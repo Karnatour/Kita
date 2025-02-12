@@ -1,8 +1,20 @@
 #include <iostream>
-#include "KitaEngine/test.h"
+#include "KitaEngine/Kita.h"
+
+class Sandbox : public IGameInstance {
+public:
+    void onUpdate() override {
+
+    }
+
+    void onRender() override {
+
+    }
+};
 
 int main() {
-    std::cout << "Hello from SandBox" << std::endl;
-    test();
-    return 0;
+    Sandbox* gameInstance = new Sandbox();
+    registerGameInstance(gameInstance);
+    Kita::Engine::run();
+
 }
