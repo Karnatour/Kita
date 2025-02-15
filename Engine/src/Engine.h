@@ -8,15 +8,15 @@ namespace Kita {
     class KITAENGINE_API Engine {
     public:
         Engine();
-        virtual ~Engine();
+        static void init();
         static std::shared_ptr<Engine>& getEngine();
-        static void loadGameInstance(std::shared_ptr<IGameInstance> instance);
-        static void run();
-        static void exit();
+
+        void loadGameInstance(std::shared_ptr<IGameInstance> instance);
+        void run();
+        void exit();
 
     private:
-        static bool isRunning;
-        static std::shared_ptr<Engine> engineInstance;
-        static std::shared_ptr<IGameInstance> gameInstance;
+        bool m_isRunning = false;
+        std::shared_ptr<IGameInstance> m_game = nullptr;
     };
 }

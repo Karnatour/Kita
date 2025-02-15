@@ -1,18 +1,19 @@
+#include <iostream>
 #include <windows.h>
 #include "Engine.h"
 #include "Logger.h"
 
 BOOL WINAPI DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
-    std::shared_ptr<Kita::Engine> engine = nullptr;
-
     switch (fdwReason) {
         case DLL_PROCESS_ATTACH:
-            engine = Kita::Engine::getEngine();
-            Kita::Logger::getEngineLogger()->info("Engine dll loaded");
+#ifdef KITA_BUILD_DEBUG
+            std::cout << "Kita Dll attached" << std::endl;
+#endif
+            Kita::Logger::init();
+            Kita::Engine::init();
             break;
 
         case DLL_PROCESS_DETACH:
-            Kita::Engine::exit();
             break;
 
         case DLL_THREAD_ATTACH:

@@ -1,42 +1,44 @@
 #include "Engine.h"
-
 #include "Logger.h"
+#include "Window.h"
 
 namespace Kita {
-
-    bool Engine::isRunning = false;
-    std::shared_ptr<Engine> Engine::engineInstance;
-    std::shared_ptr<IGameInstance> Engine::gameInstance;
+    static std::shared_ptr<Engine> m_engineInstance = nullptr;
 
     Engine::Engine() {
-        Logger::init();
-        isRunning = true;
+        m_isRunning = true;
     }
 
-    Engine::~Engine() {
+    void Engine::init() {
+        m_engineInstance = std::make_shared<Engine>();
+        Window::setErrorCallbackFun();
     }
 
     std::shared_ptr<Engine>& Engine::getEngine() {
-        if (!engineInstance) {
-            engineInstance = std::make_shared<Engine>();
-        }
-        return engineInstance;
+        return m_engineInstance;
     }
 
     void Engine::loadGameInstance(std::shared_ptr<IGameInstance> instance) {
-        gameInstance = std::move(instance);
+        m_game = std::move(instance);
+        m_isRunning = true;
+        run();
     }
 
     void Engine::run() {
-        while (isRunning) {
-            if (gameInstance) {
-                gameInstance->onUpdate();
-                gameInstance->onRender();
+        while (m_isRunning) {
+            if (m_game) {
+                if (m_game->m_initialized == false) {
+                    m_game->onInit();
+                    m_game->m_initialized = true;
+                }
+
+                m_game->onUpdate();
+                m_game->onRender();
             }
         }
     }
 
     void Engine::exit() {
-        isRunning = false;
+        m_isRunning = false;
     }
 }

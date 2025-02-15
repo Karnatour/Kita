@@ -4,6 +4,6 @@
 
 namespace Kita {
     extern "C" KITAENGINE_API void registerGameInstance(IGameInstance* instance) {
-        Engine::loadGameInstance(std::shared_ptr<IGameInstance>(instance));
+        Engine::getEngine()->loadGameInstance(std::shared_ptr<IGameInstance>(instance));
     }
 }

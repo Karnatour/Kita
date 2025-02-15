@@ -1,24 +1,22 @@
 #include "Logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Kita {
-    std::shared_ptr<spdlog::logger> Logger::engineLogger;
-    std::shared_ptr<spdlog::logger> Logger::userLogger;
-
     void Logger::init() {
-        engineLogger = spdlog::stdout_color_mt("Engine");
-        userLogger = spdlog::stdout_color_mt("User");
+        m_engineInstance = spdlog::stdout_color_mt("Engine");
+        m_userInstance = spdlog::stdout_color_mt("User");
         spdlog::set_pattern("[%n|%H:%M:%S] %^%v%$");
-#ifdef KITA_DEBUG
+#ifdef KITA_BUILD_DEBUG
         spdlog::set_level(spdlog::level::debug);
 #endif
+        KITA_ENGINE_INFO("Logger initialized");
     }
 
-    std::shared_ptr<spdlog::logger>& Logger::getEngineLogger() {
-        return engineLogger;
+    std::shared_ptr<spdlog::logger>& Logger::getEngineInstance() {
+        return m_engineInstance;
     }
 
-    std::shared_ptr<spdlog::logger>& Logger::getUserLogger() {
-        return userLogger;
+    std::shared_ptr<spdlog::logger>& Logger::getUserInstance() {
+        return m_userInstance;
     }
 } // Kita
