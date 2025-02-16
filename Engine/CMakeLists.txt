@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 project(KitaEngine)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -18,7 +18,15 @@ add_library(KitaEngine SHARED
         src/IGameInstance.h
         src/IGameInstance.cpp
         src/Window.cpp
-        src/Window.h)
+        src/Window.h
+        src/EventManager.h
+        src/Events/Event.h
+        src/Events/WindowEvents.cpp
+        src/Events/WindowEvents.h
+        src/Events/MouseEvents.cpp
+        src/Events/MouseEvents.h
+        src/Events/KeyboardEvents.cpp
+        src/Events/KeyboardEvents.h)
 
 
 
@@ -36,5 +44,8 @@ message(STATUS "Imported targets: ${_targets}")
 
 target_include_directories(KitaEngine PUBLIC ${CMAKE_SOURCE_DIR}/Engine/include)
 
+target_precompile_headers(KitaEngine PRIVATE src/kitapch.h)
+
 #Add compile definitions for DLL
 target_compile_definitions(KitaEngine PRIVATE KITAENGINE_EXPORTS KITA_BUILD_DEBUG)
+
