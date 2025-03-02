@@ -19,14 +19,19 @@ add_library(KitaEngine SHARED
         src/IGameInstance.cpp
         src/Window.cpp
         src/Window.h
-        src/EventManager.h
+        src/Events/EventManager.h
         src/Events/Event.h
         src/Events/WindowEvents.cpp
         src/Events/WindowEvents.h
         src/Events/MouseEvents.cpp
         src/Events/MouseEvents.h
         src/Events/KeyboardEvents.cpp
-        src/Events/KeyboardEvents.h)
+        src/Events/KeyboardEvents.h
+        src/InputKeys.cpp
+        src/InputKeys.h
+        src/Events/EventManager.cpp
+        src/Input.cpp
+        src/Input.h)
 
 
 

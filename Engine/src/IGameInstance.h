@@ -1,5 +1,4 @@
 #pragma once
-
 #include "DllTemplate.h"
 
 class IGameInstance {

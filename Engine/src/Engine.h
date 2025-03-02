@@ -1,8 +1,6 @@
 #pragma once
-
-#include <memory>
-#include "DllTemplate.h"
 #include "IGameInstance.h"
+#include "DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API Engine {

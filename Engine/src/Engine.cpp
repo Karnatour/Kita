@@ -1,6 +1,9 @@
 #include "Engine.h"
-#include "Logger.h"
+
+#include "Input.h"
+#include "kitapch.h"
 #include "Window.h"
+#include "Events/EventManager.h"
 
 namespace Kita {
     static std::shared_ptr<Engine> m_engineInstance = nullptr;
@@ -12,6 +15,7 @@ namespace Kita {
     void Engine::init() {
         m_engineInstance = std::make_shared<Engine>();
         Window::setErrorCallbackFun();
+        EventManager::attachEngineEvents();
     }
 
     std::shared_ptr<Engine>& Engine::getEngine() {
@@ -29,6 +33,7 @@ namespace Kita {
             if (m_game) {
                 if (m_game->m_initialized == false) {
                     m_game->onInit();
+                    KITA_ENGINE_DEBUG("LOL");
                     m_game->m_initialized = true;
                 }
 

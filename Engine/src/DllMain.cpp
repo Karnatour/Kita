@@ -1,7 +1,5 @@
-#include <iostream>
-#include <windows.h>
+#include "kitapch.h"
 #include "Engine.h"
-#include "Logger.h"
 
 BOOL WINAPI DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     switch (fdwReason) {
