@@ -2,7 +2,7 @@
 
 
 namespace Kita {
-    KeyPressed::KeyPressed(KeyboardKey const key,int const modifier): m_key(key), m_modifier(modifier) {
+    KeyPressed::KeyPressed(KeyboardKey const key,int const modifier): m_key(key), m_modifiersField(modifier) {
     }
 
     KeyboardKey KeyPressed::getKey() const {
@@ -10,7 +10,7 @@ namespace Kita {
     }
 
     int KeyPressed::getModifier() const {
-        return m_modifier;
+        return m_modifiersField;
     }
 
     KeyReleased::KeyReleased(KeyboardKey const key) : m_key(key){

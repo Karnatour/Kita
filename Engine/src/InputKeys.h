@@ -11,6 +11,15 @@ namespace Kita {
         MBUTTON_8
     };
 
+    enum class KeyModifiers {
+        MODIFIER_SHIFT,
+        MODIFIER_CTRL,
+        MODIFIER_ALT,
+        MODIFIER_SUPER,
+        MODIFIER_CAPS_LOCK,
+        MODIFIER_NUM_LOCK
+    };
+
     enum class KeyboardKey {
         KEY_SPACE,
         KEY_APOSTROPHE,

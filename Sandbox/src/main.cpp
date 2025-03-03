@@ -15,7 +15,7 @@ public:
     }
 
     void onUpdate() override {
-        if (Kita::Input::isKeyPressed(Kita::KeyboardKey::KEY_L)) {
+        if (Kita::Input::isKeyPressed(Kita::KeyboardKey::KEY_K, {Kita::KeyModifiers::MODIFIER_CTRL,Kita::KeyModifiers::MODIFIER_SHIFT})) {
             KITA_DEBUG("Keypressed");
         }
     }

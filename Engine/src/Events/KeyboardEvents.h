@@ -11,7 +11,7 @@ namespace Kita {
         int getModifier() const;
     private:
         KeyboardKey m_key;
-        int m_modifier;
+        int m_modifiersField;
     };
 
     class KITAENGINE_API KeyReleased final : public Event {
