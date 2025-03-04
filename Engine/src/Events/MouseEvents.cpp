@@ -1,11 +1,15 @@
 #include "MouseEvents.h"
 
 namespace Kita {
-    MousePressed::MousePressed(const MouseKey key) : m_key(key) {
+    MousePressed::MousePressed(const MouseButton button, const int modifiersField) : m_key(button), m_modifiersField(modifiersField) {
     }
 
-    MouseKey MousePressed::getKey() const {
+    MouseButton MousePressed::getButton() const {
         return m_key;
+    }
+
+    int MousePressed::getModifiersField() const {
+        return m_modifiersField;
     }
 
     MouseChangedFocus::MouseChangedFocus(const bool isInFocus): m_isFocused(isInFocus) {
@@ -19,13 +23,20 @@ namespace Kita {
     }
 
     std::tuple<double, double> MouseScrolled::getOffset() {
-        return std::make_tuple(m_x,m_y);
-    }
-
-    MouseMoved::MouseMoved(const int x, const int y) : m_x(x), m_y(y) {
-    }
-
-    std::tuple<int, int> MouseMoved::getPosition() {
         return std::make_tuple(m_x, m_y);
+    }
+
+    MouseMoved::MouseMoved(const double x, const double y) : m_x(x), m_y(y) {
+    }
+
+    std::tuple<double, double> MouseMoved::getPosition() {
+        return std::make_tuple(m_x, m_y);
+    }
+
+    MouseReleased::MouseReleased(const MouseButton button) : m_key(button) {
+    }
+
+    MouseButton MouseReleased::getButton() const {
+        return m_key;
     }
 } // Kita

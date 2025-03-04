@@ -17,8 +17,8 @@ add_library(KitaEngine SHARED
         src/DllMain.cpp
         src/IGameInstance.h
         src/IGameInstance.cpp
-        src/Window.cpp
-        src/Window.h
+        src/Window/Window.cpp
+        src/Window/Window.h
         src/Events/EventManager.h
         src/Events/Event.h
         src/Events/WindowEvents.cpp
@@ -27,11 +27,17 @@ add_library(KitaEngine SHARED
         src/Events/MouseEvents.h
         src/Events/KeyboardEvents.cpp
         src/Events/KeyboardEvents.h
-        src/InputKeys.cpp
-        src/InputKeys.h
+        src/Input/InputKeys.cpp
+        src/Input/InputKeys.h
         src/Events/EventManager.cpp
-        src/Input.cpp
-        src/Input.h)
+        src/Input/Input.cpp
+        src/Input/Input.h
+        src/Window/Callbacks/WindowCallbacks.cpp
+        src/Window/Callbacks/WindowCallbacks.h
+        src/Window/Callbacks/KeyboardCallbacks.cpp
+        src/Window/Callbacks/KeyboardCallbacks.h
+        src/Window/Callbacks/MouseCallbacks.cpp
+        src/Window/Callbacks/MouseCallbacks.h)
 
 
 

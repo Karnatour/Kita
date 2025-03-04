@@ -2,14 +2,14 @@
 
 
 namespace Kita {
-    KeyPressed::KeyPressed(KeyboardKey const key,int const modifier): m_key(key), m_modifiersField(modifier) {
+    KeyPressed::KeyPressed(KeyboardKey const key, const int modifiersField): m_key(key), m_modifiersField(modifiersField) {
     }
 
     KeyboardKey KeyPressed::getKey() const {
         return m_key;
     }
 
-    int KeyPressed::getModifier() const {
+    int KeyPressed::getModifiersField() const {
         return m_modifiersField;
     }
 

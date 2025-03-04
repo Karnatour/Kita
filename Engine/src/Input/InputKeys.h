@@ -1,6 +1,6 @@
 #pragma once
 namespace Kita {
-    enum class MouseKey {
+    enum class MouseButton {
         MBUTTON_LEFT,
         MBUTTON_RIGHT,
         MBUTTON_MIDDLE,
@@ -8,10 +8,11 @@ namespace Kita {
         MBUTTON_5,
         MBUTTON_6,
         MBUTTON_7,
-        MBUTTON_8
+        MBUTTON_LAST,
+        MBUTTON_NONE
     };
 
-    enum class KeyModifiers {
+    enum class Modifiers {
         MODIFIER_SHIFT,
         MODIFIER_CTRL,
         MODIFIER_ALT,
@@ -145,4 +146,6 @@ namespace Kita {
     };
 
     KeyboardKey convertGLFWToKitaKey(int key);
+
+    MouseButton convertGLFWToKitaButton(int button);
 }

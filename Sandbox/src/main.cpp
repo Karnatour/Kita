@@ -15,8 +15,11 @@ public:
     }
 
     void onUpdate() override {
-        if (Kita::Input::isKeyPressed(Kita::KeyboardKey::KEY_K, {Kita::KeyModifiers::MODIFIER_CTRL,Kita::KeyModifiers::MODIFIER_SHIFT})) {
+        if (Kita::Input::isKeyPressed(Kita::KeyboardKey::KEY_K, {Kita::Modifiers::MODIFIER_CTRL,Kita::Modifiers::MODIFIER_SHIFT})) {
             KITA_DEBUG("Keypressed");
+        }
+        if (Kita::Input::isMousePressed(Kita::MouseButton::MBUTTON_LEFT,{Kita::Modifiers::MODIFIER_CTRL})) {
+            KITA_DEBUG("MousePressed");
         }
     }
 
@@ -30,6 +33,6 @@ private:
 };
 
 int main() {
-    Sandbox* gameInstance = new Sandbox();
-    registerGameInstance(gameInstance);
+    std::unique_ptr<Sandbox> gameInstance = std::make_unique<Sandbox>();
+    registerGameInstance(gameInstance.get());
 }

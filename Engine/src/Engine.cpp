@@ -1,8 +1,7 @@
 #include "Engine.h"
 
-#include "Input.h"
 #include "kitapch.h"
-#include "Window.h"
+#include "Window/Window.h"
 #include "Events/EventManager.h"
 
 namespace Kita {
@@ -33,7 +32,7 @@ namespace Kita {
             if (m_game) {
                 if (m_game->m_initialized == false) {
                     m_game->onInit();
-                    KITA_ENGINE_DEBUG("LOL");
+                    KITA_ENGINE_INFO("Game initialized");
                     m_game->m_initialized = true;
                 }
 

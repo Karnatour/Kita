@@ -16,11 +16,6 @@ namespace Kita {
     private:
         void setWindowCallbacks();
         static void errorCallbackFun(int error_code, const char* description);
-        static void windowPosCallbackFun(GLFWwindow* window,int xpos, int ypos);
-        static void windowSizeCallbackFun(GLFWwindow* window, int width, int height);
-        static void windowCloseCallbackFun(GLFWwindow* window);
-        static void windowFocusCallbackFun(GLFWwindow* window, int focused);
-        static void windowKeyCallbackFun(GLFWwindow* window,int key,int scancode,int action,int mods);
         static void frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height);
         GLFWwindow* m_window = nullptr;
     };

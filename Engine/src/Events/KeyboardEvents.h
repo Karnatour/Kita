@@ -1,14 +1,13 @@
 #pragma once
 #include "Event.h"
-#include "../InputKeys.h"
+#include "../Input/InputKeys.h"
 
 namespace Kita {
-
     class KITAENGINE_API KeyPressed final : public Event {
     public:
-        KeyPressed(KeyboardKey key,int modifier);
+        KeyPressed(KeyboardKey key, int modifiersField);
         KeyboardKey getKey() const;
-        int getModifier() const;
+        int getModifiersField() const;
     private:
         KeyboardKey m_key;
         int m_modifiersField;
