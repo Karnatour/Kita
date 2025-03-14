@@ -1,5 +1,5 @@
+#include "../kitapch.h"
 #include "InputKeys.h"
-
 #include <GLFW/glfw3.h>
 
 namespace Kita {

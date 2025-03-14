@@ -1,4 +1,6 @@
+#include "../../kitapch.h"
 #include "WindowCallbacks.h"
+
 #include "../../Events/EventManager.h"
 #include "../../Events/WindowEvents.h"
 

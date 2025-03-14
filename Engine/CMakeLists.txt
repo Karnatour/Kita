@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
-
 #Create DLL
 add_library(KitaEngine SHARED
         src/Logger.cpp
@@ -37,7 +36,9 @@ add_library(KitaEngine SHARED
         src/Window/Callbacks/KeyboardCallbacks.cpp
         src/Window/Callbacks/KeyboardCallbacks.h
         src/Window/Callbacks/MouseCallbacks.cpp
-        src/Window/Callbacks/MouseCallbacks.h)
+        src/Window/Callbacks/MouseCallbacks.h
+        src/Events/EngineListeners.cpp
+        src/Events/EngineListeners.h)
 
 
 
@@ -53,7 +54,7 @@ target_link_libraries(KitaEngine PUBLIC glad::glad)
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")
 
-target_include_directories(KitaEngine PUBLIC ${CMAKE_SOURCE_DIR}/Engine/include)
+target_include_directories(KitaEngine PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 target_precompile_headers(KitaEngine PRIVATE src/kitapch.h)
 

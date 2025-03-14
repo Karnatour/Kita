@@ -1,5 +1,5 @@
+#include "../kitapch.h"
 #include "KeyboardEvents.h"
-
 
 namespace Kita {
     KeyPressed::KeyPressed(KeyboardKey const key, const int modifiersField): m_key(key), m_modifiersField(modifiersField) {

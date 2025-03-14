@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "Input.h"
 #include "../Events/KeyboardEvents.h"
 #include "../Events/MouseEvents.h"

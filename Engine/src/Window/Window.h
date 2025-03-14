@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 #define GLFW_INCLUDE_NONE
 #include <glad/glad.h>
@@ -10,9 +11,11 @@ namespace Kita {
     public:
         void init();
         void createWindow(int width, int height, const char* title);
+        void exit();
         static void setErrorCallbackFun();
         void poolEvents();
         void swapBuffers();
+        std::string m_title;
     private:
         void setWindowCallbacks();
         static void errorCallbackFun(int error_code, const char* description);

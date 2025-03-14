@@ -1,7 +1,10 @@
+#include "../kitapch.h"
 #include "EventManager.h"
+#include "EngineListeners.h"
 #include "../Input/Input.h"
 #include "KeyboardEvents.h"
 #include "MouseEvents.h"
+#include "WindowEvents.h"
 
 namespace Kita {
     // Define the static eventListeners map
@@ -10,6 +13,7 @@ namespace Kita {
     void EventManager::attachEngineEvents() {
         listenToEvent<KeyPressed>(Input::updateKey);
         listenToEvent<MousePressed>(Input::updateButton);
+        listenToEvent<WindowClosed>(EngineListeners::closeEngine);
     }
 
     std::vector<EventManager::eventCallbackFun>& EventManager::getCallbacks(const std::type_index type) {

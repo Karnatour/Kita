@@ -19,7 +19,7 @@ namespace Kita {
         template <typename T>
         static void triggerEvent(T& event) {
             auto& callbacks = getCallbacks(typeid(T));
-            KITA_ENGINE_DEBUG("Event triggered: {} | Callbacks count: {}", typeid(T).name(), callbacks.size());
+            //KITA_ENGINE_DEBUG("Event triggered: {} | Callbacks count: {}", typeid(T).name(), callbacks.size());
 
             for (auto& function : callbacks) {
                 function(event);

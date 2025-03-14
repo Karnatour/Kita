@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "WindowEvents.h"
 
 namespace Kita {

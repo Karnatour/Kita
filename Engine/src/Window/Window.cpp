@@ -1,5 +1,4 @@
 #include "../kitapch.h"
-
 #include "Window.h"
 
 #include "Callbacks/KeyboardCallbacks.h"
@@ -9,22 +8,44 @@
 
 namespace Kita {
     void Window::init() {
-        glfwInit();
+        setErrorCallbackFun();
+        if (!glfwInit()) {
+            KITA_ENGINE_ERROR("GLFW initialization failed!");
+            return;
+        }
+
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
         KITA_ENGINE_INFO("Window initialized");
     }
 
     void Window::createWindow(const int width, const int height, const char* title) {
+        KITA_ENGINE_INFO("Creating window: {} ({}x{})", title, width, height);
+
         m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+        if (!m_window) {
+            KITA_ENGINE_ERROR("Failed to create GLFW window");
+            return;
+        }
+
         glfwMakeContextCurrent(m_window);
         setWindowCallbacks();
+
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             KITA_ENGINE_ERROR("Failed to initialize Glad");
+            return;
         }
+
         glfwSwapInterval(1);
+
         KITA_ENGINE_INFO("Window {} created", title);
+    }
+
+    void Window::exit() {
+        glfwTerminate();
+        KITA_ENGINE_INFO("GLFW terminated");
     }
 
     void Window::errorCallbackFun(int error_code, const char* description) {
@@ -59,9 +80,9 @@ namespace Kita {
         glfwSetKeyCallback(m_window, keyboardKeyCallbackFun);
 
         //Mouse
-        glfwSetMouseButtonCallback(m_window,mouseButtonCallbackFun);
-        glfwSetCursorPosCallback(m_window,cursorPosCallbackFun);
-        glfwSetCursorEnterCallback(m_window,cursorEnterCallbackFun);
-        glfwSetScrollCallback(m_window,scrollCallbackFun);
+        glfwSetMouseButtonCallback(m_window, mouseButtonCallbackFun);
+        glfwSetCursorPosCallback(m_window, cursorPosCallbackFun);
+        glfwSetCursorEnterCallback(m_window, cursorEnterCallbackFun);
+        glfwSetScrollCallback(m_window, scrollCallbackFun);
     }
 } // Kita

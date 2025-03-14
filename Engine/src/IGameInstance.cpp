@@ -1,5 +1,5 @@
+#include "kitapch.h"
 #include "IGameInstance.h"
-
 #include "Engine.h"
 
 namespace Kita {
