@@ -1,5 +1,5 @@
 #pragma once
-#include "DllTemplate.h"
+#include "../Core/DllTemplate.h"
 
 class IGameInstance {
 public:

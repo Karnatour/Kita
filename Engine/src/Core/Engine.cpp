@@ -1,8 +1,8 @@
-#include "kitapch.h"
+#include "../kitapch.h"
 #include "Engine.h"
 
-#include "Window/Window.h"
-#include "Events/EventManager.h"
+#include "../Window/Window.h"
+#include "../Events/EventManager.h"
 
 namespace Kita {
     static std::shared_ptr<Engine> m_engineInstance = nullptr;
@@ -44,12 +44,14 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
+        m_window.makeContextCurrent();
         while (m_isRunning) {
             m_window.poolEvents();
 
             update();
             m_game->onUpdate();
 
+            m_window.makeContextCurrent();
             render();
             m_game->onRender();
 

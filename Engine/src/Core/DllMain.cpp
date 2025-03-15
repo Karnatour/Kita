@@ -1,4 +1,4 @@
-#include "kitapch.h"
+#include "../kitapch.h"
 
 BOOL WINAPI DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     switch (fdwReason) {

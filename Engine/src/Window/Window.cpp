@@ -30,7 +30,7 @@ namespace Kita {
             return;
         }
 
-        glfwMakeContextCurrent(m_window);
+        makeContextCurrent();
         setWindowCallbacks();
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
@@ -66,6 +66,10 @@ namespace Kita {
 
     void Window::swapBuffers() {
         glfwSwapBuffers(m_window);
+    }
+
+    void Window::makeContextCurrent() {
+        glfwMakeContextCurrent(m_window);
     }
 
     void Window::setWindowCallbacks() {

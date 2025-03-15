@@ -1,7 +1,7 @@
 #pragma once
-#include "IGameInstance.h"
+#include "../instances/IGameInstance.h"
 #include "DllTemplate.h"
-#include "Window/Window.h"
+#include "../Window/Window.h"
 #include <memory>
 
 namespace Kita {
@@ -17,13 +17,12 @@ namespace Kita {
         void run();
         void stop();
 
-        Window m_window;
-
     private:
         void render();
         void update();
         void exit();
         bool m_isRunning = false;
+        Window m_window;
         std::shared_ptr<IGameInstance> m_game = nullptr;
     };
 }

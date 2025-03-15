@@ -7,15 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #Create DLL
 add_library(KitaEngine SHARED
-        src/Logger.cpp
-        src/Logger.h
-        src/DLLTemplate.h
-        src/Engine.cpp
-        src/Engine.h
+        src/Core/Logger.cpp
+        src/Core/Logger.h
+        src/Core/DllTemplate.h
+        src/Core/Engine.cpp
+        src/Core/Engine.h
         include/KitaEngine/Kita.h
-        src/DllMain.cpp
-        src/IGameInstance.h
-        src/IGameInstance.cpp
+        src/Core/DllMain.cpp
+        src/Instances/IGameInstance.h
+        src/Instances/IGameInstance.cpp
         src/Window/Window.cpp
         src/Window/Window.h
         src/Events/EventManager.h

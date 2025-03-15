@@ -15,6 +15,7 @@ namespace Kita {
         static void setErrorCallbackFun();
         void poolEvents();
         void swapBuffers();
+        void makeContextCurrent();
         std::string m_title;
     private:
         void setWindowCallbacks();

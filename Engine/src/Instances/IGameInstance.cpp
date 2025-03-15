@@ -1,6 +1,6 @@
-#include "kitapch.h"
+#include "../kitapch.h"
 #include "IGameInstance.h"
-#include "Engine.h"
+#include "../Core/Engine.h"
 
 namespace Kita {
     extern "C" KITAENGINE_API void registerGameInstance(IGameInstance* instance) {
