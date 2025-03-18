@@ -1,6 +1,7 @@
 #pragma once
 #include "Event.h"
 #include "../Input/InputKeys.h"
+#include <tuple>
 
 namespace Kita {
     class KITAENGINE_API MousePressed final : public Event {

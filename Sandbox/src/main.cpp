@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "KitaEngine/Kita.h"
 
 class Sandbox : public IGameInstance {

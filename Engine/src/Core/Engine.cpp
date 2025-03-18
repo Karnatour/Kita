@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "Engine.h"
 
 #include "../Window/Window.h"

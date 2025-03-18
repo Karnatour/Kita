@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "Window.h"
 
 #include "Callbacks/KeyboardCallbacks.h"

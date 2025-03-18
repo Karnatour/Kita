@@ -1,4 +1,3 @@
-#include "../../../kitapch.h"
 #include "GLElementBuffer.h"
 
 #include <glad/glad.h>

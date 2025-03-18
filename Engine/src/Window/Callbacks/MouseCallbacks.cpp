@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "MouseCallbacks.h"
 
 #include "../../Events/EventManager.h"

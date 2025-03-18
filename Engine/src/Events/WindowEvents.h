@@ -1,5 +1,6 @@
 #pragma once
 #include "Event.h"
+#include <tuple>
 
 namespace Kita {
     class KITAENGINE_API WindowMoved final : public Event {

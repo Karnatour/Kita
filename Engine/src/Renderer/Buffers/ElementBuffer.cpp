@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "ElementBuffer.h"
 
 namespace Kita {

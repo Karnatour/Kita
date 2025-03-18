@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "KeyboardCallbacks.h"
 
 #include "../../Events/EventManager.h"

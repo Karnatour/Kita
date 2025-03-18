@@ -1,4 +1,3 @@
-#include "../../../kitapch.h"
 #include "GLVertexBuffer.h"
 
 #include <glad/glad.h>

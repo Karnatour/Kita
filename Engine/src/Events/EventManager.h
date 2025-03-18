@@ -1,5 +1,8 @@
 #pragma once
 #include <typeindex>
+#include <unordered_map>
+#include <vector>
+#include <functional>
 #include "Event.h"
 
 namespace Kita {
