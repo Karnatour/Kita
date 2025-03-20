@@ -3,7 +3,11 @@
 #include <glad/glad.h>
 
 namespace Kita {
-    void GLVertexArray::create(VertexBuffer& vbo, ElementBuffer& ibo) {
+    GLVertexArray::~GLVertexArray() {
+        glDeleteBuffers(1,&m_vao);
+    }
+
+    void GLVertexArray::createBuffer(const VertexBuffer& vbo, const IndexBuffer& ibo) {
         glCreateVertexArrays(1, &m_vao);
 
         glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, sizeof(Vertex));

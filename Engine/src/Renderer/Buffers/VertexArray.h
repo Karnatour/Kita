@@ -1,16 +1,17 @@
 #pragma once
-#include "ElementBuffer.h"
+#include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include <memory>
+#include "../../Core/DllTemplate.h"
 
 namespace Kita {
-    class VertexArray {
+    class KITAENGINE_API VertexArray {
     public:
         virtual ~VertexArray() = default;
-        virtual void create(VertexBuffer& vbo, ElementBuffer& ibo) = 0;
+        virtual void createBuffer(const VertexBuffer& vbo, const IndexBuffer& ibo) = 0;
         virtual void bind() = 0;
         unsigned int getVAO() const;
-        static std::unique_ptr<VertexArray> create();
+        static std::shared_ptr<VertexArray> createPtr();
 
     protected:
         unsigned int m_vao = 0;

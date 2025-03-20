@@ -11,9 +11,11 @@ namespace Kita {
         m_isRunning = true;
     }
 
-    void Engine::init() {
-        m_window.init();
-        m_window.createWindow(600, 600, "Kita");
+    void Engine::init(GraphicsAPI API) {
+        m_window = std::make_unique<Window>();
+        m_window->init();
+        m_window->createWindow(600, 600, "Kita");
+        m_renderer = std::make_unique<Renderer>(API);
 
         EventManager::attachEngineEvents();
 
@@ -43,18 +45,16 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
-        m_window.makeContextCurrent();
         while (m_isRunning) {
-            m_window.poolEvents();
+            m_window->poolEvents();
 
             update();
             m_game->onUpdate();
 
-            m_window.makeContextCurrent();
             render();
             m_game->onRender();
 
-            m_window.swapBuffers();
+            m_window->swapBuffers();
         }
         m_game->onExit();
         exit();
@@ -71,6 +71,6 @@ namespace Kita {
     }
 
     void Engine::exit() {
-        m_window.exit();
+        m_window->exit();
     }
 }

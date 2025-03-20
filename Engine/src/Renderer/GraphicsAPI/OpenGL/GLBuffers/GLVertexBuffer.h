@@ -5,6 +5,7 @@
 namespace Kita {
     class GLVertexBuffer final : public VertexBuffer {
     public:
-        void create(unsigned size, std::vector<Vertex>& vertices) override;
+        ~GLVertexBuffer() override;
+        void createBuffer(const std::vector<Vertex>& vertices) override;
     };
 } // Kita

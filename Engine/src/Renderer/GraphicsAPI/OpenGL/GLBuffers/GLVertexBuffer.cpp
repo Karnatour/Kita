@@ -3,7 +3,11 @@
 #include <glad/glad.h>
 
 namespace Kita {
-    void GLVertexBuffer::create(unsigned size, std::vector<Vertex>& vertices) {
+    GLVertexBuffer::~GLVertexBuffer() {
+        glDeleteBuffers(1,&m_vbo);
+    }
+
+    void GLVertexBuffer::createBuffer(const std::vector<Vertex>& vertices) {
         glCreateBuffers(1, &m_vbo);
         glNamedBufferStorage(m_vbo, static_cast<GLsizeiptr>(sizeof(Vertex) * vertices.size()), vertices.data(),GL_DYNAMIC_STORAGE_BIT);
     }

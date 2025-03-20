@@ -43,12 +43,12 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/VertexBuffer.h
         src/Renderer/Buffers/VertexArray.cpp
         src/Renderer/Buffers/VertexArray.h
-        src/Renderer/Buffers/ElementBuffer.cpp
-        src/Renderer/Buffers/ElementBuffer.h
+        src/Renderer/Buffers/IndexBuffer.cpp
+        src/Renderer/Buffers/IndexBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexBuffer.h
-        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLElementBuffer.cpp
-        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLElementBuffer.h
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h
         src/Renderer/Structs/Vertex.h

@@ -7,9 +7,9 @@ namespace Kita {
     class VertexBuffer {
     public:
         virtual ~VertexBuffer() = default;
-        virtual void create(unsigned int size, std::vector<Vertex>& vertices) = 0;
+        virtual void createBuffer(const std::vector<Vertex>& vertices) = 0;
         unsigned int getVBO() const;
-        static std::unique_ptr<VertexBuffer> create();
+        static std::shared_ptr<VertexBuffer> createPtr();
 
     protected:
         unsigned int m_vbo = 0;

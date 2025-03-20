@@ -4,7 +4,7 @@
 #define GLFW_INCLUDE_NONE
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API Window {

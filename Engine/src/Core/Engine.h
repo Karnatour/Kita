@@ -1,14 +1,16 @@
 #pragma once
-#include "../instances/IGameInstance.h"
 #include "DllTemplate.h"
+#include "../instances/IGameInstance.h"
 #include "../Window/Window.h"
+#include "../Renderer/Renderer.h"
 #include <memory>
+
 
 namespace Kita {
     class KITAENGINE_API Engine {
     public:
         Engine();
-        void init();
+        void init(GraphicsAPI API);
         static std::shared_ptr<Engine>& getEngine();
 
         void initGame();
@@ -22,7 +24,8 @@ namespace Kita {
         void update();
         void exit();
         bool m_isRunning = false;
-        Window m_window;
+        std::unique_ptr<Window> m_window = nullptr;
+        std::unique_ptr<Renderer> m_renderer = nullptr;
         std::shared_ptr<IGameInstance> m_game = nullptr;
     };
 }

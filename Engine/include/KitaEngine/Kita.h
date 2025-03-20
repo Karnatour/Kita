@@ -10,3 +10,11 @@
 #include "../src/Events/MouseEvents.h"
 #include "../src/Input/InputKeys.h"
 #include "../src/Input/Input.h"
+#include "../src/Renderer/Renderer.h"
+#include "../src/Renderer/Mesh.h"
+#include "../src/Renderer/Scene.h"
+#include "../src/Renderer/Structs/Vertex.h"
+#include "../src/Renderer/Buffers/IndexBuffer.h"
+#include "../src/Renderer/Buffers/VertexArray.h"
+#include "../src/Renderer/Buffers/VertexBuffer.h"
+
