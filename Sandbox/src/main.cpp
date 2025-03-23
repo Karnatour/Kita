@@ -3,7 +3,6 @@
 class Sandbox : public IGameInstance {
 public:
     void onInit() override {
-
     }
 
     void onUpdate() override {

@@ -2,9 +2,10 @@
 #include "../Structs/Vertex.h"
 #include <memory>
 #include <vector>
+#include "../../Core/DllTemplate.h"
 
 namespace Kita {
-    class VertexBuffer {
+    class KITAENGINE_API VertexBuffer {
     public:
         virtual ~VertexBuffer() = default;
         virtual void createBuffer(const std::vector<Vertex>& vertices) = 0;

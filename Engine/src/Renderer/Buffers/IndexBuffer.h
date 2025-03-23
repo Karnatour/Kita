@@ -1,9 +1,10 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include "../../Core/DllTemplate.h"
 
 namespace Kita {
-    class IndexBuffer {
+    class KITAENGINE_API IndexBuffer {
     public:
         virtual ~IndexBuffer() = default;
         virtual void createBuffer(const std::vector<unsigned int>& indicies) = 0;
