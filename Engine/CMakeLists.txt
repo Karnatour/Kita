@@ -63,8 +63,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Shaders/ShaderManager.h
         src/Renderer/Shaders/Shader.cpp
         src/Renderer/Shaders/Shader.h
-        src/Renderer/GraphicsAPI/OpenGL/Shaders/GLShader.cpp
-        src/Renderer/GraphicsAPI/OpenGL/Shaders/GLShader.h
+        src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.h
         src/Core/FileReader.cpp
         src/Core/FileReader.h
 )

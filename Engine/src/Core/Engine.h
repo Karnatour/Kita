@@ -19,6 +19,8 @@ namespace Kita {
         void run();
         void stop();
 
+        const Window& getWindow() const;
+        const Renderer& getRenderer() const;
     private:
         void render();
         void update();

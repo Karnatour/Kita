@@ -10,6 +10,7 @@ namespace Kita {
     public:
         explicit Renderer(GraphicsAPI api);
         static GraphicsAPI getAPI();
+        const ShaderManager& getShaderManager() const;
 
     private:
         std::unique_ptr<Scene> m_scene = nullptr;

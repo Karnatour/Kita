@@ -12,9 +12,10 @@ namespace Kita {
         }
 
         const std::size_t fileSize = std::filesystem::file_size(filePath);
-        std::vector<char> buffer(fileSize);
 
+        std::vector<char> buffer(fileSize);
         file.read(buffer.data(), static_cast<std::streamsize>(fileSize));
+
         std::string content(buffer.begin(),buffer.end());
         return content;
 

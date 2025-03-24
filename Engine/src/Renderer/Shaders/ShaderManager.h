@@ -3,14 +3,17 @@
 #include "Shader.h"
 #include <unordered_map>
 #include <memory>
+#include <string>
 
 namespace Kita {
 
 class KITAENGINE_API ShaderManager {
 public:
-    void addShader(Shader&& shader);
+    void addShader(const std::string& vertexPath,const std::string& fragmentPath);
+    std::shared_ptr<Shader> getShader(const std::string& vertexPath,const std::string& fragmentPath);
+    const std::unordered_map<std::string,std::shared_ptr<Shader>>& getShaderMap() const;
 private:
-    std::unordered_map<unsigned int,std::shared_ptr<Shader>> m_shaderMap;
+    std::unordered_map<std::string,std::shared_ptr<Shader>> m_shaderMap;
 };
 
 } // Kita

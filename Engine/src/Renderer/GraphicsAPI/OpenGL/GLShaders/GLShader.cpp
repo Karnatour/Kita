@@ -1,5 +1,4 @@
 #include "GLShader.h"
-#include <glad/glad.h>
 
 namespace Kita {
     void GLShader::bind() {
@@ -11,6 +10,7 @@ namespace Kita {
     }
 
     void GLShader::compileShader(const std::string& vertexPath, const std::string& fragmentPath) {
+        KITA_ENGINE_DEBUG("Starting compilation of shader, vertexPath: {} fragmentPath: {}",vertexPath.c_str(),fragmentPath.c_str());
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         compileGLShader(vertexPath, vertexShader);
         checkShaderCompilation(vertexShader, vertexPath);
@@ -39,9 +39,12 @@ namespace Kita {
     }
 
     void GLShader::compileGLShader(const std::string& path, const GLuint& shader) {
-        const char* shaderSource = FileReader::readFile(path).c_str();
-        glShaderSource(shader, 1, &shaderSource, nullptr);
+        const std::string& shaderSource = FileReader::readFile(path);
+        const char* sourcePtr = shaderSource.data();
+
+        glShaderSource(shader, 1, &sourcePtr, nullptr);
         glCompileShader(shader);
+
     }
 
     void GLShader::checkShaderCompilation(const GLuint shader, const std::string& shaderPath) {

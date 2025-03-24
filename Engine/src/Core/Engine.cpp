@@ -64,6 +64,14 @@ namespace Kita {
         m_isRunning = false;
     }
 
+    const Window& Engine::getWindow() const {
+        return *m_window;
+    }
+
+    const Renderer& Engine::getRenderer() const {
+        return *m_renderer;
+    }
+
     void Engine::update() {
     }
 
