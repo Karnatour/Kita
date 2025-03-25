@@ -9,7 +9,7 @@ namespace Kita {
 
     std::shared_ptr<IndexBuffer> IndexBuffer::createPtr() {
         switch (Renderer::getAPI()) {
-            case GraphicsAPI::OPENGL:
+            case RenderingAPI::OPENGL:
                 return std::make_shared<GLIndexBuffer>();
             default:
                 KITA_ENGINE_ERROR("Trying to create ElementBuffer while RenderingAPI is not selected, returning nullptr");

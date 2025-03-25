@@ -10,7 +10,7 @@ namespace Kita {
 
     std::shared_ptr<VertexArray> VertexArray::createPtr() {
         switch (Renderer::getAPI()) {
-            case GraphicsAPI::OPENGL:
+            case RenderingAPI::OPENGL:
                 return std::make_shared<GLVertexArray>();
             default:
                 KITA_ENGINE_ERROR("Trying to create VertexArray while RenderingAPI is not selected, returning nullptr");

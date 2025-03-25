@@ -10,7 +10,7 @@ namespace Kita {
 
     std::shared_ptr<VertexBuffer> VertexBuffer::createPtr() {
         switch (Renderer::getAPI()) {
-            case GraphicsAPI::OPENGL:
+            case RenderingAPI::OPENGL:
                 return std::make_shared<GLVertexBuffer>();
             default:
                 KITA_ENGINE_ERROR("Trying to create VertexBuffer while RenderingAPI is not selected, returning nullptr");

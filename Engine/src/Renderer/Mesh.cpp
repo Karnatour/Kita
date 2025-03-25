@@ -7,5 +7,10 @@ namespace Kita {
         m_vbo->createBuffer(vertices);
         m_vao->createBuffer(*m_vbo,*m_ibo);
         m_ibo->createBuffer(indicies);
+        m_verticesCount = vertices.size();
+    }
+
+    unsigned int Mesh::getID() const {
+        return m_id;
     }
 } // Kita

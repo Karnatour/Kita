@@ -1,7 +1,7 @@
 #pragma once
 
 namespace Kita {
-    enum class GraphicsAPI {
+    enum class RenderingAPI {
         OPENGL,
         //VULKAN
         NONE

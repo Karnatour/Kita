@@ -58,7 +58,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Mesh.h
         src/Renderer/Scene.cpp
         src/Renderer/Scene.h
-        src/Renderer/Structs/GraphicsAPI.h
+        src/Renderer/Structs/RenderingAPI.h
         src/Renderer/Shaders/ShaderManager.cpp
         src/Renderer/Shaders/ShaderManager.h
         src/Renderer/Shaders/Shader.cpp
@@ -67,6 +67,10 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.h
         src/Core/FileReader.cpp
         src/Core/FileReader.h
+        src/Renderer/RendererAPI.cpp
+        src/Renderer/RendererAPI.h
+        src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.h
 )
 
 
