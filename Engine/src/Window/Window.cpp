@@ -71,6 +71,14 @@ namespace Kita {
         glfwMakeContextCurrent(m_window);
     }
 
+    std::string Window::getTitle() {
+        return m_title;
+    }
+
+    void Window::setTitle(const std::string& title) {
+        m_title = title;
+    }
+
     void Window::setWindowCallbacks() {
         //Window
         glfwSetFramebufferSizeCallback(m_window, frameBufferSizeCallbackFun);

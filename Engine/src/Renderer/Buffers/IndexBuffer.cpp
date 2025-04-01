@@ -3,8 +3,8 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h"
 
 namespace Kita {
-    unsigned int IndexBuffer::getEBO() const {
-        return m_ebo;
+    unsigned int IndexBuffer::getIBO() const {
+        return m_ibo;
     }
 
     std::shared_ptr<IndexBuffer> IndexBuffer::createPtr() {

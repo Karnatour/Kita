@@ -8,9 +8,9 @@ namespace Kita {
     public:
         virtual ~IndexBuffer() = default;
         virtual void createBuffer(const std::vector<unsigned int>& indicies) = 0;
-        unsigned int getEBO() const;
+        unsigned int getIBO() const;
         static std::shared_ptr<IndexBuffer> createPtr();
     protected:
-        unsigned int m_ebo = 0;
+        unsigned int m_ibo = 0;
     };
 }

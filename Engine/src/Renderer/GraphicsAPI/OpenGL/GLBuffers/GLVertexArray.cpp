@@ -11,7 +11,7 @@ namespace Kita {
         glCreateVertexArrays(1, &m_vao);
 
         glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, sizeof(Vertex));
-        glVertexArrayElementBuffer(m_vao, ibo.getEBO());
+        glVertexArrayElementBuffer(m_vao, ibo.getIBO());
 
         //Position
         glEnableVertexArrayAttrib(m_vao, 0);

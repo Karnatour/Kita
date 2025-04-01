@@ -12,11 +12,11 @@ namespace Kita {
     void GLShader::compileShader(const std::string& vertexPath, const std::string& fragmentPath) {
         KITA_ENGINE_DEBUG("Starting compilation of shader, vertexPath: {} fragmentPath: {}",vertexPath.c_str(),fragmentPath.c_str());
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        compileGLShader(vertexPath, vertexShader);
+        compileGLShader(vertexShader, vertexPath);
         checkShaderCompilation(vertexShader, vertexPath);
 
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        compileGLShader(fragmentPath, fragmentShader);
+        compileGLShader(fragmentShader, fragmentPath);
         checkShaderCompilation(fragmentShader, fragmentPath);
 
         compileGLProgram(vertexShader, fragmentShader);
@@ -38,8 +38,8 @@ namespace Kita {
         glUniform1i(glGetUniformLocation(m_program, location.c_str()), value);
     }
 
-    void GLShader::compileGLShader(const std::string& path, const GLuint& shader) {
-        const std::string& shaderSource = FileReader::readFile(path);
+    void GLShader::compileGLShader(const GLuint& shader, const std::string& shaderPath) {
+        const std::string& shaderSource = FileReader::readFile(shaderPath);
         const char* sourcePtr = shaderSource.data();
 
         glShaderSource(shader, 1, &sourcePtr, nullptr);
@@ -47,7 +47,7 @@ namespace Kita {
 
     }
 
-    void GLShader::checkShaderCompilation(const GLuint shader, const std::string& shaderPath) {
+    void GLShader::checkShaderCompilation(const GLuint& shader, const std::string& shaderPath) {
         GLint vertexCompiled;
         glGetShaderiv(shader,GL_COMPILE_STATUS, &vertexCompiled);
         if (vertexCompiled == GL_FALSE) {
