@@ -10,7 +10,7 @@ namespace Kita {
     class KITAENGINE_API Engine {
     public:
         Engine();
-        void init(GraphicsAPI API);
+        void init(RenderingAPI API);
         static std::shared_ptr<Engine>& getEngine();
 
         void initGame();
@@ -19,15 +19,15 @@ namespace Kita {
         void run();
         void stop();
 
-        const Window& getWindow() const;
-        const Renderer& getRenderer() const;
+        Window& getWindow();
+        Renderer& getRenderer();
     private:
         void render();
         void update();
         void exit();
         bool m_isRunning = false;
-        std::unique_ptr<Window> m_window = nullptr;
-        std::unique_ptr<Renderer> m_renderer = nullptr;
-        std::shared_ptr<IGameInstance> m_game = nullptr;
+        std::unique_ptr<Window> m_window;
+        std::unique_ptr<Renderer> m_renderer;
+        std::shared_ptr<IGameInstance> m_game;
     };
 }

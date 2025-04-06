@@ -11,7 +11,7 @@ namespace Kita {
         m_isRunning = true;
     }
 
-    void Engine::init(GraphicsAPI API) {
+    void Engine::init(RenderingAPI API) {
         m_window = std::make_unique<Window>();
         m_window->init();
         m_window->createWindow(600, 600, "Kita");
@@ -64,11 +64,11 @@ namespace Kita {
         m_isRunning = false;
     }
 
-    const Window& Engine::getWindow() const {
+    Window& Engine::getWindow(){
         return *m_window;
     }
 
-    const Renderer& Engine::getRenderer() const {
+    Renderer& Engine::getRenderer(){
         return *m_renderer;
     }
 

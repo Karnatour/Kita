@@ -6,6 +6,7 @@
 namespace Kita {
     class KITAENGINE_API Scene {
     public:
+        void render();
     private:
         std::unordered_map<unsigned int, Mesh> m_meshes;
     };

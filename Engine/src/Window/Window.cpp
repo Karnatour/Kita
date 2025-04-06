@@ -1,5 +1,6 @@
 #include "Window.h"
 
+#include "../Core/Engine.h"
 #include "Callbacks/KeyboardCallbacks.h"
 #include "../Events/EventManager.h"
 #include "Callbacks/MouseCallbacks.h"
@@ -52,7 +53,7 @@ namespace Kita {
     }
 
     void Window::frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
+        Engine::getEngine()->getRenderer().getRendererAPI().setViewport(width,height);
     }
 
     void Window::setErrorCallbackFun() {

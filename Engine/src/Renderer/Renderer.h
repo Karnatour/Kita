@@ -1,20 +1,25 @@
 #pragma once
 #include "Scene.h"
-#include "Structs/GraphicsAPI.h"
+#include "Structs/RenderingAPI.h"
 #include "../Core/DllTemplate.h"
 #include "Shaders/ShaderManager.h"
 #include <memory>
 
+#include "RendererAPI.h"
+
 namespace Kita {
     class KITAENGINE_API Renderer {
     public:
-        explicit Renderer(GraphicsAPI api);
-        static GraphicsAPI getAPI();
+        explicit Renderer(RenderingAPI api);
+        static RenderingAPI getAPI();
+
         const ShaderManager& getShaderManager() const;
+        RendererAPI& getRendererAPI();
 
     private:
-        std::unique_ptr<Scene> m_scene = nullptr;
-        std::unique_ptr<ShaderManager> m_shaderManager = nullptr;
-        static inline GraphicsAPI m_api = GraphicsAPI::NONE;
+        static inline RenderingAPI m_api = RenderingAPI::NONE;
+        std::unique_ptr<RendererAPI> m_rendererAPI;
+        std::unique_ptr<ShaderManager> m_shaderManager;
+        std::unique_ptr<Scene> m_scene;
     };
 } // Kita
