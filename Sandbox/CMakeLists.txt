@@ -11,4 +11,3 @@ add_executable(Sandbox src/main.cpp)
 target_link_libraries(Sandbox PUBLIC KitaEngine)
 target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/include)
 add_dependencies(Sandbox KitaEngine)
-

@@ -5,7 +5,7 @@ namespace Kita {
     class GLVertexArray final : public VertexArray {
     public:
         ~GLVertexArray() override;
-        void createBuffer(const VertexBuffer& vbo, const IndexBuffer& ibo) override;
+        void createBuffer(const std::vector<Vertex>& verticies, const std::vector<unsigned int>& indicies) override;
         void bind() override;
     };
 } // Kita

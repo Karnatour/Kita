@@ -7,11 +7,14 @@ namespace Kita {
         glDeleteBuffers(1,&m_vao);
     }
 
-    void GLVertexArray::createBuffer(const VertexBuffer& vbo, const IndexBuffer& ibo) {
+    void GLVertexArray::createBuffer(const std::vector<Vertex>& verticies, const std::vector<unsigned int>& indicies) {
+        m_vbo->createBuffer(verticies);
+        m_ibo->createBuffer(indicies);
+
         glCreateVertexArrays(1, &m_vao);
 
-        glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, sizeof(Vertex));
-        glVertexArrayElementBuffer(m_vao, ibo.getIBO());
+        glVertexArrayVertexBuffer(m_vao, 0, m_vbo->getVBO(), 0, sizeof(Vertex));
+        glVertexArrayElementBuffer(m_vao, m_ibo->getIBO());
 
         //Position
         glEnableVertexArrayAttrib(m_vao, 0);

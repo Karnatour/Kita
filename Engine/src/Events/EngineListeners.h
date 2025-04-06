@@ -3,6 +3,6 @@
 
 namespace Kita {
     struct EngineListeners {
-        static void closeEngine(Kita::WindowClosed& event);
+        static void closeEngine(WindowClosed& event);
     };
 }

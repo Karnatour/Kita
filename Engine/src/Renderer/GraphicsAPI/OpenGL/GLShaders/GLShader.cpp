@@ -10,7 +10,8 @@ namespace Kita {
     }
 
     void GLShader::compileShader(const std::string& vertexPath, const std::string& fragmentPath) {
-        KITA_ENGINE_DEBUG("Starting compilation of shader, vertexPath: {} fragmentPath: {}",vertexPath.c_str(),fragmentPath.c_str());
+        KITA_ENGINE_DEBUG("Starting compilation of shaders, [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.c_str(), fragmentPath.c_str());
+
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         compileGLShader(vertexShader, vertexPath);
         checkShaderCompilation(vertexShader, vertexPath);

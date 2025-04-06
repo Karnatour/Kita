@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <tuple>
+#include <filesystem>
 
 #include "Core/Logger.h"
 #include "Core/FileReader.h"

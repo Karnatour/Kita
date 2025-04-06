@@ -17,4 +17,8 @@ namespace Kita {
                 return nullptr;
         }
     }
+
+    size_t VertexBuffer::getVerticiesCount() const {
+        return m_verticiesCount;
+    }
 } // Kita

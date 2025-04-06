@@ -4,13 +4,14 @@ namespace Kita {
     Mesh::Mesh(const std::vector<Vertex>& vertices,const std::vector<unsigned int>& indicies) {
         static int idCounter = 0;
         m_id = ++idCounter;
-        m_vbo->createBuffer(vertices);
-        m_vao->createBuffer(*m_vbo,*m_ibo);
-        m_ibo->createBuffer(indicies);
-        m_verticesCount = vertices.size();
+        m_vao->createBuffer(vertices,indicies);
     }
 
     unsigned int Mesh::getID() const {
         return m_id;
+    }
+
+    std::shared_ptr<VertexArray> Mesh::getVertexArray() const {
+        return m_vao;
     }
 } // Kita

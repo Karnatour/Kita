@@ -11,11 +11,9 @@ namespace Kita {
     public:
         Mesh(const std::vector<Vertex>& vertices,const std::vector<unsigned int>& indicies);
         unsigned int getID() const;
+        std::shared_ptr<VertexArray> getVertexArray() const;
     private:
         unsigned int m_id;
-        size_t m_verticesCount;
-        std::shared_ptr<VertexBuffer> m_vbo = VertexBuffer::createPtr();
         std::shared_ptr<VertexArray> m_vao = VertexArray::createPtr();
-        std::shared_ptr<IndexBuffer> m_ibo = IndexBuffer::createPtr();
     };
 } // Kita

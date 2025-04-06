@@ -55,6 +55,7 @@ namespace Kita {
             m_game->onRender();
 
             m_window->swapBuffers();
+            m_renderer->getRendererAPI().clearColor(0.07f, 0.09f, 0.15f, 1.0f);
         }
         m_game->onExit();
         exit();

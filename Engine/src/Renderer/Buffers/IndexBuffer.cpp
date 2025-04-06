@@ -16,4 +16,8 @@ namespace Kita {
                 return nullptr;
         }
     }
+
+    size_t IndexBuffer::getIndicesCount() const {
+        return m_indicesCount;
+    }
 }

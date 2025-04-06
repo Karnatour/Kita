@@ -14,7 +14,7 @@ namespace Kita {
         static RenderingAPI getAPI();
 
         const ShaderManager& getShaderManager() const;
-        RendererAPI& getRendererAPI();
+        RendererAPI& getRendererAPI() const;
 
     private:
         static inline RenderingAPI m_api = RenderingAPI::NONE;

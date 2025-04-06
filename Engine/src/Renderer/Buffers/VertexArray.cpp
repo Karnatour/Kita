@@ -4,6 +4,17 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h"
 
 namespace Kita {
+    void VertexArray::bind() {
+    }
+
+   std::shared_ptr<VertexBuffer> VertexArray::getVBOobj() const {
+        return m_vbo;
+    }
+
+    std::shared_ptr<IndexBuffer> VertexArray::getIBOobj() const {
+        return m_ibo;
+    }
+
     unsigned int VertexArray::getVAO() const {
         return m_vao;
     }

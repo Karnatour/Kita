@@ -15,7 +15,7 @@ namespace Kita {
         return *m_shaderManager;
     }
 
-    RendererAPI& Renderer::getRendererAPI() {
+    RendererAPI& Renderer::getRendererAPI() const {
         return *m_rendererAPI;
     }
 
