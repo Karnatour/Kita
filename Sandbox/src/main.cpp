@@ -1,5 +1,6 @@
 #include "KitaEngine/Kita.h"
 #include <vector>
+#include <windows.h>
 
 class Sandbox : public IGameInstance {
 public:
@@ -11,8 +12,6 @@ public:
     }
 
     void onRender() override {
-        mesh->getVertexArray()->bind();
-        Kita::Engine::getEngine()->getRenderer().getShaderManager().getShader("../assets/shaders/DefaultVertex.glsl","../assets/shaders/DefaultFragment.glsl")->bind();
         Kita::Engine::getEngine()->getRenderer().getRendererAPI().render(*mesh);
     }
 

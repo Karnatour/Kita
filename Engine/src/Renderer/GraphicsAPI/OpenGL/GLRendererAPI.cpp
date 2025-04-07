@@ -9,6 +9,8 @@ namespace Kita {
     }
 
     void GLRendererAPI::render(Mesh& mesh) {
+        mesh.getVertexArray()->bind();
+        mesh.getShader()->bind();
         const auto& vertexArray = mesh.getVertexArray();
         if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
             glDrawArrays(GL_TRIANGLES,0,static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
@@ -16,6 +18,7 @@ namespace Kita {
         else {
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT,nullptr);
         }
+        glBindVertexArray(0);
     }
 
     void GLRendererAPI::clearColor(const float red,const float green,const float blue, const float alpha) {

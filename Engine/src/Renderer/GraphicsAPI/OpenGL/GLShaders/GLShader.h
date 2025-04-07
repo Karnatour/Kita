@@ -12,9 +12,9 @@ namespace Kita {
         void setUniformBool(const std::string& location, bool value) override;
         void setUniformFloat(const std::string& location, float value) override;
         void seUniformtInt(const std::string& location, int value) override;
+        void compileShader(const std::string& vertexPath, const std::string& fragmentPath) override;
 
     private:
-        void compileShader(const std::string& vertexPath, const std::string& fragmentPath) override;
         void compileGLShader(const GLuint& shader, const std::string& shaderPath);
         void checkShaderCompilation(const GLuint& shader, const std::string& shaderPath);
 
