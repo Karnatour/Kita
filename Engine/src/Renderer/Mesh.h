@@ -17,6 +17,9 @@ namespace Kita {
         unsigned int getID() const;
         std::shared_ptr<VertexArray> getVertexArray() const;
         std::shared_ptr<Shader> getShader() const;
+        void setShader(const std::shared_ptr<Shader>& shader);
+        std::shared_ptr<Texture> getTexture() const;
+        void setTexture(const std::shared_ptr<Texture>& texture);
     private:
         inline static unsigned int m_idCounter = 0;
         unsigned int m_id;

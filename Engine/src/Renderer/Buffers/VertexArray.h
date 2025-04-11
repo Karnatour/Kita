@@ -9,7 +9,7 @@ namespace Kita {
     public:
         virtual ~VertexArray() = default;
         virtual void createBuffer(const std::vector<Vertex>& verticies, const std::vector<unsigned int>& indicies) = 0;
-        virtual void bind();
+        virtual void bind() = 0;
         unsigned int getVAO() const;
         std::shared_ptr<VertexBuffer> getVBOobj() const;
         std::shared_ptr<IndexBuffer> getIBOobj() const;

@@ -7,7 +7,7 @@ namespace Kita {
     class KITAENGINE_API Texture {
     public:
         virtual ~Texture() = default;
-        virtual void createTexture(const std::string& texturePath) = 0;
+        virtual bool createTexture(const std::string& texturePath) = 0;
         virtual void bind(unsigned int position) = 0;
         static std::shared_ptr<Texture> createPtr();
         unsigned int getTexture() const;

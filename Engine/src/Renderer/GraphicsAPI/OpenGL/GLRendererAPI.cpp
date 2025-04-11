@@ -9,8 +9,11 @@ namespace Kita {
     }
 
     void GLRendererAPI::render(Mesh& mesh) {
-        mesh.getVertexArray()->bind();
+        if (mesh.getTexture() != nullptr){
+            mesh.getTexture()->bind(0);
+        }
         mesh.getShader()->bind();
+        mesh.getVertexArray()->bind();
         const auto& vertexArray = mesh.getVertexArray();
         if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
             glDrawArrays(GL_TRIANGLES,0,static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));

@@ -1,16 +1,16 @@
 #include "TextureManager.h"
 
 namespace Kita {
-    TextureManager::TextureManager() {
-        addTexture("../assets/texture/wood_floor.jpg");
-    }
-
     void TextureManager::addTexture(const std::string& texturePath) {
         auto [iterator,inserted] = m_textureMap.try_emplace(texturePath, Texture::createPtr());
 
         if (inserted) {
-            iterator->second->createTexture(texturePath);
-            KITA_ENGINE_DEBUG("Added texture to TextureManager, {}", texturePath.c_str());
+            if (iterator->second->createTexture(texturePath)) {
+                KITA_ENGINE_DEBUG("Added texture to TextureManager, {}", texturePath.c_str());
+            }
+            else {
+                m_textureMap.erase(iterator);
+            }
         }
         else {
             KITA_ENGINE_WARN("Texture is already included in TextureManager, {}", texturePath.c_str());

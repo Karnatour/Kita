@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "RendererAPI.h"
+#include "Textures/TextureManager.h"
 
 namespace Kita {
     class KITAENGINE_API Renderer {
@@ -14,12 +15,14 @@ namespace Kita {
         static RenderingAPI getAPI();
 
         const ShaderManager& getShaderManager() const;
+        const TextureManager& getTextureManager() const;
         RendererAPI& getRendererAPI() const;
 
     private:
         static inline RenderingAPI m_api = RenderingAPI::NONE;
         std::unique_ptr<RendererAPI> m_rendererAPI;
         std::unique_ptr<ShaderManager> m_shaderManager;
+        std::unique_ptr<TextureManager> m_textureManager;
         std::unique_ptr<Scene> m_scene;
     };
 } // Kita
