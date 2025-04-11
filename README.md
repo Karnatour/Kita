@@ -1,8 +1,9 @@
 # Kita
 
-### Todo list 7.4.2025
+### Todo list
 
 - [ ] Textures
+- [ ] Setup OpenGL Debug callbacks
 - [ ] Camera
 - [ ] Model loading
 - [ ] Basic lighting

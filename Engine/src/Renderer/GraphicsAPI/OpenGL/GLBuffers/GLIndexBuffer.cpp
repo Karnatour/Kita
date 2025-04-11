@@ -4,9 +4,8 @@
 
 namespace Kita {
     GLIndexBuffer::~GLIndexBuffer() {
-        glDeleteBuffers(1,&m_ibo);
+        glDeleteBuffers(1, &m_ibo);
     }
-
 
     void GLIndexBuffer::createBuffer(const std::vector<unsigned int>& indicies) {
         m_indicesCount = indicies.size();

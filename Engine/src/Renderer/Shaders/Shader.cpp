@@ -5,7 +5,7 @@
 #include "../GraphicsAPI/OpenGL/GLShaders/GLShader.h"
 
 namespace Kita {
-    unsigned int Shader::getProgramID() const {
+    unsigned int Shader::getProgram() const {
         return m_program;
     }
 

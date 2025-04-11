@@ -11,7 +11,7 @@ namespace Kita {
         virtual void setUniformBool(const std::string& location, bool value) = 0;
         virtual void setUniformFloat(const std::string& location, float value) = 0;
         virtual void seUniformtInt(const std::string& location, int value) = 0;
-        unsigned int getProgramID() const;
+        unsigned int getProgram() const;
         static std::shared_ptr<Shader> createPtr();
         virtual void compileShader(const std::string& vertexPath, const std::string& fragmentPath) = 0;
 

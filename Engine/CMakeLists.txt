@@ -71,6 +71,13 @@ add_library(KitaEngine SHARED
         src/Renderer/RendererAPI.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.h
+        src/Renderer/Textures/Texture.cpp
+        src/Renderer/Textures/Texture.h
+        src/Renderer/GraphicsAPI/OpenGL/GLTexture.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLTexture.h
+        src/Renderer/Textures/TextureManager.cpp
+        src/Renderer/Textures/TextureManager.h
+        vendor/stb_image/stb_image_init.cpp
 )
 
 
@@ -86,6 +93,8 @@ target_link_libraries(KitaEngine PUBLIC glad::glad)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC glm::glm)
+
+find_package(Stb REQUIRED)
 
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")

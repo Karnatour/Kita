@@ -18,7 +18,6 @@ namespace Kita {
         else {
             glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT,nullptr);
         }
-        glBindVertexArray(0);
     }
 
     void GLRendererAPI::clearColor(const float red,const float green,const float blue, const float alpha) {
