@@ -14,14 +14,11 @@ namespace Kita {
 
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         compileGLShader(vertexShader, vertexPath);
-        checkShaderCompilation(vertexShader, vertexPath);
 
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
         compileGLShader(fragmentShader, fragmentPath);
-        checkShaderCompilation(fragmentShader, fragmentPath);
 
         compileGLProgram(vertexShader, fragmentShader);
-        checkProgramLinkage(vertexPath, fragmentPath);
 
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
@@ -48,17 +45,6 @@ namespace Kita {
 
     }
 
-    void GLShader::checkShaderCompilation(const GLuint& shader, const std::string& shaderPath) {
-        GLint vertexCompiled;
-        glGetShaderiv(shader,GL_COMPILE_STATUS, &vertexCompiled);
-        if (vertexCompiled == GL_FALSE) {
-            GLsizei errorLength;
-            GLchar errorMessage[1024];
-            glGetShaderInfoLog(shader, 1024, &errorLength, errorMessage);
-            KITA_ENGINE_ERROR("Unable to compile shader located in: {}\nGLError message ({}): {}", shaderPath.c_str(), errorLength, errorMessage);
-        }
-    }
-
     void GLShader::compileGLProgram(const GLuint vertexShader, const GLuint fragmentShader) {
         m_program = glCreateProgram();
         glAttachShader(m_program, vertexShader);
@@ -66,15 +52,4 @@ namespace Kita {
         glLinkProgram(m_program);
     }
 
-    void GLShader::checkProgramLinkage(const std::string& vertexPath, const std::string& fragmentPath) {
-        GLint programLinked;
-        glGetProgramiv(m_program,GL_LINK_STATUS, &programLinked);
-        if (programLinked == GL_FALSE) {
-            GLsizei errorLength;
-            GLchar errorMessage[1024];
-            glGetProgramInfoLog(m_program, 1024, &errorLength, errorMessage);
-            KITA_ENGINE_ERROR("Unable to link program vertexShader {}, fragmentShader {}\nGLError message ({}): {}", vertexPath.c_str(), fragmentPath.c_str(),
-                              errorLength, errorMessage);
-        }
-    }
 } // Kita

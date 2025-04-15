@@ -14,7 +14,7 @@ public:
     virtual void render(Mesh& mesh) = 0;
     virtual void clearColor(float red, float green, float blue, float alpha) = 0;
     static std::unique_ptr<RendererAPI> createPtr(RenderingAPI api);
-private:
+    virtual void setupDebug() = 0;
 };
 
 } // Kita

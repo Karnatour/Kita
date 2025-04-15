@@ -3,7 +3,7 @@
 ### Todo list
 
 - [x] Textures
-- [ ] Setup OpenGL Debug callbacks
+- [x] Setup OpenGL Debug callbacks
 - [ ] Properly free OpenGL resources
 - [ ] Camera
 - [ ] Model loading
