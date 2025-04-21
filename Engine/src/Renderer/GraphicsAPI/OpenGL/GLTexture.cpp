@@ -4,6 +4,10 @@
 #include <stb_image.h>
 
 namespace Kita {
+    GLTexture::~GLTexture() {
+        glDeleteTextures(1,&m_texture);
+    }
+
     bool GLTexture::createTexture(const std::string& texturePath) {
         stbi_set_flip_vertically_on_load(true);
 
