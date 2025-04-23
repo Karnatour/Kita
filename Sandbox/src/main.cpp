@@ -1,20 +1,33 @@
 #include "KitaEngine/Kita.h"
 #include <vector>
-#include <windows.h>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 class Sandbox : public IGameInstance {
 public:
     void onInit() override {
-        mesh = std::make_unique<Kita::Mesh>(vertices, indices, "../assets/textures/wood_floor.jpg");
-        mesh->getShader()->bind();
-        mesh->getShader()->seUniformtInt("texture1", 0);
+        mesh = std::make_shared<Kita::Mesh>(vertices, indices, "../assets/textures/wood_floor.jpg");
+        m_scene.addMesh(*mesh);
     }
 
     void onUpdate() override {
+        mesh->getShader()->bind();
+        mesh->getShader()->seUniformtInt("texture1", 0);
+
+        auto res = Kita::Engine::getEngine()->getWindow().getResolution();
+        glm::mat4 projection = glm::perspective(glm::radians(m_scene.getCamera().getZoom()), (float)res.first / (float)res.second, 0.1f, 100.0f);
+        mesh->getShader()->setMat4("projection", projection);
+
+        glm::mat4 view = m_scene.getCamera().getViewMatrix();
+        mesh->getShader()->setMat4("view", view);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        mesh->getShader()->setMat4("model", model);
     }
 
     void onRender() override {
-        Kita::Engine::getEngine()->getRenderer().getRendererAPI().render(*mesh);
+        m_scene.render();
     }
 
     void onExit() override {
@@ -22,17 +35,67 @@ public:
 
 private:
     std::vector<Kita::Vertex> vertices = {
-        {glm::vec3(0.5f, 0.5f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)}, // top right
-        {glm::vec3(0.5f, -0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(1.0f, 0.0f)}, // bottom right
-        {glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f)}, // bottom left
-        {glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)}, // top left
+        // Front face
+        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
+        {glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+
+        // Top face
+        {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
+        {glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+
+        // Back face
+        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
+        {glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+
+        // Bottom face
+        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
+        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+
+        // Left face
+        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
+        {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
+
+        // Right face
+        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
+        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
+        {glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
+        {glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
     };
 
+
     std::vector<unsigned int> indices = {
-        0, 1, 3, // first Triangle
-        1, 2, 3 // second Triangle
+        // front
+        0, 1, 2,
+        2, 3, 0,
+        // top
+        4, 5, 6,
+        6, 7, 4,
+        // back
+        8, 9, 10,
+        10, 11, 8,
+        // bottom
+        12, 13, 14,
+        14, 15, 12,
+        // left
+        16, 17, 18,
+        18, 19, 16,
+        // right
+        20, 21, 22,
+        22, 23, 20,
     };
-    std::unique_ptr<Kita::Mesh> mesh;
+
+    std::shared_ptr<Kita::Mesh> mesh;
+    Kita::Scene m_scene;
 };
 
 int main() {

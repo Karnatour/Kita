@@ -1,7 +1,8 @@
 #pragma once
+#include "DllTemplate.h"
 
 namespace Kita {
-    class FileReader {
+    class KITAENGINE_API FileReader {
     public:
         static std::string readFile(const std::string& filePath);
     };

@@ -18,7 +18,7 @@ namespace Kita {
             //TODO: Support parameter option
             glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             switch (m_channels) {

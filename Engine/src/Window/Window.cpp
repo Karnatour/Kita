@@ -23,6 +23,7 @@ namespace Kita {
     }
 
     void Window::createWindow(const int width, const int height, const char* title) {
+        m_resolution = std::make_pair(width, height);
         KITA_ENGINE_INFO("Creating window: {} ({}x{})", title, width, height);
 
         m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
@@ -30,6 +31,8 @@ namespace Kita {
             KITA_ENGINE_ERROR("Failed to create GLFW window");
             return;
         }
+
+        glfwSetWindowUserPointer(m_window, this);
 
         makeContextCurrent();
         setWindowCallbacks();
@@ -54,11 +57,22 @@ namespace Kita {
     }
 
     void Window::frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height) {
-        Engine::getEngine()->getRenderer().getRendererAPI().setViewport(width,height);
+        Window* windowPtr = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+        if (window) {
+            windowPtr->m_resolution.first = width;
+            windowPtr->m_resolution.second = height;
+        }
+
+        Engine::getEngine()->getRenderer().getRendererAPI().setViewport(width, height);
     }
 
     void Window::setErrorCallbackFun() {
         glfwSetErrorCallback(errorCallbackFun);
+    }
+
+    double Window::getTime() {
+        return glfwGetTime();
     }
 
     void Window::poolEvents() {
@@ -75,6 +89,10 @@ namespace Kita {
 
     std::string Window::getTitle() {
         return m_title;
+    }
+
+    std::pair<int, int> Window::getResolution() {
+        return m_resolution;
     }
 
     void Window::setTitle(const std::string& title) {

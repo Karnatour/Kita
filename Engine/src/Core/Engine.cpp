@@ -1,5 +1,6 @@
 #include "Engine.h"
 
+#include "Time.h"
 #include "../Window/Window.h"
 #include "../Events/EventManager.h"
 
@@ -19,6 +20,8 @@ namespace Kita {
 
         EventManager::attachEngineEvents();
 
+        m_currentFrameTime = std::chrono::system_clock::now();
+        Time::updateDeltaTime(m_currentFrameTime);
         KITA_ENGINE_INFO("Engine initialized");
     }
 
@@ -45,7 +48,11 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
+        glEnable(GL_DEPTH_TEST);
         while (m_isRunning) {
+            m_currentFrameTime = std::chrono::system_clock::now();
+            Time::updateDeltaTime(m_currentFrameTime);
+
             m_window->poolEvents();
 
             update();

@@ -1,10 +1,9 @@
 #pragma once
 #include "InputKeys.h"
 #include "../Events/KeyboardEvents.h"
+#include "../Events/MouseEvents.h"
 
 namespace Kita {
-    class MousePressed;
-
     class KITAENGINE_API Input {
     public:
         static void updateKey(const KeyPressed& event);

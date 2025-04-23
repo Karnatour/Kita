@@ -22,15 +22,15 @@ namespace Kita {
     MouseScrolled::MouseScrolled(const double x, const double y): m_x(x), m_y(y) {
     }
 
-    std::tuple<double, double> MouseScrolled::getOffset() {
-        return std::make_tuple(m_x, m_y);
+    std::pair<double, double> MouseScrolled::getOffset() {
+        return std::make_pair(m_x, m_y);
     }
 
     MouseMoved::MouseMoved(const double x, const double y) : m_x(x), m_y(y) {
     }
 
-    std::tuple<double, double> MouseMoved::getPosition() {
-        return std::make_tuple(m_x, m_y);
+    std::pair<double, double> MouseMoved::getPosition() {
+        return std::make_pair(m_x, m_y);
     }
 
     MouseReleased::MouseReleased(const MouseButton button) : m_key(button) {

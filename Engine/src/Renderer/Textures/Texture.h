@@ -14,6 +14,7 @@ namespace Kita {
         int getWidth() const;
         int getHeight() const;
         int getChannels() const;
+
     protected:
         unsigned int m_texture = 0;
         int m_width = 0;

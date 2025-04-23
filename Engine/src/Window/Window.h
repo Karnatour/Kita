@@ -13,16 +13,20 @@ namespace Kita {
         void createWindow(int width, int height, const char* title);
         void exit();
         static void setErrorCallbackFun();
+        static double getTime();
         void poolEvents();
         void swapBuffers();
         void makeContextCurrent();
         std::string getTitle();
+        std::pair<int,int> getResolution();
         void setTitle(const std::string& title);
+
     private:
         void setWindowCallbacks();
         static void errorCallbackFun(int error_code, const char* description);
         static void frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height);
         std::string m_title;
         GLFWwindow* m_window = nullptr;
+        std::pair<int,int> m_resolution;
     };
 } // Kita

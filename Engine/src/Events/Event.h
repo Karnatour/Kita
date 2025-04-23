@@ -1,6 +1,7 @@
 #pragma once
+#include "../Core/DllTemplate.h"
 
-class Event {
+class KITAENGINE_API Event {
 public:
     virtual ~Event() = default;
 };

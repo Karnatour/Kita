@@ -4,17 +4,16 @@
 #include <memory>
 
 namespace Kita {
-
     class KITAENGINE_API Logger {
     public:
         static void init();
         static std::shared_ptr<spdlog::logger>& getEngineInstance();
         static std::shared_ptr<spdlog::logger>& getUserInstance();
+
     private:
         static inline std::shared_ptr<spdlog::logger> m_engineInstance = nullptr;
         static inline std::shared_ptr<spdlog::logger> m_userInstance = nullptr;
     };
-
 } // Kita
 
 #define KITA_ENGINE_DEBUG(...) ::Kita::Logger::getEngineInstance()->debug(__VA_ARGS__)

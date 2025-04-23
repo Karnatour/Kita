@@ -4,6 +4,7 @@
 #include "../Window/Window.h"
 #include "../Renderer/Renderer.h"
 #include <memory>
+#include <chrono>
 
 
 namespace Kita {
@@ -29,5 +30,6 @@ namespace Kita {
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Renderer> m_renderer;
         std::shared_ptr<IGameInstance> m_game;
+        std::chrono::time_point<std::chrono::system_clock> m_currentFrameTime;
     };
 }

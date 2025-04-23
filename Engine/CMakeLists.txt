@@ -78,6 +78,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Textures/TextureManager.cpp
         src/Renderer/Textures/TextureManager.h
         vendor/stb_image/stb_image_init.cpp
+        src/Renderer/Camera.cpp
+        src/Renderer/Camera.h
+        src/Core/Time.cpp
+        src/Core/Time.h
 )
 
 

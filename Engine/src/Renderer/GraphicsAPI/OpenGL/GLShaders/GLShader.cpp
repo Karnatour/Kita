@@ -24,6 +24,21 @@ namespace Kita {
         glDeleteShader(fragmentShader);
     }
 
+    void GLShader::compileGLShader(const GLuint& shader, const std::string& shaderPath) {
+        const std::string& shaderSource = FileReader::readFile(shaderPath);
+        const char* sourcePtr = shaderSource.data();
+
+        glShaderSource(shader, 1, &sourcePtr, nullptr);
+        glCompileShader(shader);
+    }
+
+    void GLShader::compileGLProgram(const GLuint vertexShader, const GLuint fragmentShader) {
+        m_program = glCreateProgram();
+        glAttachShader(m_program, vertexShader);
+        glAttachShader(m_program, fragmentShader);
+        glLinkProgram(m_program);
+    }
+
     void GLShader::setUniformBool(const std::string& location, const bool value) {
         glUniform1i(glGetUniformLocation(m_program, location.c_str()), static_cast<GLint>(value));
     }
@@ -36,20 +51,27 @@ namespace Kita {
         glUniform1i(glGetUniformLocation(m_program, location.c_str()), value);
     }
 
-    void GLShader::compileGLShader(const GLuint& shader, const std::string& shaderPath) {
-        const std::string& shaderSource = FileReader::readFile(shaderPath);
-        const char* sourcePtr = shaderSource.data();
-
-        glShaderSource(shader, 1, &sourcePtr, nullptr);
-        glCompileShader(shader);
-
+    void GLShader::setVec2(const std::string& location, const glm::vec2& value) {
+        glUniform2fv(glGetUniformLocation(m_program, location.c_str()), 1, &value[0]);
     }
 
-    void GLShader::compileGLProgram(const GLuint vertexShader, const GLuint fragmentShader) {
-        m_program = glCreateProgram();
-        glAttachShader(m_program, vertexShader);
-        glAttachShader(m_program, fragmentShader);
-        glLinkProgram(m_program);
+    void GLShader::setVec3(const std::string& location, const glm::vec3& value) {
+        glUniform3fv(glGetUniformLocation(m_program, location.c_str()), 1, &value[0]);
     }
 
+    void GLShader::setVec4(const std::string& location, const glm::vec4& value) {
+        glUniform4fv(glGetUniformLocation(m_program, location.c_str()), 1, &value[0]);
+    }
+
+    void GLShader::setMat2(const std::string& location, const glm::mat2& value) {
+        glUniformMatrix2fv(glGetUniformLocation(m_program, location.c_str()), 1,GL_FALSE, &value[0][0]);
+    }
+
+    void GLShader::setMat3(const std::string& location, const glm::mat3& value) {
+        glUniformMatrix3fv(glGetUniformLocation(m_program, location.c_str()), 1,GL_FALSE, &value[0][0]);
+    }
+
+    void GLShader::setMat4(const std::string& location, const glm::mat4& value) {
+        glUniformMatrix4fv(glGetUniformLocation(m_program, location.c_str()), 1,GL_FALSE, &value[0][0]);
+    }
 } // Kita
