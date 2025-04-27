@@ -10,8 +10,10 @@ namespace Kita {
     std::unordered_map<std::type_index, std::vector<EventManager::eventCallbackFun>> EventManager::eventListeners;
 
     void EventManager::attachEngineEvents() {
-        listenToEvent<KeyPressed>(Input::updateKey);
-        listenToEvent<MousePressed>(Input::updateButton);
+        listenToEvent<KeyPressed>(Input::updateKeyPress);
+        listenToEvent<KeyReleased>(Input::updateKeyRelease);
+        listenToEvent<MousePressed>(Input::updateButtonPress);
+        listenToEvent<MouseReleased>(Input::updateButtonRelease);
         listenToEvent<WindowClosed>(EngineListeners::closeEngine);
     }
 

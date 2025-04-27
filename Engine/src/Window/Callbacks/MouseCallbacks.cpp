@@ -8,20 +8,20 @@ namespace Kita {
         MousePressed pressedEvent(convertGLFWToKitaButton(button), mods);
         MouseReleased releasedEvent(convertGLFWToKitaButton(button));
         switch (action) {
-        case GLFW_PRESS:
-            EventManager::triggerEvent(pressedEvent);
-            break;
-        case GLFW_RELEASE:
-            EventManager::triggerEvent(releasedEvent);
-            break;
-        case GLFW_REPEAT:
-            //Emulate REPEAT as buttonPreesed event
-            //GLFW doesnt seem to call GLFW_REPEAT
-            EventManager::triggerEvent(pressedEvent);
-            break;
-        default:
-            KITA_ENGINE_WARN("mouseButtonCallbackFun recived unknown action");
-            break;
+            case GLFW_PRESS:
+                EventManager::triggerEvent(pressedEvent);
+                break;
+            case GLFW_RELEASE:
+                EventManager::triggerEvent(releasedEvent);
+                break;
+            case GLFW_REPEAT:
+                //Emulate REPEAT as buttonPreesed event
+                //In rewritten Input system GLFW_REPEAT causing the button to be stuck, doesnt seem we need it now
+                //EventManager::triggerEvent(pressedEvent);
+                break;
+            default:
+                KITA_ENGINE_WARN("mouseButtonCallbackFun recived unknown action");
+                break;
         }
     }
 

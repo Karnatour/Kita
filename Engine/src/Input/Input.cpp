@@ -3,85 +3,74 @@
 #include "../Events/MouseEvents.h"
 
 namespace Kita {
-    void Input::updateKey(const KeyPressed& event) {
-        m_key = event.getKey();
-        const int modifiersField = event.getModifiersField();
-        if (modifiersField & 0x1) {
-            m_keyboardModifiers.push_back(Modifiers::MODIFIER_SHIFT);
-        }
-        if (modifiersField & 0x2) {
-            m_keyboardModifiers.push_back(Modifiers::MODIFIER_CTRL);
-        }
-        if (modifiersField & 0x4) {
-            m_keyboardModifiers.push_back(Modifiers::MODIFIER_ALT);
-        }
-        if (modifiersField & 0x8) {
-            m_keyboardModifiers.push_back(Modifiers::MODIFIER_SUPER);
-        }
-        if (modifiersField & 0x10) {
-            m_keyboardModifiers.push_back(Modifiers::MODIFIER_CAPS_LOCK);
-        }
-        if (modifiersField & 0x20) {
-            m_keyboardModifiers.push_back(Modifiers::MODIFIER_NUM_LOCK);
+    void Input::updateKeyPress(KeyPressed& event) {
+        m_keyboardPressedKeys.emplace_back(event.getKey(), getSortedModifiers(event.getModifiersField()));
+    }
+
+    void Input::updateKeyRelease(KeyReleased& event) {
+        for (int i = 0; i < m_keyboardPressedKeys.size(); ++i) {
+            if (m_keyboardPressedKeys[i].m_key == event.getKey()) {
+                m_keyboardPressedKeys.erase(m_keyboardPressedKeys.begin() + i);
+            }
         }
     }
 
-    bool Input::isKeyPressed(const KeyboardKey key, const std::vector<Modifiers>& modifiers) {
-        std::vector<Modifiers> sortedModifiers = modifiers;
-        std::vector<Modifiers> sortedActive = m_keyboardModifiers;
+    bool Input::isKeyPressed(const KeyboardKey key, std::vector<Modifiers> modifiers) {
+        std::ranges::sort(modifiers);
 
-        std::ranges::sort(sortedModifiers);
-        std::ranges::sort(sortedActive);
-
-        if (key == m_key && sortedModifiers == sortedActive) {
-            m_key = KeyboardKey::KEY_NONE;
-            m_keyboardModifiers.clear();
-            return true;
+        for (auto [m_key, m_keyboardModifiers] : m_keyboardPressedKeys) {
+            if (m_key == key && m_keyboardModifiers == modifiers) {
+                return true;
+            }
         }
-
-        m_key = KeyboardKey::KEY_NONE;
-        m_keyboardModifiers.clear();
         return false;
     }
 
-    void Input::updateButton(const MousePressed& event) {
-        m_button = event.getButton();
-        const int modifiersField = event.getModifiersField();
-        if (modifiersField & 0x1) {
-            m_mouseModifiers.push_back(Modifiers::MODIFIER_SHIFT);
-        }
-        if (modifiersField & 0x2) {
-            m_mouseModifiers.push_back(Modifiers::MODIFIER_CTRL);
-        }
-        if (modifiersField & 0x4) {
-           m_mouseModifiers.push_back(Modifiers::MODIFIER_ALT);
-        }
-        if (modifiersField & 0x8) {
-            m_mouseModifiers.push_back(Modifiers::MODIFIER_SUPER);
-        }
-        if (modifiersField & 0x10) {
-            m_mouseModifiers.push_back(Modifiers::MODIFIER_CAPS_LOCK);
-        }
-        if (modifiersField & 0x20) {
-            m_mouseModifiers.push_back(Modifiers::MODIFIER_NUM_LOCK);
+
+    void Input::updateButtonPress(MousePressed& event) {
+        m_mousePressedKeys.emplace_back(event.getButton(), getSortedModifiers(event.getModifiersField()));
+    }
+
+    void Input::updateButtonRelease(MouseReleased& event) {
+        for (int i = 0; i < m_mousePressedKeys.size(); ++i) {
+            if (m_mousePressedKeys[i].m_button == event.getButton()) {
+                m_mousePressedKeys.erase(m_mousePressedKeys.begin() + i);
+            }
         }
     }
 
-    bool Input::isMousePressed(const MouseButton button, const std::vector<Modifiers>& modifiers) {
-        std::vector<Modifiers> sortedModifiers = modifiers;
-        std::vector<Modifiers> sortedActive = m_mouseModifiers;
+    bool Input::isMousePressed(const MouseButton button, std::vector<Modifiers> modifiers) {
+        std::ranges::sort(modifiers);
 
-        std::ranges::sort(sortedModifiers);
-        std::ranges::sort(sortedActive);
-
-        if (button == m_button && sortedModifiers == sortedActive) {
-            m_button = MouseButton::MBUTTON_NONE;
-            m_mouseModifiers.clear();
-            return true;
+        for (auto [m_button, m_mouseModifiers] : m_mousePressedKeys) {
+            if (m_button == button && m_mouseModifiers == modifiers) {
+                return true;
+            }
         }
-
-        m_button = MouseButton::MBUTTON_NONE;
-        m_mouseModifiers.clear();
         return false;
+    }
+
+    std::vector<Modifiers> Input::getSortedModifiers(const int modifiersField) {
+        std::vector<Modifiers> keyboardModifiers;
+        if (modifiersField & 0x1) {
+            keyboardModifiers.push_back(Modifiers::MODIFIER_SHIFT);
+        }
+        if (modifiersField & 0x2) {
+            keyboardModifiers.push_back(Modifiers::MODIFIER_CTRL);
+        }
+        if (modifiersField & 0x4) {
+            keyboardModifiers.push_back(Modifiers::MODIFIER_ALT);
+        }
+        if (modifiersField & 0x8) {
+            keyboardModifiers.push_back(Modifiers::MODIFIER_SUPER);
+        }
+        if (modifiersField & 0x10) {
+            keyboardModifiers.push_back(Modifiers::MODIFIER_CAPS_LOCK);
+        }
+        if (modifiersField & 0x20) {
+            keyboardModifiers.push_back(Modifiers::MODIFIER_NUM_LOCK);
+        }
+        std::ranges::sort(keyboardModifiers);
+        return keyboardModifiers;
     }
 } // Kita
