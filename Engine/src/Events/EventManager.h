@@ -32,6 +32,9 @@ namespace Kita {
     private:
         static std::vector<eventCallbackFun>& getCallbacks(std::type_index type);
 
-        static std::unordered_map<std::type_index, std::vector<eventCallbackFun>> eventListeners;
+        static inline std::unordered_map<std::type_index, std::vector<eventCallbackFun>> eventListeners;
+
+        static void setInputListeners();
+
     };
 }

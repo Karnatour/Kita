@@ -17,8 +17,7 @@ namespace Kita {
                 break;
             case GLFW_REPEAT:
                 //Emulate REPEAT as keyPreesed event
-                //In rewritten Input system GLFW_REPEAT causing the key to be stuck, doesnt seem we need it now
-                //EventManager::triggerEvent(pressedEvent);
+                EventManager::triggerEvent(pressedEvent);
                 break;
             default:
                 KITA_ENGINE_WARN("keyboardKeyCallbackFun recived unknown action");

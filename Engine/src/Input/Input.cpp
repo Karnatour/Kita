@@ -9,7 +9,7 @@ namespace Kita {
 
     void Input::updateKeyRelease(KeyReleased& event) {
         for (int i = 0; i < m_keyboardPressedKeys.size(); ++i) {
-            if (m_keyboardPressedKeys[i].m_key == event.getKey()) {
+            if (m_keyboardPressedKeys[i].key == event.getKey()) {
                 m_keyboardPressedKeys.erase(m_keyboardPressedKeys.begin() + i);
             }
         }
@@ -33,7 +33,7 @@ namespace Kita {
 
     void Input::updateButtonRelease(MouseReleased& event) {
         for (int i = 0; i < m_mousePressedKeys.size(); ++i) {
-            if (m_mousePressedKeys[i].m_button == event.getButton()) {
+            if (m_mousePressedKeys[i].button == event.getButton()) {
                 m_mousePressedKeys.erase(m_mousePressedKeys.begin() + i);
             }
         }
@@ -48,6 +48,43 @@ namespace Kita {
             }
         }
         return false;
+    }
+
+    void Input::updateMouseMovement(MouseMoved& event) {
+        m_mousePos.lastMousePosition = m_mousePos.mousePosition;
+        m_mousePos.mousePosition = event.getPosition();
+
+        m_mousePos.mouseOffset.first = m_mousePos.mousePosition.first - m_mousePos.lastMousePosition.first;
+        m_mousePos.mouseOffset.second = m_mousePos.mousePosition.second - m_mousePos.lastMousePosition.second;
+        m_mousePos.moved = true;
+    }
+
+    bool Input::wasMouseMoved() {
+        return m_mousePos.moved;
+    }
+
+    MouseMovement Input::getMousePos() {
+        return m_mousePos;
+    }
+
+    void Input::updateMouseScroll(MouseScrolled& event) {
+        m_mouseScroll.lastMouseScrollOffset = m_mouseScroll.mouseScrollOffset;
+        m_mouseScroll.mouseScrollOffset = event.getOffset();
+
+        m_mouseScroll.scrolled = true;
+    }
+
+    bool Input::wasMouseScrolled() {
+        return m_mouseScroll.scrolled;
+    }
+
+    MouseScroll Input::getMouseScroll() {
+        return m_mouseScroll;
+    }
+
+    void Input::update() {
+        m_mousePos.moved = false;
+        m_mouseScroll.scrolled = false;
     }
 
     std::vector<Modifiers> Input::getSortedModifiers(const int modifiersField) {
