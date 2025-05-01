@@ -5,7 +5,7 @@
 - [x] Textures
 - [x] Setup OpenGL Debug callbacks
 - [x] Properly free OpenGL resources
-- [ ] Camera
+- [x] Camera
 - [ ] Uniform buffer
 - [ ] Model loading
 - [ ] Basic lighting
