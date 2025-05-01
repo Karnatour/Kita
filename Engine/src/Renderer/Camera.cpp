@@ -1,26 +1,18 @@
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "../Core/Engine.h"
 #include "../Core/Time.h"
 #include "../Events/EventManager.h"
 #include "../Input/Input.h"
+#include "../Window/Window.h"
 
 namespace Kita {
     Camera::Camera(glm::vec3 position, glm::vec3 up) : m_position(position), m_up(up) {
-        EventManager::listenToEvent<MouseMoved>([this](MouseMoved& event) {
-            updateMovement(event);
-        });
-        EventManager::listenToEvent<MouseScrolled>([this](MouseScrolled& event) {
-            updateZoom(event);
-        });
-        EventManager::listenToEvent<KeyPressed>([this](KeyPressed& event) {
-            updatePosition(event);
-        });
-
         m_worldUp = up;
         m_yaw = -90.0f;
         m_pitch = 0.0f;
-        m_movementSpeed = 5.0f;
+        m_movementSpeed = 10.0f;
         m_sensitivity = 0.1f;
         m_zoom = 45.0f;
         updateCamera();
@@ -57,18 +49,18 @@ namespace Kita {
         m_up = glm::normalize(glm::cross(m_right, m_front));
     }
 
-    void Camera::updatePosition(KeyPressed& event) {
-        const float velocity = m_movementSpeed * Time::getDeltaTime();
-        if (event.getKey() == KeyboardKey::KEY_W) {
+    void Camera::updatePosition() {
+        const float velocity = m_movementSpeed * static_cast<float>(Time::getDeltaTime());
+        if (Input::isKeyPressed(KeyboardKey::KEY_W)) {
             m_position = m_position + m_front * velocity;
         }
-        if (event.getKey() == KeyboardKey::KEY_A) {
+        if (Input::isKeyPressed(KeyboardKey::KEY_A)) {
             m_position = m_position - m_right * velocity;
         }
-        if (event.getKey() == KeyboardKey::KEY_S) {
+        if (Input::isKeyPressed(KeyboardKey::KEY_S)) {
             m_position = m_position - m_front * velocity;
         }
-        if (event.getKey() == KeyboardKey::KEY_D) {
+        if (Input::isKeyPressed(KeyboardKey::KEY_D)) {
             m_position = m_position + m_right * velocity;
         }
     }
@@ -77,43 +69,41 @@ namespace Kita {
         return m_position;
     }
 
-    void Camera::updateMovement(MouseMoved& event) {
-        float xpos = event.getPosition().first;
-        float ypos = event.getPosition().second;
-
-        if (firstMouse)
-        {
-            lastX = xpos;
-            lastY = ypos;
-            firstMouse = false;
-        }
-
-        float xoffset = xpos - lastX;
-        float yoffset = lastY - ypos;
-
-        xoffset = xoffset * m_sensitivity;
-        yoffset = yoffset * m_sensitivity;
-
-        lastX = xpos;
-        lastY = ypos;
-
-        m_yaw = m_yaw + xoffset;
-        m_pitch = m_pitch + yoffset;
-
-        if (m_pitch > 89.0f)
-            m_pitch = 89.0f;
-        if (m_pitch < -89.0f)
-            m_pitch = -89.0f;
-
-        updateCamera();
+    void Camera::update() {
+        updatePosition();
+        updateMovement();
+        updateZoom();
     }
 
-    void Camera::updateZoom(MouseScrolled& event) {
-        m_zoom = m_zoom - event.getOffset().second;
+    void Camera::updateMovement() {
+        auto& engineWindow = Engine::getEngine()->getWindow();
 
-        if (m_zoom < 1.0f)
-            m_zoom = 1.0f;
-        if (m_zoom > 45.0f)
-            m_zoom = 45.0f;
+        if (Input::isMousePressed(MouseButton::MBUTTON_RIGHT)) {
+            engineWindow.setCursorMode(CursorMode::DISABLED);
+
+            if (Input::wasMouseMoved()) {
+                auto offset = Input::getMousePos().mouseOffset;
+                offset.first *= m_sensitivity;
+                offset.second *= m_sensitivity;
+
+                m_yaw += static_cast<float>(offset.first);
+                m_pitch -= static_cast<float>(offset.second);
+
+                m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
+
+                updateCamera();
+            }
+        }
+        else {
+            engineWindow.setCursorMode(CursorMode::SHOWN);
+        }
+    }
+
+    void Camera::updateZoom() {
+        if (Input::wasMouseScrolled()) {
+            m_zoom = m_zoom - static_cast<float>(Input::getMouseScroll().mouseScrollOffset.second);
+
+            m_zoom = std::clamp(m_zoom, 1.0f, 45.0f);
+        }
     }
 } // Kita

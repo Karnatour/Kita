@@ -3,6 +3,7 @@
 #include "Time.h"
 #include "../Window/Window.h"
 #include "../Events/EventManager.h"
+#include "../Input/Input.h"
 
 namespace Kita {
     static std::shared_ptr<Engine> m_engineInstance = nullptr;
@@ -48,13 +49,9 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
+        //TODO: Move to rendererAPI
         glEnable(GL_DEPTH_TEST);
         while (m_isRunning) {
-            m_currentFrameTime = std::chrono::system_clock::now();
-            Time::updateDeltaTime(m_currentFrameTime);
-
-            m_window->poolEvents();
-
             update();
             m_game->onUpdate();
 
@@ -81,6 +78,10 @@ namespace Kita {
     }
 
     void Engine::update() {
+        m_currentFrameTime = std::chrono::system_clock::now();
+        Time::updateDeltaTime(m_currentFrameTime);
+        Input::update();
+        m_window->poolEvents();
     }
 
     void Engine::render() {

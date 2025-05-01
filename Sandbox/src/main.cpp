@@ -3,11 +3,16 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+void onSomething(Kita::KeyPressed& event) {
+    KITA_DEBUG("LOL");
+}
+
 class Sandbox : public IGameInstance {
 public:
     void onInit() override {
         mesh = std::make_shared<Kita::Mesh>(vertices, indices, "../assets/textures/wood_floor.jpg");
         m_scene.addMesh(*mesh);
+        Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
     }
 
     void onUpdate() override {
@@ -24,6 +29,7 @@ public:
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         mesh->getShader()->setMat4("model", model);
+        m_scene.update();
     }
 
     void onRender() override {

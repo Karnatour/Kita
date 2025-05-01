@@ -22,4 +22,8 @@ namespace Kita {
     Camera& Scene::getCamera() {
         return m_camera;
     }
+
+    void Scene::update() {
+        m_camera.update();
+    }
 } // Kita

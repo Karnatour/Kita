@@ -13,6 +13,7 @@ namespace Kita {
         void addMesh(Mesh&& mesh);
         void addMesh(Mesh& mesh);
         Camera& getCamera();
+        void update();
     private:
         std::unordered_map<unsigned int, Mesh> m_meshes{};
         Camera m_camera;

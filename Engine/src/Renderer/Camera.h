@@ -1,24 +1,24 @@
 #pragma once
 #include <glm/glm.hpp>
 
-#include "../Events/MouseEvents.h"
 #include "../Core/DllTemplate.h"
-#include "../Events/KeyboardEvents.h"
 
 namespace Kita {
 
 class KITAENGINE_API Camera {
 public:
+    virtual ~Camera() = default;
     Camera(glm::vec3 position, glm::vec3 up);
     Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float movementSpeed, float sensitivity, float zoom);
     glm::mat4 getViewMatrix() const;
     float getZoom();
     glm::vec3 getPosition();
+    void update();
 private:
-    void updatePosition(KeyPressed& event);
-    void updateCamera();
-    void updateMovement(MouseMoved& event);
-    void updateZoom(MouseScrolled& event);
+    virtual void updatePosition();
+    virtual void updateCamera();
+    virtual void updateMovement();
+    virtual void updateZoom();
 
     glm::vec3 m_position;
     glm::vec3 m_front{};
@@ -33,8 +33,6 @@ private:
     float m_sensitivity;
     float m_zoom;
 
-    bool firstMouse = true;
-    float lastX,lastY;
 };
 
 } // Kita

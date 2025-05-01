@@ -91,8 +91,30 @@ namespace Kita {
         return m_title;
     }
 
-    std::pair<int, int> Window::getResolution() {
+    std::pair<int, int> Window::getResolution() const {
         return m_resolution;
+    }
+
+    void Window::setCursorMode(const CursorMode mode) {
+        if (m_cursorMode == mode) {
+            return;
+        }
+        m_cursorMode = mode;
+        switch (mode) {
+            case CursorMode::DISABLED:
+                glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
+                break;
+            case CursorMode::HIDDEN:
+                glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_HIDDEN);
+                break;
+            case CursorMode::SHOWN:
+                glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
+                break;
+        }
+    }
+
+    CursorMode Window::getCursorMode() const {
+        return m_cursorMode;
     }
 
     void Window::setTitle(const std::string& title) {
