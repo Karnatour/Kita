@@ -17,7 +17,7 @@ namespace Kita {
                 break;
             case GLFW_REPEAT:
                 //Emulate REPEAT as keyPreesed event
-                EventManager::triggerEvent(pressedEvent);
+                //EventManager::triggerEvent(pressedEvent);
                 break;
             default:
                 KITA_ENGINE_WARN("keyboardKeyCallbackFun recived unknown action");
