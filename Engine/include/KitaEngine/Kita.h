@@ -24,6 +24,7 @@
 #include "../src/Renderer/Buffers/IndexBuffer.h"
 #include "../src/Renderer/Buffers/VertexArray.h"
 #include "../src/Renderer/Buffers/VertexBuffer.h"
+#include "../src/Renderer/Buffers/UniformBuffer.h"
 #include "../src/Renderer/Textures/Texture.h"
 #include "../src/Renderer/Textures/TextureManager.h"
 

@@ -82,6 +82,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Camera.h
         src/Core/Time.cpp
         src/Core/Time.h
+        src/Renderer/Buffers/UniformBuffer.cpp
+        src/Renderer/Buffers/UniformBuffer.h
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h
 )
 
 
