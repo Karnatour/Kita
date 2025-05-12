@@ -14,6 +14,12 @@ namespace Kita {
         return m_lastFrameTime;
     }
 
+    double Time::getElapsedTime() {
+        const auto now = std::chrono::system_clock::now();
+        const std::chrono::duration<double> elapsed = now - m_startTime;
+        return elapsed.count();
+    }
+
     double Time::getDeltaTime() {
         return m_deltaTime.count();
     }
