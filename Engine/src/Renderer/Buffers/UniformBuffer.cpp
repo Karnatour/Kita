@@ -1,5 +1,6 @@
 #include "UniformBuffer.h"
 #include "../Renderer.h"
+#include "../GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h"
 
 namespace Kita {
     unsigned int UniformBuffer::getUBO() const {

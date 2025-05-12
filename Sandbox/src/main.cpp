@@ -7,24 +7,33 @@ void onSomething(Kita::KeyPressed& event) {
     KITA_DEBUG("LOL");
 }
 
+struct CameraMat {
+    glm::mat4 view;
+    glm::mat4 projection;
+};
+
 class Sandbox : public IGameInstance {
 public:
     void onInit() override {
         mesh = std::make_shared<Kita::Mesh>(vertices, indices, "../assets/textures/wood_floor.jpg");
         m_scene.addMesh(*mesh);
         Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
+        uniformBuffer->createBuffer(sizeof(cameraMat),static_cast<const void*>(&cameraMat));
     }
 
     void onUpdate() override {
         mesh->getShader()->bind();
         mesh->getShader()->seUniformtInt("texture1", 0);
+        uniformBuffer->bind(0);
+        uniformBuffer->update(sizeof(cameraMat),static_cast<const void*>(&cameraMat));
 
         auto res = Kita::Engine::getEngine()->getWindow().getResolution();
-        glm::mat4 projection = glm::perspective(glm::radians(m_scene.getCamera().getZoom()), (float)res.first / (float)res.second, 0.1f, 100.0f);
-        mesh->getShader()->setMat4("projection", projection);
+        cameraMat.projection = glm::perspective(glm::radians(m_scene.getCamera().getZoom()), (float)res.first / (float)res.second, 0.1f, 100.0f);
 
-        glm::mat4 view = m_scene.getCamera().getViewMatrix();
-        mesh->getShader()->setMat4("view", view);
+        cameraMat.view = m_scene.getCamera().getViewMatrix();
+
+
+
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
@@ -40,6 +49,8 @@ public:
     }
 
 private:
+    CameraMat cameraMat;
+    std::shared_ptr<Kita::UniformBuffer> uniformBuffer = Kita::UniformBuffer::createPtr();
     std::vector<Kita::Vertex> vertices = {
         // Front face
         {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
