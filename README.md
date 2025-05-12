@@ -6,7 +6,7 @@
 - [x] Setup OpenGL Debug callbacks
 - [x] Properly free OpenGL resources
 - [x] Camera
-- [ ] Uniform buffer
+- [x] Uniform buffer
 - [ ] Model loading
 - [ ] Basic lighting
 - [ ] Skybox
