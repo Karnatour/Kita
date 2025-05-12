@@ -15,29 +15,27 @@ struct CameraMat {
 class Sandbox : public IGameInstance {
 public:
     void onInit() override {
-        mesh = std::make_shared<Kita::Mesh>(vertices, indices, "../assets/textures/wood_floor.jpg");
-        m_scene.addMesh(*mesh);
+        m_mesh = std::make_shared<Kita::Mesh>(m_vertices, m_indices, "../assets/textures/wood_floor.jpg");
+        m_scene.addMesh(*m_mesh);
         Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
-        uniformBuffer->createBuffer(sizeof(cameraMat),static_cast<const void*>(&cameraMat));
+        uniformBuffer->createBuffer(sizeof(m_cameraMat), &m_cameraMat);
     }
 
     void onUpdate() override {
-        mesh->getShader()->bind();
-        mesh->getShader()->seUniformtInt("texture1", 0);
+        m_mesh->getShader()->bind();
+        m_mesh->getShader()->seUniformtInt("texture1", 0);
         uniformBuffer->bind(0);
-        uniformBuffer->update(sizeof(cameraMat),static_cast<const void*>(&cameraMat));
+        uniformBuffer->update(sizeof(m_cameraMat), &m_cameraMat);
 
         auto res = Kita::Engine::getEngine()->getWindow().getResolution();
-        cameraMat.projection = glm::perspective(glm::radians(m_scene.getCamera().getZoom()), (float)res.first / (float)res.second, 0.1f, 100.0f);
+        m_cameraMat.projection = glm::perspective(glm::radians(m_scene.getCamera().getZoom()), (float)res.first / (float)res.second, 0.1f, 100.0f);
 
-        cameraMat.view = m_scene.getCamera().getViewMatrix();
-
-
+        m_cameraMat.view = m_scene.getCamera().getViewMatrix();
 
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-        mesh->getShader()->setMat4("model", model);
+        model = glm::rotate(model, (float)Kita::Time::getElapsedTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        m_mesh->getShader()->setMat4("model", model);
         m_scene.update();
     }
 
@@ -49,69 +47,12 @@ public:
     }
 
 private:
-    CameraMat cameraMat;
+    CameraMat m_cameraMat = {};
     std::shared_ptr<Kita::UniformBuffer> uniformBuffer = Kita::UniformBuffer::createPtr();
-    std::vector<Kita::Vertex> vertices = {
-        // Front face
-        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
-        {glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
 
-        // Top face
-        {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
-        {glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
-
-        // Back face
-        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
-        {glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
-
-        // Bottom face
-        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
-        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
-
-        // Left face
-        {glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(-1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
-        {glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
-
-        // Right face
-        {glm::vec3(1.0f, -1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 0.0f)},
-        {glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 0.0f)},
-        {glm::vec3(1.0f, 1.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(1.0f, 1.0f)},
-        {glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec2(0.0f, 1.0f)},
-    };
-
-
-    std::vector<unsigned int> indices = {
-        // front
-        0, 1, 2,
-        2, 3, 0,
-        // top
-        4, 5, 6,
-        6, 7, 4,
-        // back
-        8, 9, 10,
-        10, 11, 8,
-        // bottom
-        12, 13, 14,
-        14, 15, 12,
-        // left
-        16, 17, 18,
-        18, 19, 16,
-        // right
-        20, 21, 22,
-        22, 23, 20,
-    };
-
-    std::shared_ptr<Kita::Mesh> mesh;
+    std::vector<Kita::Vertex> m_vertices = Kita::Cube::vertices;
+    std::vector<unsigned int> m_indices = Kita::Cube::indices;
+    std::shared_ptr<Kita::Mesh> m_mesh;
     Kita::Scene m_scene;
 };
 

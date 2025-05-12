@@ -86,6 +86,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/UniformBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h
+        src/Renderer/Structs/GeometryHelper.h
 )
 
 

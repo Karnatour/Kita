@@ -27,4 +27,5 @@
 #include "../src/Renderer/Buffers/UniformBuffer.h"
 #include "../src/Renderer/Textures/Texture.h"
 #include "../src/Renderer/Textures/TextureManager.h"
+#include "../src/Renderer//Structs/GeometryHelper.h"
 
