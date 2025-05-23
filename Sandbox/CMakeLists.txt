@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #Create Sandbox executable
-add_executable(Sandbox src/main.cpp)
+add_executable(Sandbox src/Sandbox.cpp
+        src/Sandbox.h
+        src/main.cpp)
 
 #Include KitaEngine DLL
 target_link_libraries(Sandbox PUBLIC KitaEngine)

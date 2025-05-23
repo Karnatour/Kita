@@ -4,6 +4,7 @@
 
 #include "Camera.h"
 #include "../Core/DllTemplate.h"
+#include "Buffers/UniformBuffer.h"
 
 namespace Kita {
     class KITAENGINE_API Scene {
@@ -15,7 +16,10 @@ namespace Kita {
         Camera& getCamera();
         void update();
     private:
+        void updateCameraBuffer();
         std::unordered_map<unsigned int, Mesh> m_meshes{};
         Camera m_camera;
+        std::shared_ptr<UniformBuffer> m_uniformBuffer = UniformBuffer::createPtr();
+
     };
 } // Kita

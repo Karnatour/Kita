@@ -75,6 +75,10 @@ namespace Kita {
         updateZoom();
     }
 
+    CameraMatrices& Camera::getCameraMatrices() {
+        return m_matrices;
+    }
+
     void Camera::updateMovement() {
         auto& engineWindow = Engine::getEngine()->getWindow();
 
