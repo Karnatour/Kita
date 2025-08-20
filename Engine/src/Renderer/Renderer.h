@@ -14,8 +14,8 @@ namespace Kita {
         explicit Renderer(RenderingAPI api);
         static RenderingAPI getAPI();
 
-        const ShaderManager& getShaderManager() const;
-        const TextureManager& getTextureManager() const;
+        ShaderManager& getShaderManager() const;
+        TextureManager& getTextureManager() const;
         RendererAPI& getRendererAPI() const;
 
     private:

@@ -1,3 +1,4 @@
+#include "../../../kitapch.h"
 #include "GLTexture.h"
 
 #include <glad/glad.h>
@@ -9,6 +10,7 @@ namespace Kita {
     }
 
     bool GLTexture::createTexture(const std::string& texturePath) {
+        m_path = texturePath;
         stbi_set_flip_vertically_on_load(true);
 
         unsigned char* image = stbi_load(texturePath.c_str(), &m_width, &m_height, &m_channels, 0);

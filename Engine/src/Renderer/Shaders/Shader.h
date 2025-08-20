@@ -23,7 +23,10 @@ namespace Kita {
         virtual void setMat3(const std::string& location, const glm::mat3& value) = 0;
         virtual void setMat4(const std::string& location, const glm::mat4& value) = 0;
 
+        const std::pair<std::string, std::string>& getPath() const;
+
     protected:
         unsigned int m_program = 0;
+        std::pair<std::string, std::string> m_path;
     };
 } // Kita

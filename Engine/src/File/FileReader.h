@@ -1,5 +1,5 @@
 #pragma once
-#include "DllTemplate.h"
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API FileReader {

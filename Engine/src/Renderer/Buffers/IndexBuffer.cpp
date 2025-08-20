@@ -1,3 +1,4 @@
+#include "../../kitapch.h"
 #include "IndexBuffer.h"
 #include "../Renderer.h"
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h"
@@ -19,5 +20,9 @@ namespace Kita {
 
     size_t IndexBuffer::getIndicesCount() const {
         return m_indicesCount;
+    }
+
+    std::vector<unsigned int>& IndexBuffer::getIndices() {
+        return m_indices;
     }
 }

@@ -65,8 +65,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Shaders/Shader.h
         src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.h
-        src/Core/FileReader.cpp
-        src/Core/FileReader.h
+        src/File/FileReader.cpp
+        src/File/FileReader.h
         src/Renderer/RendererAPI.h
         src/Renderer/RendererAPI.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.cpp
@@ -87,6 +87,16 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h
         src/Renderer/Structs/GeometryHelper.h
+        src/Asset/KAsset.cpp
+        src/Asset/KAsset.h
+        src/Renderer/Material.cpp
+        src/Renderer/Material.h
+        src/Renderer/Model.cpp
+        src/Renderer/Model.h
+        src/Renderer/Structs/PhongProperties.h
+        src/Asset/AssetImporter.cpp
+        src/Asset/AssetImporter.h
+        src/Renderer/Structs/GeometryHelper.cpp
 )
 
 
@@ -104,6 +114,9 @@ find_package(glm CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC glm::glm)
 
 find_package(Stb REQUIRED)
+
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(KitaEngine PUBLIC assimp::assimp)
 
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")

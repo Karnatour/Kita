@@ -1,3 +1,4 @@
+#include "../../kitapch.h"
 #include "Texture.h"
 
 #include "../Renderer.h"
@@ -29,4 +30,9 @@ namespace Kita {
     int Texture::getChannels() const {
         return m_channels;
     }
+
+    const std::string& Texture::getPath() const {
+        return m_path;
+    }
+
 } // Kita

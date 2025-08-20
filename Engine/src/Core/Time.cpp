@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "Time.h"
 
 namespace Kita {

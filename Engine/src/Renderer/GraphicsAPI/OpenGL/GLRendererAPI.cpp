@@ -15,18 +15,27 @@ namespace Kita {
         glViewport(0, 0, width, height);
     }
 
-    void GLRendererAPI::render(Mesh& mesh) {
-        if (mesh.getTexture() != nullptr) {
-            mesh.getTexture()->bind(0);
-        }
-        mesh.getShader()->bind();
-        mesh.getVertexArray()->bind();
-        const auto& vertexArray = mesh.getVertexArray();
-        if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
-            glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
-        }
-        else {
-            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
+    void GLRendererAPI::render(Model& model) {
+        for (const auto& mesh : model.getMeshes()) {
+            const auto materialIndex = mesh->getMaterialIndex();
+            if (materialIndex >= 0 && materialIndex < model.getMaterials().size()) {
+                const auto& material = model.getMaterials()[materialIndex];
+
+                if (!material->getTextures().empty()) {
+                    material->getTextures().at(0)->bind(0);
+                }
+
+                material->getShader()->bind();
+            }
+
+            mesh->getVertexArray()->bind();
+            const auto& vertexArray = mesh->getVertexArray();
+            if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
+                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
+            }
+            else {
+                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
+            }
         }
     }
 

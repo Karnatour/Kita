@@ -1,3 +1,4 @@
+#include "../../kitapch.h"
 #include "VertexBuffer.h"
 
 #include "../Renderer.h"
@@ -20,5 +21,9 @@ namespace Kita {
 
     size_t VertexBuffer::getVerticiesCount() const {
         return m_verticiesCount;
+    }
+
+    std::vector<Vertex>& VertexBuffer::getVertices() {
+        return m_vertices;
     }
 } // Kita

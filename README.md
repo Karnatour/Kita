@@ -18,6 +18,7 @@
 - [ ] Instancing
 - [ ] Anti-Aliasing
 - [ ] Font rendering
+- [ ] Physics
 - [ ] Animations
 - [ ] Advanced lighting
 - [ ] PBR

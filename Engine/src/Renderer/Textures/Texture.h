@@ -14,11 +14,13 @@ namespace Kita {
         int getWidth() const;
         int getHeight() const;
         int getChannels() const;
+        const std::string& getPath() const;
 
     protected:
         unsigned int m_texture = 0;
         int m_width = 0;
         int m_height = 0;
         int m_channels = 0;;
+        std::string m_path;
     };
 } // Kita

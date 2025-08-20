@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include "Camera.h"
+#include "Model.h"
 #include "../Core/DllTemplate.h"
 #include "Buffers/UniformBuffer.h"
 
@@ -11,15 +12,13 @@ namespace Kita {
     public:
         Scene();
         void render() const;
-        void addMesh(Mesh&& mesh);
-        void addMesh(Mesh& mesh);
+        void addModel(Model model);
         Camera& getCamera();
         void update();
     private:
         void updateCameraBuffer();
-        std::unordered_map<unsigned int, Mesh> m_meshes{};
+        std::unordered_map<unsigned int, Model> m_models{};
         Camera m_camera;
-        std::shared_ptr<UniformBuffer> m_uniformBuffer = UniformBuffer::createPtr();
-
+        std::shared_ptr<UniformBuffer> m_cameraUniformBuffer = UniformBuffer::createPtr();
     };
 } // Kita

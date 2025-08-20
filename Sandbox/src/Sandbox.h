@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 
-class Sandbox : public Kita::IGameInstance {
+class Sandbox final : public Kita::IGameInstance {
 public:
     void onInit() override;
     void onUpdate() override;
@@ -14,6 +14,6 @@ public:
 private:
     std::vector<Kita::Vertex> m_vertices = Kita::Cube::vertices;
     std::vector<unsigned int> m_indices = Kita::Cube::indices;
-    std::shared_ptr<Kita::Mesh> m_mesh;
+    std::shared_ptr<Kita::Model> m_model;
     Kita::Scene m_scene;
 };

@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "KeyboardEvents.h"
 
 namespace Kita {

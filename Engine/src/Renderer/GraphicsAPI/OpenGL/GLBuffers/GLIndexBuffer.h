@@ -6,6 +6,6 @@ namespace Kita {
     class GLIndexBuffer final : public IndexBuffer {
     public:
         ~GLIndexBuffer() override;
-        void createBuffer(const std::vector<unsigned int>& indicies) override;
+        void createBuffer(const std::vector<unsigned int>& indices) override;
     };
 } // Kita

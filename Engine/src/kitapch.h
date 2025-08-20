@@ -19,6 +19,7 @@
 #include <filesystem>
 #include <chrono>
 #include <ranges>
+#include <fstream>
 
 #include "Core/Logger.h"
-#include "Core/FileReader.h"
+#include "File/FileReader.h"

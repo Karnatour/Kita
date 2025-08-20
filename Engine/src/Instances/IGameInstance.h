@@ -2,7 +2,7 @@
 #include "../Core/DllTemplate.h"
 
 namespace Kita {
-    class IGameInstance {
+    class KITAENGINE_API IGameInstance {
     public:
         virtual void onInit() = 0;
         virtual void onUpdate() = 0;

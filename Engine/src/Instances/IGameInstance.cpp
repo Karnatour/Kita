@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "IGameInstance.h"
 #include "../Core/Engine.h"
 

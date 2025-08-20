@@ -3,8 +3,7 @@
 
 namespace Kita {
     ShaderManager::ShaderManager() {
-        addShader("../assets/shaders/DefaultVertexColor.glsl","../assets/shaders/DefaultFragmentColor.glsl");
-        addShader("../assets/shaders/DefaultVertexTexture.glsl","../assets/shaders/DefaultFragmentTexture.glsl");
+        addShader("../assets/shaders/DefaultVertex.glsl","../assets/shaders/DefaultFragment.glsl");
     }
 
     void ShaderManager::addShader(const std::string& vertexPath, const std::string& fragmentPath) {

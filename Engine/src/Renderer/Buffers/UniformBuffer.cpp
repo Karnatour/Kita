@@ -1,3 +1,4 @@
+#include "../../kitapch.h"
 #include "UniformBuffer.h"
 #include "../Renderer.h"
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h"

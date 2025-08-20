@@ -1,3 +1,4 @@
+#include "../../../../kitapch.h"
 #include "GLVertexArray.h"
 
 #include <glad/glad.h>
@@ -7,16 +8,16 @@ namespace Kita {
         glDeleteBuffers(1, &m_vao);
     }
 
-    void GLVertexArray::createBuffer(const std::vector<Vertex>& verticies, const std::vector<unsigned int>& indicies) {
+    void GLVertexArray::createBuffer(const std::vector<Vertex>& verticies, const std::vector<unsigned int>& indices) {
         m_vbo->createBuffer(verticies);
-        if (!indicies.empty()) {
-            m_ibo->createBuffer(indicies);
+        if (!indices.empty()) {
+            m_ibo->createBuffer(indices);
         }
 
         glCreateVertexArrays(1, &m_vao);
 
         glVertexArrayVertexBuffer(m_vao, 0, m_vbo->getVBO(), 0, sizeof(Vertex));
-        if (!indicies.empty()) {
+        if (!indices.empty()) {
             glVertexArrayElementBuffer(m_vao, m_ibo->getIBO());
         }
 

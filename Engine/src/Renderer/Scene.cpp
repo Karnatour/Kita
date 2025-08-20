@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "Scene.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
@@ -6,21 +7,18 @@
 
 namespace Kita {
     Scene::Scene(): m_camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)) {
-        m_uniformBuffer->createBuffer(sizeof(m_camera.getCameraMatrices()), &m_camera.getCameraMatrices());
+        m_cameraUniformBuffer->createBuffer(sizeof(m_camera.getCameraMatrices()), &m_camera.getCameraMatrices());
     }
 
     void Scene::render() const {
-        for (auto mesh : m_meshes | std::views::values) {
-            Engine::getEngine()->getRenderer().getRendererAPI().render(mesh);
+        for (auto model : m_models | std::views::values) {
+            Engine::getEngine()->getRenderer().getRendererAPI().render(model);
         }
     }
 
-    void Scene::addMesh(Mesh&& mesh) {
-        m_meshes.insert({mesh.getID(), std::move(mesh)});
-    }
-
-    void Scene::addMesh(Mesh& mesh) {
-        m_meshes.insert({mesh.getID(), mesh});
+    void Scene::addModel(Model model) {
+        auto id = model.getID();
+        m_models.emplace(id, std::move(model));
     }
 
     Camera& Scene::getCamera() {
@@ -35,11 +33,11 @@ namespace Kita {
     void Scene::updateCameraBuffer() {
         CameraMatrices& matrices = m_camera.getCameraMatrices();
 
-        m_uniformBuffer->bind(0);
-        m_uniformBuffer->update(sizeof(matrices), &matrices);
+        m_cameraUniformBuffer->bind(0);
+        m_cameraUniformBuffer->update(sizeof(matrices), &matrices);
 
-        auto res = Engine::getEngine()->getWindow().getResolution();
-        matrices.projection = glm::perspective(glm::radians(m_camera.getZoom()), static_cast<float>(res.first) / static_cast<float>(res.second), 0.1f, 100.0f);
+        auto [width, height] = Engine::getEngine()->getWindow().getResolution();
+        matrices.projection = glm::perspective(glm::radians(m_camera.getZoom()), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
 
         matrices.view = m_camera.getViewMatrix();
     }

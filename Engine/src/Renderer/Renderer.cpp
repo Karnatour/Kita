@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "Renderer.h"
 
 namespace Kita {
@@ -13,11 +14,11 @@ namespace Kita {
         return m_api;
     }
 
-    const ShaderManager& Renderer::getShaderManager() const {
+    ShaderManager& Renderer::getShaderManager() const {
         return *m_shaderManager;
     }
 
-    const TextureManager& Renderer::getTextureManager() const {
+    TextureManager& Renderer::getTextureManager() const {
         return *m_textureManager;
     }
 

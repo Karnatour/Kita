@@ -1,3 +1,4 @@
+#include "../kitapch.h"
 #include "MouseEvents.h"
 
 namespace Kita {

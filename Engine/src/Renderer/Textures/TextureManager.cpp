@@ -1,3 +1,4 @@
+#include "../../kitapch.h"
 #include "TextureManager.h"
 
 namespace Kita {

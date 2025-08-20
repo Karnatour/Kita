@@ -1,9 +1,9 @@
+#include "../kitapch.h"
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../Core/Engine.h"
 #include "../Core/Time.h"
-#include "../Events/EventManager.h"
 #include "../Input/Input.h"
 #include "../Window/Window.h"
 
