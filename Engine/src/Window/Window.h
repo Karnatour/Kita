@@ -31,8 +31,8 @@ namespace Kita {
         void setCursorMode(CursorMode mode);
         CursorMode getCursorMode() const;
 
-
     private:
+        void setWindowPosToCenter() const;
         static void setErrorCallbackFun();
         void setWindowCallbacks();
         static void errorCallbackFun(int error_code, const char* description);

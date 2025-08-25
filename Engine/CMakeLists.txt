@@ -54,10 +54,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Structs/Vertex.h
         src/Renderer/Renderer.cpp
         src/Renderer/Renderer.h
-        src/Renderer/Mesh.cpp
-        src/Renderer/Mesh.h
-        src/Renderer/Scene.cpp
-        src/Renderer/Scene.h
+        src/Renderer/Scene/Primitives/Mesh.cpp
+        src/Renderer/Scene/Primitives/Mesh.h
+        src/Renderer/Scene/Scene.cpp
+        src/Renderer/Scene/Scene.h
         src/Renderer/Structs/RenderingAPI.h
         src/Renderer/Shaders/ShaderManager.cpp
         src/Renderer/Shaders/ShaderManager.h
@@ -78,8 +78,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Textures/TextureManager.cpp
         src/Renderer/Textures/TextureManager.h
         vendor/stb_image/stb_image_init.cpp
-        src/Renderer/Camera.cpp
-        src/Renderer/Camera.h
+        src/Renderer/Scene/Camera.cpp
+        src/Renderer/Scene/Camera.h
         src/Core/Time.cpp
         src/Core/Time.h
         src/Renderer/Buffers/UniformBuffer.cpp
@@ -89,14 +89,18 @@ add_library(KitaEngine SHARED
         src/Renderer/Structs/GeometryHelper.h
         src/Asset/KAsset.cpp
         src/Asset/KAsset.h
-        src/Renderer/Material.cpp
-        src/Renderer/Material.h
-        src/Renderer/Model.cpp
-        src/Renderer/Model.h
+        src/Renderer/Scene/Primitives/Material.cpp
+        src/Renderer/Scene/Primitives/Material.h
+        src/Renderer/Scene/Primitives/Model.cpp
+        src/Renderer/Scene/Primitives/Model.h
         src/Renderer/Structs/PhongProperties.h
         src/Asset/AssetImporter.cpp
         src/Asset/AssetImporter.h
         src/Renderer/Structs/GeometryHelper.cpp
+        src/Renderer/Scene/Entity.cpp
+        src/Renderer/Scene/Entity.h
+        src/Renderer/Scene/Transformation.cpp
+        src/Renderer/Scene/Transformation.h
 )
 
 
@@ -117,6 +121,9 @@ find_package(Stb REQUIRED)
 
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC assimp::assimp)
+
+find_package(magic_enum CONFIG REQUIRED)
+target_link_libraries(KitaEngine PRIVATE magic_enum::magic_enum)
 
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")

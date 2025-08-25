@@ -5,11 +5,12 @@
 namespace Kita {
     class KITAENGINE_API TextureManager {
     public:
-        void addTexture(const std::string& texturePath);
-        std::shared_ptr<Texture> getTexture(const std::string& texturePath) const;
-        const std::unordered_map<std::string, std::shared_ptr<Texture>>& getTextureMap() const;
+        static inline const std::filesystem::path TEXTURE_PREFIX = "../assets/textures/";
+        void addTexture(const std::filesystem::path& texturePath);
+        std::shared_ptr<Texture> getTexture(const std::filesystem::path& texturePath) const;
+        const std::unordered_map<std::filesystem::path, std::shared_ptr<Texture>>& getTextureMap() const;
 
     private:
-        std::unordered_map<std::string, std::shared_ptr<Texture>> m_textureMap;
+        std::unordered_map<std::filesystem::path, std::shared_ptr<Texture>> m_textureMap;
     };
 } // Kita

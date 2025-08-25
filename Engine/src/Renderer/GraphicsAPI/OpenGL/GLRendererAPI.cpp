@@ -1,6 +1,7 @@
 #include "../../../kitapch.h"
 #include "GLRendererAPI.h"
 
+#include <complex.h>
 #include <glad/glad.h>
 
 namespace Kita {
@@ -15,21 +16,14 @@ namespace Kita {
         glViewport(0, 0, width, height);
     }
 
-    void GLRendererAPI::render(Model& model) {
-        for (const auto& mesh : model.getMeshes()) {
-            const auto materialIndex = mesh->getMaterialIndex();
-            if (materialIndex >= 0 && materialIndex < model.getMaterials().size()) {
-                const auto& material = model.getMaterials()[materialIndex];
-
-                if (!material->getTextures().empty()) {
-                    material->getTextures().at(0)->bind(0);
-                }
-
-                material->getShader()->bind();
-            }
+    void GLRendererAPI::render(const ::std::shared_ptr<Entity>& entity) {
+        const auto& model = entity->getModel();
+        for (const auto& mesh : model->getMeshes()) {
+            setMaterial(mesh->getMaterialIndex(), model->getMaterials(), entity->getTransformation());
 
             mesh->getVertexArray()->bind();
             const auto& vertexArray = mesh->getVertexArray();
+
             if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
                 glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
             }
@@ -42,6 +36,24 @@ namespace Kita {
     void GLRendererAPI::clearColor(const float red, const float green, const float blue, const float alpha) {
         glClearColor(red, green, blue, alpha);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
+    void GLRendererAPI::setMaterial(const int materialIndex, const std::vector<std::shared_ptr<Material>>& materials, const Transformation& transformation) {
+        if (materialIndex >= 0 && materialIndex < materials.size()) {
+            const auto& material = materials[materialIndex];
+
+            material->getShader()->bind();
+
+            const bool hasTex = !material->getTextures().empty();
+            material->getShader()->setUniformBool("hasTexture", hasTex);
+
+            if (hasTex) {
+                material->getTextures().at(0)->bind(0);
+                material->getShader()->setUniformInt("texture1", 0);
+            }
+
+            material->getShader()->setUniformMat4("model", transformation.getModelMatrix());
+        }
     }
 
     void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param) {

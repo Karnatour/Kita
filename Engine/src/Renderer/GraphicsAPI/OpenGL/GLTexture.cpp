@@ -4,16 +4,18 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
+#include "../../../Asset/AssetImporter.h"
+#include "../../Textures/TextureManager.h"
+
 namespace Kita {
     GLTexture::~GLTexture() {
-        glDeleteTextures(1,&m_texture);
+        glDeleteTextures(1, &m_texture);
     }
 
-    bool GLTexture::createTexture(const std::string& texturePath) {
+    bool GLTexture::createTexture(const std::filesystem::path& texturePath) {
         m_path = texturePath;
         stbi_set_flip_vertically_on_load(true);
-
-        unsigned char* image = stbi_load(texturePath.c_str(), &m_width, &m_height, &m_channels, 0);
+        unsigned char* image = stbi_load((TextureManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
         if (image) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
@@ -33,7 +35,7 @@ namespace Kita {
                     glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
                     break;
                 default:
-                    KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.c_str());
+                    KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.string());
                     return false;
                     break;
             }
@@ -42,7 +44,7 @@ namespace Kita {
             stbi_image_free(image);
         }
         else {
-            KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.c_str());
+            KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.string());
             return false;
         }
         return true;

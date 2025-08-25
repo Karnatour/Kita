@@ -12,8 +12,5 @@ public:
     void onExit() override;
 
 private:
-    std::vector<Kita::Vertex> m_vertices = Kita::Cube::vertices;
-    std::vector<unsigned int> m_indices = Kita::Cube::indices;
-    std::shared_ptr<Kita::Model> m_model;
     Kita::Scene m_scene;
 };

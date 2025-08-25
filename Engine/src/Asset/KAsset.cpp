@@ -5,96 +5,113 @@
 #include "../Renderer/Textures/TextureManager.h"
 
 namespace Kita {
-    std::shared_ptr<Model> KAsset::loadFromFile(const std::string& path) {
+    std::shared_ptr<Model> KAsset::loadFromFile(const std::filesystem::path& path) {
         try {
-            const std::filesystem::path filePath(path);
-
-            std::ifstream file(filePath, std::ios::binary | std::ios::in);
+            std::ifstream file(path, std::ios::binary | std::ios::in);
             file.exceptions(std::istream::failbit | std::istream::badbit);
 
             FileHeader header;
             file.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-            if (header.magicNumber != MAGIC_NUMBER) {
-                throw std::runtime_error("Invalid magic number in asset file: " + path);
-            }
-            if (header.versionFormat != VERSION_FORMAT) {
-                throw std::runtime_error("Unsupported version in asset file: " + path);
-            }
+            cheackHeaderFormat(header, path);
 
-            std::shared_ptr<Model> model = std::make_shared<Model>();
+            auto model = std::make_shared<Model>();
 
             for (uint32_t i = 0; i < header.chunkCount; ++i) {
                 ChunkHeader chunk;
                 file.read(reinterpret_cast<char*>(&chunk), sizeof(chunk));
-
-                auto chunkStart = file.tellg();
-
-                switch (static_cast<ChunkType>(chunk.chunkType)) {
-                    case ChunkType::MESH: {
-                        model->addMesh(readMesh(file));
-                        break;
-                    }
-                    case ChunkType::MATERIAL: {
-                        model->addMaterial(readMaterial(file));
-                        break;
-                    }
-                    case ChunkType::NONE: {
-                        break;
-                    }
-                }
-                if (auto chunkEnd = file.tellg(); static_cast<uint64_t>(chunkEnd - chunkStart) != chunk.chunkSize) {
-                    throw std::runtime_error("Chunk size mismatch! Expected " + std::to_string(chunk.chunkSize) + ", read " + std::to_string(chunkEnd - chunkStart));
-                }
+                loadChunk(file, chunk, model);
             }
 
             return model;
         }
         catch (const std::ifstream::failure& e) {
-            KITA_ENGINE_ERROR("Error while loading aseet returning nullptr. Path {}, error: {}", path.c_str(), e.what());
+            KITA_ENGINE_ERROR("Error while loading aseet returning nullptr. Path {}, error: {}", path.string(), e.what());
             return nullptr;
         }
         catch (const std::runtime_error& e) {
-            KITA_ENGINE_ERROR("Eror while loeading asset returning nullptr. Patr {}, error: {}", path.c_str(), e.what());
+            KITA_ENGINE_ERROR("Eror while loeading asset returning nullptr. Patr {}, error: {}", path.string(), e.what());
             return nullptr;
         }
     }
 
-    bool KAsset::saveToFile(const std::shared_ptr<Model>& model, const std::string& path) {
+    bool KAsset::saveToFile(const std::shared_ptr<Model>& model, const std::filesystem::path& path) {
         try {
-            const std::filesystem::path filePath(path);
-            std::filesystem::create_directories(filePath.parent_path());
+            std::filesystem::create_directories(path.parent_path());
 
-            std::ofstream file(filePath, std::ios::binary | std::ios::trunc);
+            std::ofstream file(path, std::ios::binary | std::ios::trunc);
             file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 
             FileHeader header;
-            header.chunkCount = static_cast<uint32_t>(model->getMeshes().size() + model->getMaterials().size());
-            header.totalSize = 0;
-            file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+            writeHeaderStart(file, header, model->getMeshes().size() + model->getMaterials().size());
 
             writeMeshes(file, model->getMeshes());
 
             writeMaterials(file, model->getMaterials());
 
-            const auto endPos = file.tellp();
-            const uint64_t totalSize = endPos;
+            writeHeaderEnd(file, header);
 
-            file.seekp(offsetof(FileHeader, chunkCount));
-            file.write(reinterpret_cast<const char*>(&header.chunkCount), sizeof(header.chunkCount));
-
-            file.seekp(offsetof(FileHeader, totalSize));
-            file.write(reinterpret_cast<const char*>(&totalSize), sizeof(totalSize));
+            m_bakedFiles.insert(path.lexically_relative("../assets/baked"));
 
             return true;
         }
         catch (const std::ofstream::failure& e) {
-            KITA_ENGINE_ERROR("Error while saving aseet. Path {}, error: {}", path.c_str(), e.what());
+            KITA_ENGINE_ERROR("Error while saving aseet. Path {}, error: {}", path.string(), e.what());
             return false;
         }
         catch (const std::runtime_error& e) {
-            KITA_ENGINE_ERROR("Eror while loeading asset returning nullptr. Patr {}, error: {}", path.c_str(), e.what());
+            KITA_ENGINE_ERROR("Eror while loeading asset returning nullptr. Patr {}, error: {}", path.string(), e.what());
             return false;
+        }
+    }
+
+    void KAsset::fetchExistingBakedFiles() {
+        const std::filesystem::path bakedPath = "../assets/baked/";
+
+        if (!std::filesystem::exists(bakedPath)) {
+            return;
+        }
+
+        for (auto& entry : std::filesystem::recursive_directory_iterator(bakedPath)) {
+            if (entry.is_regular_file()) {
+                std::filesystem::path relativePath = std::filesystem::relative(entry.path(), bakedPath);
+                m_bakedFiles.insert(relativePath.string());
+            }
+        }
+    }
+
+    bool KAsset::alreadyBaked(const std::filesystem::path& path) {
+        return m_bakedFiles.contains(path);
+    }
+
+    void KAsset::loadChunk(std::ifstream& file, ChunkHeader& chunk, const std::shared_ptr<Model>& model) {
+        const auto chunkStart = file.tellg();
+
+        switch (static_cast<ChunkType>(chunk.chunkType)) {
+            case ChunkType::MESH: {
+                model->addMesh(readMesh(file));
+                break;
+            }
+            case ChunkType::MATERIAL: {
+                model->addMaterial(readMaterial(file));
+                break;
+            }
+            case ChunkType::NONE: {
+                break;
+            }
+        }
+
+        if (auto chunkEnd = file.tellg(); static_cast<uint64_t>(chunkEnd - chunkStart) != chunk.chunkSize) {
+            throw std::runtime_error("Chunk size mismatch! Expected " + std::to_string(chunk.chunkSize) + ", read " + std::to_string(chunkEnd - chunkStart));
+        }
+    }
+
+    void KAsset::cheackHeaderFormat(const FileHeader& header, const std::filesystem::path& path) {
+        if (header.magicNumber != MAGIC_NUMBER) {
+            throw std::runtime_error("Invalid magic number in asset file: " + path.string());
+        }
+        if (header.versionFormat != VERSION_FORMAT) {
+            throw std::runtime_error("Unsupported version in asset file: " + path.string());
         }
     }
 
@@ -134,6 +151,22 @@ namespace Kita {
         return material;
     }
 
+    void KAsset::writeHeaderStart(std::ofstream& file, FileHeader& header, const uint32_t chunkCount) {
+        header.chunkCount = chunkCount;
+        file.write(reinterpret_cast<const char*>(&header), sizeof(header));
+    }
+
+    void KAsset::writeHeaderEnd(std::ofstream& file, const FileHeader& header) {
+        const auto endPos = file.tellp();
+        const uint64_t totalSize = endPos;
+
+        file.seekp(offsetof(FileHeader, chunkCount));
+        file.write(reinterpret_cast<const char*>(&header.chunkCount), sizeof(header.chunkCount));
+
+        file.seekp(offsetof(FileHeader, totalSize));
+        file.write(reinterpret_cast<const char*>(&totalSize), sizeof(totalSize));
+    }
+
     void KAsset::writeMeshes(std::ofstream& file, const std::vector<std::shared_ptr<Mesh>>& meshes) {
         for (const auto& mesh : meshes) {
             const auto vbo = mesh->getVertexArray()->getVBOobj();
@@ -159,7 +192,7 @@ namespace Kita {
     }
 
     void KAsset::writeMaterials(std::ofstream& file, const std::vector<std::shared_ptr<Material>>& materials) {
-        for (const auto& material :materials) {
+        for (const auto& material : materials) {
             MaterialHeader materialHeader{};
             materialHeader.textureCount = material->getTextures().size();
 
@@ -169,23 +202,9 @@ namespace Kita {
             vec3ToFloat(specular, materialHeader.specular);
             materialHeader.shininess = shininess;
 
-            for (int i = 0; i < materialHeader.textureCount; i++) {
-                if (material->getTextures().at(i)->getPath().length() >= 63) {
-                    throw std::runtime_error("TexturePath is larger than 64 causing overflow " + material->getTextures().at(i)->getPath());
-                }
-                strcpy_s(materialHeader.texturePaths[i], material->getTextures().at(i)->getPath().c_str());
-            }
+            writeTextures(materialHeader, material->getTextures());
 
-            std::pair<std::string, std::string> shaderPaths = material->getShader()->getPath();
-            if (shaderPaths.first.length() >= 63) {
-                throw std::runtime_error("VertexShaderPath is larger than 64 causing overflow " + shaderPaths.first);
-            }
-            strcpy_s(materialHeader.shaderPaths[0], shaderPaths.first.c_str());
-
-            if (shaderPaths.second.length() >= 63) {
-                throw std::runtime_error("FragmentShaderpath is larger than 64 causing overflow " + shaderPaths.second);
-            }
-            strcpy_s(materialHeader.shaderPaths[1], shaderPaths.second.c_str());
+            writeShader(materialHeader, material->getShader());
 
             ChunkHeader chunk;
             chunk.chunkType = static_cast<uint32_t>(ChunkType::MATERIAL);
@@ -194,6 +213,30 @@ namespace Kita {
 
             file.write(reinterpret_cast<const char*>(&materialHeader), sizeof(materialHeader));
         }
+    }
+
+    void KAsset::writeTextures(MaterialHeader& materialHeader, const std::vector<std::shared_ptr<Texture>>& textures) {
+        for (int i = 0; i < materialHeader.textureCount; i++) {
+            if (textures.at(i)->getPath().string().length() >= 63) {
+                throw std::runtime_error("TexturePath is larger than 64 causing overflow " + textures.at(i)->getPath().string());
+            }
+            strcpy_s(materialHeader.texturePaths[i], textures.at(i)->getPath().string().c_str());
+        }
+    }
+
+    void KAsset::writeShader(MaterialHeader& materialHeader, const std::shared_ptr<Shader>& shader) {
+        //Vertex
+        auto [vertexPath, fragmentPath] = shader->getPath();
+        if (vertexPath.string().length() >= 63) {
+            throw std::runtime_error("VertexShaderPath is larger than 64 causing overflow " + vertexPath.string());
+        }
+        strcpy_s(materialHeader.shaderPaths[0], vertexPath.string().c_str());
+
+        //Fragment
+        if (fragmentPath.string().length() >= 63) {
+            throw std::runtime_error("FragmentShaderPath is larger than 64 causing overflow " + fragmentPath.string());
+        }
+        strcpy_s(materialHeader.shaderPaths[1], fragmentPath.string().c_str());
     }
 
     void KAsset::vec3ToFloat(const glm::vec3& vec, float (&arr)[3]) {

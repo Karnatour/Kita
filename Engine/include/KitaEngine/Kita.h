@@ -27,11 +27,13 @@
 #include "../src/Renderer/Textures/TextureManager.h"
 #include "../src/Renderer/Renderer.h"
 #include "../src/Renderer/RendererAPI.h"
-#include "../src/Renderer/Mesh.h"
-#include "../src/Renderer/Scene.h"
-#include "../src/Renderer/Camera.h"
-#include "../src/Renderer/Material.h"
-#include "../src/Renderer/Model.h"
+#include "../src/Renderer/Scene/Scene.h"
+#include "../src/Renderer/Scene/Camera.h"
+#include "../src/Renderer/Scene/Entity.h"
+#include "../src/Renderer/Scene/Transformation.h"
+#include "../src/Renderer/Scene/Primitives/Mesh.h"
+#include "../src/Renderer/Scene/Primitives/Material.h"
+#include "../src/Renderer/Scene/Primitives/Model.h"
 
 #include "../src/Window/Window.h"
 

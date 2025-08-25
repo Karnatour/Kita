@@ -4,6 +4,6 @@
 namespace Kita {
     class KITAENGINE_API FileReader {
     public:
-        static std::string readFile(const std::string& filePath);
+        static std::string readFile(const std::filesystem::path& path);
     };
 } // Kita

@@ -1,5 +1,5 @@
 #pragma once
-#include "Scene.h"
+#include "Scene/Scene.h"
 #include "Structs/RenderingAPI.h"
 #include "../Core/DllTemplate.h"
 #include "Shaders/ShaderManager.h"

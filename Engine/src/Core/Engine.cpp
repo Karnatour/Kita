@@ -2,6 +2,7 @@
 #include "Engine.h"
 
 #include "Time.h"
+#include "../Asset/KAsset.h"
 #include "../Window/Window.h"
 #include "../Events/EventManager.h"
 #include "../Input/Input.h"
@@ -17,13 +18,16 @@ namespace Kita {
     void Engine::init(RenderingAPI API) {
         m_window = std::make_unique<Window>();
         m_window->init();
-        m_window->createWindow(600, 600, "Kita");
+        m_window->createWindow(1600, 900, "Kita");
         m_renderer = std::make_unique<Renderer>(API);
 
         EventManager::attachEngineEvents();
 
         m_currentFrameTime = std::chrono::system_clock::now();
         Time::updateDeltaTime(m_currentFrameTime);
+
+        KAsset::fetchExistingBakedFiles();
+
         KITA_ENGINE_INFO("Engine initialized");
     }
 

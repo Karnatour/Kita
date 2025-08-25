@@ -3,11 +3,12 @@
 #include <cstdint>
 
 #include "../Core/DllTemplate.h"
-#include "../Renderer/Model.h"
+#include "../Renderer/Scene/Primitives/Model.h"
 
 namespace Kita {
     class KITAENGINE_API KAsset {
     public:
+        static inline const std::filesystem::path BAKED_PREFIX = "../assets/baked";
         static constexpr uint32_t MAGIC_NUMBER = 0x4b495441; // KITA
         static constexpr uint32_t VERSION_FORMAT = 100;
 
@@ -54,14 +55,23 @@ namespace Kita {
             char shaderPaths[2][64]; //vertex, fragment
         };
 
-        static std::shared_ptr<Model> loadFromFile(const std::string& path);
-        static bool saveToFile(const std::shared_ptr<Model>& model, const std::string& path);
+        static std::shared_ptr<Model> loadFromFile(const std::filesystem::path& path);
+        static bool saveToFile(const std::shared_ptr<Model>& model, const std::filesystem::path& path);
+        static void fetchExistingBakedFiles();
+        static bool alreadyBaked(const std::filesystem::path& path);
+        static inline std::unordered_set<std::filesystem::path> m_bakedFiles;
 
     private:
+        static void loadChunk(std::ifstream& file, ChunkHeader& chunk, const std::shared_ptr<Model>& model);
+        static void cheackHeaderFormat(const FileHeader& header, const std::filesystem::path& path);
         static std::shared_ptr<Mesh> readMesh(std::ifstream& file);
         static std::shared_ptr<Material> readMaterial(std::ifstream& file);
+        static void writeHeaderStart(std::ofstream& file, FileHeader& header, uint32_t chunkCount);
+        static void writeHeaderEnd(std::ofstream& file, const FileHeader& header);
         static void writeMeshes(std::ofstream& file, const std::vector<std::shared_ptr<Mesh>>& meshes);
         static void writeMaterials(std::ofstream& file, const std::vector<std::shared_ptr<Material>>& materials);
+        static void writeTextures(MaterialHeader& materialHeader, const std::vector<std::shared_ptr<Texture>>& textures);
+        static void writeShader(MaterialHeader& materialHeader, const std::shared_ptr<Shader>& shader);
 
         static void vec3ToFloat(const glm::vec3& vec, float (&arr)[3]);
         static void FloatToVec3(glm::vec3& vec, const float (&arr)[3]);

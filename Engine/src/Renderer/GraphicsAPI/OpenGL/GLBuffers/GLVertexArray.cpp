@@ -5,7 +5,7 @@
 
 namespace Kita {
     GLVertexArray::~GLVertexArray() {
-        glDeleteBuffers(1, &m_vao);
+        glDeleteVertexArrays(1, &m_vao);
     }
 
     void GLVertexArray::createBuffer(const std::vector<Vertex>& verticies, const std::vector<unsigned int>& indices) {
@@ -28,7 +28,7 @@ namespace Kita {
 
         //Color
         glEnableVertexArrayAttrib(m_vao, 1);
-        glVertexArrayAttribFormat(m_vao, 1, 3,GL_FLOAT,GL_FALSE,offsetof(Vertex, color));
+        glVertexArrayAttribFormat(m_vao, 1, 4,GL_FLOAT,GL_FALSE,offsetof(Vertex, color));
         glVertexArrayAttribBinding(m_vao, 1, 0);
 
         //Texture

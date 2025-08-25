@@ -32,6 +32,8 @@ namespace Kita {
             return;
         }
 
+        setWindowPosToCenter();
+
         glfwSetWindowUserPointer(m_window, this);
 
         makeContextCurrent();
@@ -115,6 +117,24 @@ namespace Kita {
 
     CursorMode Window::getCursorMode() const {
         return m_cursorMode;
+    }
+
+    void Window::setWindowPosToCenter() const {
+        GLFWmonitor* primary = glfwGetPrimaryMonitor();
+        int monitorX, monitorY;
+        glfwGetMonitorPos(primary, &monitorX, &monitorY);
+
+        const GLFWvidmode* mode = glfwGetVideoMode(primary);
+        const int monitorWidth = mode->width;
+        const int monitorHeight = mode->height;
+
+        int windowWidth, windowHeight;
+        glfwGetWindowSize(m_window, &windowWidth, &windowHeight);
+
+        const int windowPosX = monitorX + (monitorWidth - windowWidth) / 2;
+        const int windowPosY = monitorY + (monitorHeight - windowHeight) / 2;
+
+        glfwSetWindowPos(m_window, windowPosX, windowPosY);
     }
 
     void Window::setTitle(const std::string& title) {

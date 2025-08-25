@@ -19,7 +19,7 @@ namespace Kita {
         }
     }
 
-    const std::pair<std::string, std::string>& Shader::getPath() const {
+    const std::pair<std::filesystem::path, std::filesystem::path>& Shader::getPath() const {
         return m_path;
     }
 } // Kita
