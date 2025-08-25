@@ -7,12 +7,12 @@ void onSomething(Kita::KeyPressed& event) {
 }
 
 void Sandbox::onInit() {
-    //auto entity = std::make_shared<Kita::Entity>(Kita::AssetImporter::importModel("backpack/backpack.obj"));
-    //m_scene.addEntity(entity);
-    //std::shared_ptr<Kita::Entity> entity2 = entity->clone();
-    //entity2->getTransformation().translate({0.0f, 5.0f, 0.0f});
-    //m_scene.addEntity(entity2);
-    //Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
+    auto entity = std::make_shared<Kita::Entity>(Kita::AssetImporter::importModel("backpack/backpack.obj"));
+    m_scene.addEntity(entity);
+    std::shared_ptr<Kita::Entity> entity2 = entity->clone();
+    entity2->getTransformation().translate({0.0f, 5.0f, 0.0f});
+    m_scene.addEntity(entity2);
+    Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
 }
 
 void Sandbox::onUpdate() {

@@ -7,7 +7,7 @@
 - [x] Properly free OpenGL resources
 - [x] Camera
 - [x] Uniform buffer
-- [ ] Model loading
+- [x] Model loading
 - [ ] Basic lighting
 - [ ] Skybox
 - [ ] Framebuffer
