@@ -8,7 +8,7 @@
 - [x] Camera
 - [x] Uniform buffer
 - [x] Model loading
-- [ ] Basic lighting
+- [x] Basic lighting
 - [ ] Skybox
 - [ ] Framebuffer
 - [ ] Editor
