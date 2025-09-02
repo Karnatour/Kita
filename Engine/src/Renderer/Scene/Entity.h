@@ -8,8 +8,10 @@ namespace Kita {
     public:
         Entity();
         Entity(const Entity& original);
-        Entity(const std::shared_ptr<Model>& model);
+        explicit Entity(const std::shared_ptr<Model>& model);
         Entity(const std::shared_ptr<Model>& model, const Transformation& transformation);
+        virtual ~Entity() = default;
+
         void setModel(const std::shared_ptr<Model>& model);
         void setTransformation(const Transformation& transformation);
 

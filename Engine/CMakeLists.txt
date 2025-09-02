@@ -101,6 +101,12 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/Entity.h
         src/Renderer/Scene/Transformation.cpp
         src/Renderer/Scene/Transformation.h
+        src/Renderer/Scene/Entities/LightEntity.cpp
+        src/Renderer/Scene/Entities/LightEntity.h
+        src/Renderer/Buffers/ShaderStorageBuffer.cpp
+        src/Renderer/Buffers/ShaderStorageBuffer.h
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.h
 )
 
 

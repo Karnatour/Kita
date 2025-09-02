@@ -1,25 +1,24 @@
 #pragma once
 #include "Event.h"
 #include "../Input/InputKeys.h"
-#include <tuple>
 
 namespace Kita {
     class KITAENGINE_API MousePressed final : public Event {
     public:
-        MousePressed(MouseButton button, int modifiersField);
-        MouseButton getButton() const;
+        MousePressed(InputKeys::MouseButton button, int modifiersField);
+        InputKeys::MouseButton getButton() const;
         int getModifiersField() const;
     private:
-        MouseButton m_key;
+        InputKeys::MouseButton m_key;
         int m_modifiersField;
     };
 
     class KITAENGINE_API MouseReleased final : public Event {
     public:
-        explicit MouseReleased(MouseButton button);
-        MouseButton getButton() const;
+        explicit MouseReleased(InputKeys::MouseButton button);
+        InputKeys::MouseButton getButton() const;
     private:
-        MouseButton m_key;
+        InputKeys::MouseButton m_key;
     };
 
     class KITAENGINE_API MouseMoved final : public Event {

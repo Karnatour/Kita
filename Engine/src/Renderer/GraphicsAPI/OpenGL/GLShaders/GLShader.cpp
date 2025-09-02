@@ -34,6 +34,16 @@ namespace Kita {
 
         glShaderSource(shader, 1, &sourcePtr, nullptr);
         glCompileShader(shader);
+
+        GLint success;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            GLint logLength = 0;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+            std::string log(logLength, ' ');
+            glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+            KITA_ENGINE_ERROR("Shader compilation failed ({}): {}", shaderPath.string(), log);
+        }
     }
 
     void GLShader::compileGLProgram(const GLuint vertexShader, const GLuint fragmentShader) {
@@ -41,6 +51,16 @@ namespace Kita {
         glAttachShader(m_program, vertexShader);
         glAttachShader(m_program, fragmentShader);
         glLinkProgram(m_program);
+
+        GLint success;
+        glGetProgramiv(m_program, GL_LINK_STATUS, &success);
+        if (!success) {
+            GLint logLength = 0;
+            glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &logLength);
+            std::string log(logLength, ' ');
+            glGetProgramInfoLog(m_program, logLength, nullptr, log.data());
+            KITA_ENGINE_ERROR("Shader program linking failed: {}", log);
+        }
     }
 
     void GLShader::setUniformBool(const std::string& location, const bool value) {

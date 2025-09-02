@@ -16,7 +16,7 @@ namespace Kita {
         }
     }
 
-    bool Input::isKeyPressed(const KeyboardKey key, std::vector<Modifiers> modifiers) {
+    bool Input::isKeyPressed(const InputKeys::KeyboardKey key, std::vector<InputKeys::Modifiers> modifiers) {
         std::ranges::sort(modifiers);
 
         for (auto [m_key, m_keyboardModifiers] : m_keyboardPressedKeys) {
@@ -40,7 +40,7 @@ namespace Kita {
         }
     }
 
-    bool Input::isMousePressed(const MouseButton button, std::vector<Modifiers> modifiers) {
+    bool Input::isMousePressed(const InputKeys::MouseButton button, std::vector<InputKeys::Modifiers> modifiers) {
         std::ranges::sort(modifiers);
 
         for (auto [m_button, m_mouseModifiers] : m_mousePressedKeys) {
@@ -88,25 +88,25 @@ namespace Kita {
         m_mouseScroll.scrolled = false;
     }
 
-    std::vector<Modifiers> Input::getSortedModifiers(const int modifiersField) {
-        std::vector<Modifiers> keyboardModifiers;
+    std::vector<InputKeys::Modifiers> Input::getSortedModifiers(const int modifiersField) {
+        std::vector<InputKeys::Modifiers> keyboardModifiers;
         if (modifiersField & 0x1) {
-            keyboardModifiers.push_back(Modifiers::MODIFIER_SHIFT);
+            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_SHIFT);
         }
         if (modifiersField & 0x2) {
-            keyboardModifiers.push_back(Modifiers::MODIFIER_CTRL);
+            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_CTRL);
         }
         if (modifiersField & 0x4) {
-            keyboardModifiers.push_back(Modifiers::MODIFIER_ALT);
+            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_ALT);
         }
         if (modifiersField & 0x8) {
-            keyboardModifiers.push_back(Modifiers::MODIFIER_SUPER);
+            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_SUPER);
         }
         if (modifiersField & 0x10) {
-            keyboardModifiers.push_back(Modifiers::MODIFIER_CAPS_LOCK);
+            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_CAPS_LOCK);
         }
         if (modifiersField & 0x20) {
-            keyboardModifiers.push_back(Modifiers::MODIFIER_NUM_LOCK);
+            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_NUM_LOCK);
         }
         std::ranges::sort(keyboardModifiers);
         return keyboardModifiers;

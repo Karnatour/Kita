@@ -1,8 +1,6 @@
 #pragma once
 
 #include "KitaEngine/Kita.h"
-#include <vector>
-#include <memory>
 
 class Sandbox final : public Kita::IGameInstance {
 public:

@@ -14,5 +14,6 @@ namespace Kita {
         virtual void clearColor(float red, float green, float blue, float alpha) = 0;
         static std::unique_ptr<RendererAPI> createPtr(RenderingAPI api);
         virtual void setupDebug() = 0;
+        virtual void enableDepthTest() = 0;
     };
 } // Kita

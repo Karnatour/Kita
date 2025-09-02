@@ -1,7 +1,7 @@
 #include "../../../kitapch.h"
 #include "GLRendererAPI.h"
 
-#include <complex.h>
+#include <complex>
 #include <glad/glad.h>
 
 namespace Kita {
@@ -17,18 +17,20 @@ namespace Kita {
     }
 
     void GLRendererAPI::render(const ::std::shared_ptr<Entity>& entity) {
-        const auto& model = entity->getModel();
-        for (const auto& mesh : model->getMeshes()) {
-            setMaterial(mesh->getMaterialIndex(), model->getMaterials(), entity->getTransformation());
+        if (entity->getModel() != nullptr) {
+            const auto& model = entity->getModel();
+            for (const auto& mesh : model->getMeshes()) {
+                setMaterial(mesh->getMaterialIndex(), model->getMaterials(), entity->getTransformation());
 
-            mesh->getVertexArray()->bind();
-            const auto& vertexArray = mesh->getVertexArray();
+                mesh->getVertexArray()->bind();
+                const auto& vertexArray = mesh->getVertexArray();
 
-            if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
-                glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
-            }
-            else {
-                glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
+                if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
+                    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
+                }
+                else {
+                    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
+                }
             }
         }
     }
@@ -38,21 +40,41 @@ namespace Kita {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    void GLRendererAPI::enableDepthTest() {
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    void GLRendererAPI::enableTextureInShader(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture) {
+        switch (texture->getType()) {
+            case Texture::TextureType::DIFFUSE:
+                texture->bind(0);
+                shader->setUniformInt("diffuseTex", 0);
+                shader->setUniformBool("hasDiffuseTex", true);
+                break;
+            case Texture::TextureType::SPECULAR:
+                texture->bind(1);
+                shader->setUniformInt("specularTex", 1);
+                shader->setUniformBool("hasSpecularTex", true);
+                break;
+            default:
+                KITA_ENGINE_WARN("Texture type is NONE or Unknown, unable to bind into shader", texture->getPath().string());
+                break;
+        }
+    }
+
     void GLRendererAPI::setMaterial(const int materialIndex, const std::vector<std::shared_ptr<Material>>& materials, const Transformation& transformation) {
         if (materialIndex >= 0 && materialIndex < materials.size()) {
             const auto& material = materials[materialIndex];
 
             material->getShader()->bind();
+            material->getShader()->setUniformBool("hasDiffuseTex", false);
+            material->getShader()->setUniformBool("hasSpecularTex", false);
 
-            const bool hasTex = !material->getTextures().empty();
-            material->getShader()->setUniformBool("hasTexture", hasTex);
-
-            if (hasTex) {
-                material->getTextures().at(0)->bind(0);
-                material->getShader()->setUniformInt("texture1", 0);
+            for (const auto& texture : material->getTextures()) {
+                enableTextureInShader(material->getShader(), texture);
             }
-
             material->getShader()->setUniformMat4("model", transformation.getModelMatrix());
+            material->getPhongUniformBuffer()->bind(1);
         }
     }
 

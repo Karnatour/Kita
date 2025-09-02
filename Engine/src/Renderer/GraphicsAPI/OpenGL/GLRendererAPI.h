@@ -9,8 +9,10 @@ namespace Kita {
         void setViewport(int width, int height) override;
         void render(const std::shared_ptr<Entity>& entity) override;
         void clearColor(float red, float green, float blue, float alpha) override;
+        void enableDepthTest() override;
 
     private:
+        void enableTextureInShader(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture);
         void setMaterial(int materialIndex, const std::vector<std::shared_ptr<Material>>& materials, const Transformation& transformation);
         static void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
     };

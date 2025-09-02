@@ -7,13 +7,13 @@
 
 namespace Kita {
     struct KeyWithModifier {
-        KeyboardKey key;
-        std::vector<Modifiers> keyboardModifiers;
+        InputKeys::KeyboardKey key;
+        std::vector<InputKeys::Modifiers> keyboardModifiers;
     };
 
     struct MouseWithModifier {
-        MouseButton button;
-        std::vector<Modifiers> mouseModifiers;
+        InputKeys::MouseButton button;
+        std::vector<InputKeys::Modifiers> mouseModifiers;
     };
 
     struct MouseMovement {
@@ -31,8 +31,8 @@ namespace Kita {
 
     class KITAENGINE_API Input {
     public:
-        static bool isKeyPressed(KeyboardKey key, std::vector<Modifiers> modifiers = {});
-        static bool isMousePressed(MouseButton button, std::vector<Modifiers> modifiers = {});
+        static bool isKeyPressed(InputKeys::KeyboardKey key, std::vector<InputKeys::Modifiers> modifiers = {});
+        static bool isMousePressed(InputKeys::MouseButton button, std::vector<InputKeys::Modifiers> modifiers = {});
 
         static bool wasMouseMoved();
         static MouseMovement getMousePos();
@@ -51,7 +51,7 @@ namespace Kita {
         static void updateMouseMovement(MouseMoved& event);
         static void updateMouseScroll(MouseScrolled& event);
 
-        static std::vector<Modifiers> getSortedModifiers(int modifiersField);
+        static std::vector<InputKeys::Modifiers> getSortedModifiers(int modifiersField);
 
         static inline std::vector<KeyWithModifier> m_keyboardPressedKeys;
         static inline std::vector<MouseWithModifier> m_mousePressedKeys;

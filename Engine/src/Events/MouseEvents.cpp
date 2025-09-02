@@ -2,10 +2,10 @@
 #include "MouseEvents.h"
 
 namespace Kita {
-    MousePressed::MousePressed(const MouseButton button, const int modifiersField) : m_key(button), m_modifiersField(modifiersField) {
+    MousePressed::MousePressed(const InputKeys::MouseButton button, const int modifiersField) : m_key(button), m_modifiersField(modifiersField) {
     }
 
-    MouseButton MousePressed::getButton() const {
+    InputKeys::MouseButton MousePressed::getButton() const {
         return m_key;
     }
 
@@ -34,10 +34,10 @@ namespace Kita {
         return std::make_pair(m_x, m_y);
     }
 
-    MouseReleased::MouseReleased(const MouseButton button) : m_key(button) {
+    MouseReleased::MouseReleased(const InputKeys::MouseButton button) : m_key(button) {
     }
 
-    MouseButton MouseReleased::getButton() const {
+    InputKeys::MouseButton MouseReleased::getButton() const {
         return m_key;
     }
 } // Kita

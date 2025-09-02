@@ -54,8 +54,7 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
-        //TODO: Move to rendererAPI
-        glEnable(GL_DEPTH_TEST);
+        m_renderer->getRendererAPI().enableDepthTest();
         while (m_isRunning) {
             update();
             m_game->onUpdate();

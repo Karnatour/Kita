@@ -4,9 +4,11 @@
 #include "../../Core/DllTemplate.h"
 
 namespace Kita {
-    struct CameraMatrices {
+    struct CameraProperties {
         glm::mat4 view;
         glm::mat4 projection;
+        glm::vec4 position;
+        glm::vec4 front;
     };
 
     class KITAENGINE_API Camera {
@@ -15,10 +17,11 @@ namespace Kita {
         Camera(glm::vec3 position, glm::vec3 up);
         Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float movementSpeed, float sensitivity, float zoom);
         glm::mat4 getViewMatrix() const;
-        float getZoom();
-        glm::vec3 getPosition();
+        float getZoom() const;
+        glm::vec3 getPosition() const;
+        glm::vec3 getFront() const;
         void update();
-        CameraMatrices& getCameraMatrices();
+        CameraProperties& getCameraData();
 
     private:
         virtual void updatePosition();
@@ -39,6 +42,6 @@ namespace Kita {
         float m_sensitivity;
         float m_zoom;
 
-        CameraMatrices m_matrices;
+        CameraProperties m_cameraData;
     };
 } // Kita

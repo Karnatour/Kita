@@ -52,6 +52,7 @@ namespace Kita {
             float specular[3];
             float shininess;
             char texturePaths[8][64];
+            unsigned char textureTypes[64];
             char shaderPaths[2][64]; //vertex, fragment
         };
 
@@ -74,6 +75,6 @@ namespace Kita {
         static void writeShader(MaterialHeader& materialHeader, const std::shared_ptr<Shader>& shader);
 
         static void vec3ToFloat(const glm::vec3& vec, float (&arr)[3]);
-        static void FloatToVec3(glm::vec3& vec, const float (&arr)[3]);
+        static void FloatToVec3(glm::vec4& vec, const float (&arr)[3]);
     };
 } // Kita

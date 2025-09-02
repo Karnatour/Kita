@@ -6,8 +6,8 @@
 
 namespace Kita {
     void keyboardKeyCallbackFun(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        KeyPressed pressedEvent(convertGLFWToKitaKey(key), mods);
-        KeyReleased releasedEvent(convertGLFWToKitaKey(key));
+        KeyPressed pressedEvent(InputKeys::convertGLFWToKitaKey(key), mods);
+        KeyReleased releasedEvent(InputKeys::convertGLFWToKitaKey(key));
         switch (action) {
             case GLFW_PRESS:
                 EventManager::triggerEvent(pressedEvent);

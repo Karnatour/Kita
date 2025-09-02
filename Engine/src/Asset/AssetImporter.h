@@ -14,8 +14,9 @@ namespace Kita {
     private:
         static void processNode(const aiScene* aiScene, const aiNode* aiNode, const std::shared_ptr<Model>& model);
         static Vertex importVertex(const aiMesh& aiMesh, unsigned int index);
+        static Texture::TextureType assimpToKitaTextureType(const aiTextureType& ai_texture);
         static void importTextures(aiTextureType textureType, const aiMaterial& aiMaterial, const std::shared_ptr<Material>& material, const std::filesystem::path& path);
         static void moveTexture(const std::filesystem::path& texturePath);
-        static void importPhongProperies(const aiMaterial& aiMaterial, PhongProperties& phongProperties);
+        static void importPhongProperies(const aiMaterial& aiMaterial, const std::shared_ptr<Material>& material);
     };
 } // Kita

@@ -2,11 +2,11 @@
 #include "TextureManager.h"
 
 namespace Kita {
-    void TextureManager::addTexture(const std::filesystem::path& texturePath) {
+    void TextureManager::addTexture(const std::filesystem::path& texturePath, const Texture::TextureType& textureType) {
         auto [iterator,inserted] = m_textureMap.try_emplace(texturePath, Texture::createPtr());
 
         if (inserted) {
-            if (iterator->second->createTexture(texturePath)) {
+            if (iterator->second->createTexture(texturePath, textureType)) {
                 KITA_ENGINE_DEBUG("Added texture to TextureManager, {}", texturePath.string());
             }
             else {

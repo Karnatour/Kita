@@ -12,8 +12,9 @@ namespace Kita {
         glDeleteTextures(1, &m_texture);
     }
 
-    bool GLTexture::createTexture(const std::filesystem::path& texturePath) {
+    bool GLTexture::createTexture(const std::filesystem::path& texturePath, const TextureType& textureType) {
         m_path = texturePath;
+        m_textureType = textureType;
         stbi_set_flip_vertically_on_load(true);
         unsigned char* image = stbi_load((TextureManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
         if (image) {

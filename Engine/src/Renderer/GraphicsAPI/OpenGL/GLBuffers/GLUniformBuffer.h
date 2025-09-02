@@ -3,7 +3,7 @@
 
 namespace Kita {
 
-class GLUniformBuffer : public UniformBuffer{
+class GLUniformBuffer final : public UniformBuffer{
 public:
     ~GLUniformBuffer() override;
     void bind(unsigned int position) override;

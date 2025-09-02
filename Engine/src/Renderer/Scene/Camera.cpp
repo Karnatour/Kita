@@ -15,7 +15,7 @@ namespace Kita {
         m_movementSpeed = 10.0f;
         m_sensitivity = 0.1f;
         m_zoom = 45.0f;
-        updateCamera();
+        Camera::updateCamera();
     }
 
     Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch, float movementSpeed, float sensitivity, float zoom) {
@@ -27,14 +27,14 @@ namespace Kita {
         m_movementSpeed = movementSpeed;
         m_sensitivity = sensitivity;
         m_zoom = zoom;
-        updateCamera();
+        Camera::updateCamera();
     }
 
     glm::mat4 Camera::getViewMatrix() const {
         return glm::lookAt(m_position, m_position + m_front, m_up);
     }
 
-    float Camera::getZoom() {
+    float Camera::getZoom() const {
         return m_zoom;
     }
 
@@ -50,23 +50,34 @@ namespace Kita {
     }
 
     void Camera::updatePosition() {
-        const float velocity = m_movementSpeed * static_cast<float>(Time::getDeltaTime());
-        if (Input::isKeyPressed(KeyboardKey::KEY_W)) {
-            m_position = m_position + m_front * velocity;
+        glm::vec3 direction(0.0f);
+
+        if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_W)) {
+            direction += m_front;
         }
-        if (Input::isKeyPressed(KeyboardKey::KEY_A)) {
-            m_position = m_position - m_right * velocity;
+        if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_A)) {
+            direction -= m_right;
         }
-        if (Input::isKeyPressed(KeyboardKey::KEY_S)) {
-            m_position = m_position - m_front * velocity;
+        if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_S)) {
+            direction -= m_front;
         }
-        if (Input::isKeyPressed(KeyboardKey::KEY_D)) {
-            m_position = m_position + m_right * velocity;
+        if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_D)) {
+            direction += m_right;
+        }
+
+        if (glm::length(direction) > 0.0f) {
+            direction = glm::normalize(direction);
+            const float velocity = m_movementSpeed * static_cast<float>(Time::getDeltaTime());
+            m_position += direction * velocity;
         }
     }
 
-    glm::vec3 Camera::getPosition() {
+    glm::vec3 Camera::getPosition() const {
         return m_position;
+    }
+
+    glm::vec3 Camera::getFront() const {
+        return m_front;
     }
 
     void Camera::update() {
@@ -75,23 +86,23 @@ namespace Kita {
         updateZoom();
     }
 
-    CameraMatrices& Camera::getCameraMatrices() {
-        return m_matrices;
+    CameraProperties& Camera::getCameraData() {
+        return m_cameraData;
     }
 
     void Camera::updateMovement() {
         auto& engineWindow = Engine::getEngine()->getWindow();
 
-        if (Input::isMousePressed(MouseButton::MBUTTON_RIGHT)) {
+        if (Input::isMousePressed(InputKeys::MouseButton::MBUTTON_RIGHT)) {
             engineWindow.setCursorMode(CursorMode::DISABLED);
 
             if (Input::wasMouseMoved()) {
-                auto offset = Input::getMousePos().mouseOffset;
-                offset.first *= m_sensitivity;
-                offset.second *= m_sensitivity;
+                auto [xOffset, yOffset] = Input::getMousePos().mouseOffset;
+                xOffset *= m_sensitivity;
+                yOffset *= m_sensitivity;
 
-                m_yaw += static_cast<float>(offset.first);
-                m_pitch -= static_cast<float>(offset.second);
+                m_yaw += static_cast<float>(xOffset);
+                m_pitch -= static_cast<float>(yOffset);
 
                 m_pitch = std::clamp(m_pitch, -89.0f, 89.0f);
 

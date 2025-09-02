@@ -35,6 +35,11 @@ namespace Kita {
         glEnableVertexArrayAttrib(m_vao, 2);
         glVertexArrayAttribFormat(m_vao, 2, 2,GL_FLOAT,GL_FALSE,offsetof(Vertex, texture));
         glVertexArrayAttribBinding(m_vao, 2, 0);
+
+        //Normal
+        glEnableVertexArrayAttrib(m_vao, 3);
+        glVertexArrayAttribFormat(m_vao, 3, 3,GL_FLOAT,GL_FALSE,offsetof(Vertex, normal));
+        glVertexArrayAttribBinding(m_vao, 3, 0);
     }
 
     void GLVertexArray::bind() {

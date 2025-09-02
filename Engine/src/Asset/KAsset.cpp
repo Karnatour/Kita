@@ -134,15 +134,16 @@ namespace Kita {
         auto material = std::make_shared<Material>();
         for (int j = 0; j < materialHeader.textureCount; ++j) {
             auto& textureManager = Engine::getEngine()->getRenderer().getTextureManager();
-            textureManager.addTexture(materialHeader.texturePaths[j]);
+            textureManager.addTexture(materialHeader.texturePaths[j], static_cast<Texture::TextureType>(materialHeader.textureTypes[j]));
             material->addTexture(textureManager.getTexture(materialHeader.texturePaths[j]));
         }
 
-        auto& [ambient, diffuse, specular, shininess] = material->getPhongProperties();
-        FloatToVec3(ambient, materialHeader.ambient);
-        FloatToVec3(diffuse, materialHeader.diffuse);
-        FloatToVec3(specular, materialHeader.specular);
-        shininess = materialHeader.shininess;
+        PhongProperties phongProperties;
+        FloatToVec3(phongProperties.ambient, materialHeader.ambient);
+        FloatToVec3(phongProperties.diffuse, materialHeader.diffuse);
+        FloatToVec3(phongProperties.specular, materialHeader.specular);
+        phongProperties.shininess = materialHeader.shininess;
+        material->setPhongProperties(phongProperties);
 
         auto& shaderManager = Engine::getEngine()->getRenderer().getShaderManager();
         shaderManager.addShader(materialHeader.shaderPaths[0], materialHeader.shaderPaths[1]);
@@ -196,11 +197,11 @@ namespace Kita {
             MaterialHeader materialHeader{};
             materialHeader.textureCount = material->getTextures().size();
 
-            auto [ambient, diffuse, specular, shininess] = material->getPhongProperties();
-            vec3ToFloat(ambient, materialHeader.ambient);
-            vec3ToFloat(diffuse, materialHeader.diffuse);
-            vec3ToFloat(specular, materialHeader.specular);
-            materialHeader.shininess = shininess;
+            PhongProperties phongProperties = material->getPhongProperties();
+            vec3ToFloat(phongProperties.ambient, materialHeader.ambient);
+            vec3ToFloat(phongProperties.diffuse, materialHeader.diffuse);
+            vec3ToFloat(phongProperties.specular, materialHeader.specular);
+            materialHeader.shininess = phongProperties.shininess;
 
             writeTextures(materialHeader, material->getTextures());
 
@@ -221,6 +222,7 @@ namespace Kita {
                 throw std::runtime_error("TexturePath is larger than 64 causing overflow " + textures.at(i)->getPath().string());
             }
             strcpy_s(materialHeader.texturePaths[i], textures.at(i)->getPath().string().c_str());
+            materialHeader.textureTypes[i] = static_cast<unsigned char>(textures.at(i)->getType());
         }
     }
 
@@ -245,7 +247,8 @@ namespace Kita {
         arr[2] = vec.z;
     }
 
-    void KAsset::FloatToVec3(glm::vec3& vec, const float (&arr)[3]) {
+    //Accept vec4 because of std140 layout
+    void KAsset::FloatToVec3(glm::vec4& vec, const float (&arr)[3]) {
         vec.x = arr[0];
         vec.y = arr[1];
         vec.z = arr[2];

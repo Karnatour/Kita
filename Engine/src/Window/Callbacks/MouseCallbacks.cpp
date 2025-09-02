@@ -5,8 +5,8 @@
 
 namespace Kita {
     void mouseButtonCallbackFun(GLFWwindow* window, int button, int action, int mods) {
-        MousePressed pressedEvent(convertGLFWToKitaButton(button), mods);
-        MouseReleased releasedEvent(convertGLFWToKitaButton(button));
+        MousePressed pressedEvent(InputKeys::convertGLFWToKitaButton(button), mods);
+        MouseReleased releasedEvent(InputKeys::convertGLFWToKitaButton(button));
         switch (action) {
             case GLFW_PRESS:
                 EventManager::triggerEvent(pressedEvent);

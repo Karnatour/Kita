@@ -18,6 +18,7 @@
 #include "../src/Renderer/Buffers/VertexArray.h"
 #include "../src/Renderer/Buffers/VertexBuffer.h"
 #include "../src/Renderer/Buffers/UniformBuffer.h"
+#include "../src/Renderer/Buffers/ShaderStorageBuffer.h"
 #include "../src/Renderer/Shaders/Shader.h"
 #include "../src/Renderer/Shaders/ShaderManager.h"
 #include "../src/Renderer/Structs/GeometryHelper.h"
@@ -34,6 +35,7 @@
 #include "../src/Renderer/Scene/Primitives/Mesh.h"
 #include "../src/Renderer/Scene/Primitives/Material.h"
 #include "../src/Renderer/Scene/Primitives/Model.h"
+#include "../src/Renderer/Scene/Entities/LightEntity.h"
 
 #include "../src/Window/Window.h"
 

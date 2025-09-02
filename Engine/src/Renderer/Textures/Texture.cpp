@@ -35,4 +35,7 @@ namespace Kita {
         return m_path;
     }
 
+    Texture::TextureType Texture::getType() const {
+        return m_textureType;
+    }
 } // Kita

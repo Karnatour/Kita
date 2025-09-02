@@ -36,7 +36,7 @@ namespace Kita {
             importTextures(aiTextureType_DIFFUSE, *aiMaterial, material, path);
             importTextures(aiTextureType_SPECULAR, *aiMaterial, material, path);
 
-            importPhongProperies(*aiMaterial, material->getPhongProperties());
+            importPhongProperies(*aiMaterial, material);
 
             model->addMaterial(material);
         }
@@ -94,7 +94,23 @@ namespace Kita {
             vertex.color.b = aiMesh.mColors[0][index].b;
             vertex.color.a = aiMesh.mColors[0][index].a;
         }
+        if (aiMesh.HasNormals()) {
+            vertex.normal.x = aiMesh.mNormals[index].x;
+            vertex.normal.y = aiMesh.mNormals[index].y;
+            vertex.normal.z = aiMesh.mNormals[index].z;
+        }
         return vertex;
+    }
+
+    Texture::TextureType AssetImporter::assimpToKitaTextureType(const aiTextureType& ai_texture) {
+        switch (ai_texture) {
+            case aiTextureType_DIFFUSE:
+                return Texture::TextureType::DIFFUSE;
+            case aiTextureType_SPECULAR:
+                return Texture::TextureType::SPECULAR;
+            default:
+                return Texture::TextureType::NONE;
+        }
     }
 
     void AssetImporter::importTextures(const aiTextureType textureType, const aiMaterial& aiMaterial, const std::shared_ptr<Material>& material, const std::filesystem::path& path) {
@@ -105,7 +121,7 @@ namespace Kita {
             texturePath.replace_filename(aiStr.C_Str());
             moveTexture(texturePath);
             auto& textureManager = Engine::getEngine()->getRenderer().getTextureManager();
-            textureManager.addTexture(texturePath);
+            textureManager.addTexture(texturePath, assimpToKitaTextureType(textureType));
             material->addTexture(textureManager.getTexture(texturePath.string()));
         }
     }
@@ -117,23 +133,26 @@ namespace Kita {
         }
     }
 
-    void AssetImporter::importPhongProperies(const aiMaterial& aiMaterial, PhongProperties& phongProperties) {
+    void AssetImporter::importPhongProperies(const aiMaterial& aiMaterial, const std::shared_ptr<Material>& material) {
         aiColor3D aiColor;
-        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, aiColor)) {
-            phongProperties.diffuse = {aiColor.r, aiColor.g, aiColor.b};
+        PhongProperties phongProperties;
+        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_AMBIENT, aiColor)) {
+            phongProperties.ambient = {aiColor.r, aiColor.g, aiColor.b, 1.0f};
         }
 
-        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_AMBIENT, aiColor)) {
-            phongProperties.ambient = {aiColor.r, aiColor.g, aiColor.b};
+        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, aiColor)) {
+            phongProperties.diffuse = {aiColor.r, aiColor.g, aiColor.b, 1.0f};
         }
 
         if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_SPECULAR, aiColor)) {
-            phongProperties.specular = {aiColor.r, aiColor.g, aiColor.b};
+            phongProperties.specular = {aiColor.r, aiColor.g, aiColor.b, 1.0f};
         }
 
         float shininnes;
         if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_SHININESS, shininnes)) {
             phongProperties.shininess = shininnes;
         }
+
+        material->setPhongProperties(phongProperties);
     }
 } // Kita
