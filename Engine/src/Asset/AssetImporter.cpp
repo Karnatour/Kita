@@ -108,6 +108,8 @@ namespace Kita {
                 return Texture::TextureType::DIFFUSE;
             case aiTextureType_SPECULAR:
                 return Texture::TextureType::SPECULAR;
+            case aiTextureType_NORMALS:
+
             default:
                 return Texture::TextureType::NONE;
         }

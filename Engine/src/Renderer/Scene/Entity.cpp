@@ -18,12 +18,24 @@ namespace Kita {
         m_id = ++m_idCounter;
     }
 
+    bool Entity::onRender(RendererAPI& rendererApi) {
+        return false;
+    }
+
     void Entity::setModel(const std::shared_ptr<Model>& model) {
         m_model = model;
     }
 
     void Entity::setTransformation(const Transformation& transformation) {
         m_transformation = transformation;
+    }
+
+    bool Entity::shouldRenderOnce() const {
+        return m_renderOnce;
+    }
+
+    bool Entity::isFirstFrame() const {
+        return m_firstFrame;
     }
 
     std::shared_ptr<Model>& Entity::getModel() {
@@ -40,5 +52,9 @@ namespace Kita {
 
     std::shared_ptr<Entity> Entity::clone() const {
         return std::make_shared<Entity>(*this);
+    }
+
+    void Entity::setFirstFrame(const bool isFirstFrame) {
+        m_firstFrame = isFirstFrame;
     }
 } // Kita

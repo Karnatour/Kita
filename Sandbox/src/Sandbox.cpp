@@ -12,18 +12,17 @@ void onSomething(Kita::KeyPressed& event) {
 }
 
 void Sandbox::onInit() {
-    auto entity = std::make_shared<Kita::Entity>(Kita::AssetImporter::importModel("backpack/backpack.obj", true));
+    auto entity = std::make_shared<Kita::Entity>(Kita::AssetImporter::importModel("Sponza-master/sponza.obj", false));
     m_scene.addEntity(entity);
-    lightEntity = std::make_shared<Kita::LightEntity>(Kita::LightEntity::LightType::SPOT);
+    entity->getTransformation().scale({0.005f,0.005f,0.005f});
     lightEntity2 = std::make_shared<Kita::LightEntity>(Kita::LightEntity::LightType::DIRECTIONAL);
-    m_scene.addEntity(lightEntity);
+    lightEntity2->setDirection({-0.3f, -1.0f, -0.2f, 0.0f});
+    //m_scene.addEntity(lightEntity);
     m_scene.addEntity(lightEntity2);
     Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
 }
 
 void Sandbox::onUpdate() {
-    lightEntity->setDirection(glm::vec4(m_scene.getCamera().getFront(),1.0f));
-    lightEntity->setPosition(glm::vec4(m_scene.getCamera().getPosition(),1.0f));
     m_scene.update();
 }
 

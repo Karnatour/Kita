@@ -19,8 +19,8 @@ namespace Kita {
         }
     }
 
-    size_t VertexBuffer::getVerticiesCount() const {
-        return m_verticiesCount;
+    size_t VertexBuffer::getVerticesCount() const {
+        return m_verticesCount;
     }
 
     std::vector<Vertex>& VertexBuffer::getVertices() {

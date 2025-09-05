@@ -36,6 +36,9 @@
 #include "../src/Renderer/Scene/Primitives/Material.h"
 #include "../src/Renderer/Scene/Primitives/Model.h"
 #include "../src/Renderer/Scene/Entities/LightEntity.h"
+#include "../../src/Renderer/Scene/Entities/SkyboxEntity.h"
+#include "../src/Renderer/Buffers/FrameBuffer.h"
+#include "../src/Renderer/Buffers/RenderBuffer.h"
 
 #include "../src/Window/Window.h"
 

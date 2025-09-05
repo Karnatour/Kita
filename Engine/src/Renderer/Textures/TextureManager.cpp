@@ -6,7 +6,7 @@ namespace Kita {
         auto [iterator,inserted] = m_textureMap.try_emplace(texturePath, Texture::createPtr());
 
         if (inserted) {
-            if (iterator->second->createTexture(texturePath, textureType)) {
+            if (iterator->second->createTexture2D(texturePath, textureType)) {
                 KITA_ENGINE_DEBUG("Added texture to TextureManager, {}", texturePath.string());
             }
             else {

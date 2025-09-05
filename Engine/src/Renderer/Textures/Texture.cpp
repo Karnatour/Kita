@@ -2,7 +2,7 @@
 #include "Texture.h"
 
 #include "../Renderer.h"
-#include "../GraphicsAPI/OpenGL/GLTexture.h"
+#include "../GraphicsAPI/OpenGL/GLTextures/GLTexture.h"
 
 namespace Kita {
     std::shared_ptr<Texture> Texture::createPtr() {

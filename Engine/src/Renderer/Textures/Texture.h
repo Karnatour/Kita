@@ -10,10 +10,13 @@ namespace Kita {
             NONE = 0,
             DIFFUSE = 1,
             SPECULAR = 2,
+            CUBEMAP = 3
         };
 
         virtual ~Texture() = default;
-        virtual bool createTexture(const std::filesystem::path& texturePath, const TextureType& textureType) = 0;
+        virtual bool createTexture2D(const std::filesystem::path& texturePath, const TextureType& textureType) = 0;
+        virtual bool createSkyboxTexture2D(const std::filesystem::path& texturePath) = 0;
+        virtual void createCubemapTexture(const std::pair<int, int>& resolution) = 0;
         virtual void bind(unsigned int position) = 0;
         static std::shared_ptr<Texture> createPtr();
         unsigned int getTexture() const;

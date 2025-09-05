@@ -66,7 +66,7 @@ namespace Kita {
             windowPtr->m_resolution.second = height;
         }
 
-        Engine::getEngine()->getRenderer().getRendererAPI().setViewport(width, height);
+        Engine::getEngine()->getRenderer().getRendererAPI().setViewport(width, height, true);
     }
 
     void Window::setErrorCallbackFun() {

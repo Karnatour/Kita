@@ -23,7 +23,7 @@ namespace Kita {
         void swapBuffers();
         void makeContextCurrent();
 
-        std::pair<int,int> getResolution() const;
+        std::pair<int, int> getResolution() const;
 
         std::string getTitle();
         void setTitle(const std::string& title);
@@ -41,6 +41,6 @@ namespace Kita {
         std::string m_title;
         GLFWwindow* m_window = nullptr;
         CursorMode m_cursorMode = CursorMode::SHOWN;
-        std::pair<int,int> m_resolution;
+        std::pair<int, int> m_resolution;
     };
 } // Kita

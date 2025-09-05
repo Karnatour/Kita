@@ -73,8 +73,8 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.h
         src/Renderer/Textures/Texture.cpp
         src/Renderer/Textures/Texture.h
-        src/Renderer/GraphicsAPI/OpenGL/GLTexture.cpp
-        src/Renderer/GraphicsAPI/OpenGL/GLTexture.h
+        src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.h
         src/Renderer/Textures/TextureManager.cpp
         src/Renderer/Textures/TextureManager.h
         vendor/stb_image/stb_image_init.cpp
@@ -107,6 +107,17 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/ShaderStorageBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.h
+        src/Renderer/Scene/Entities/SkyboxEntity.cpp
+        src/Renderer/Scene/Entities/SkyboxEntity.h
+        src/Renderer/Buffers/FrameBuffer.cpp
+        src/Renderer/Buffers/FrameBuffer.h
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLFrameBuffer.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLFrameBuffer.h
+        src/Renderer/Buffers/RenderBuffer.cpp
+        src/Renderer/Buffers/RenderBuffer.h
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.h
+        src/Renderer/Buffers/BufferType.h
 )
 
 

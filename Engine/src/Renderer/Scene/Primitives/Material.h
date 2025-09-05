@@ -21,6 +21,7 @@ namespace Kita {
 
         const std::vector<std::shared_ptr<Texture>>& getTextures();
         void addTexture(const std::shared_ptr<Texture>& texture);
+        void replaceTexture(std::shared_ptr<Texture>& texture, size_t position);
 
         const PhongProperties& getPhongProperties() const;
         void setPhongProperties(const PhongProperties& phongProperties);

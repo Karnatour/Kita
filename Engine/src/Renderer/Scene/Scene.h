@@ -8,6 +8,7 @@
 #include "../Buffers/ShaderStorageBuffer.h"
 #include "../Buffers/UniformBuffer.h"
 #include "Entities/LightEntity.h"
+#include "Entities/SkyboxEntity.h"
 
 namespace Kita {
     class KITAENGINE_API Scene {
@@ -24,6 +25,7 @@ namespace Kita {
         std::vector<std::byte> buildLightsBuffer() const;
         void updateLights() const;
         void addLight(LightEntity::LightProperties& lightProperties);
+
         std::unordered_map<unsigned int, std::shared_ptr<Entity>> m_entities{};
 
         Camera m_camera;
@@ -32,5 +34,6 @@ namespace Kita {
         LightEntity::Lights m_lights;
         std::shared_ptr<ShaderStorageBuffer> m_lightsShaderStorageBuffer = ShaderStorageBuffer::createPtr();
 
+        std::shared_ptr<SkyboxEntity> m_skyboxEntity;
     };
 } // Kita

@@ -35,6 +35,10 @@ namespace Kita {
         m_textures.push_back(texture);
     }
 
+    void Material::replaceTexture(std::shared_ptr<Texture>& texture, const size_t position) {
+        m_textures.at(position).swap(texture);
+    }
+
     const PhongProperties& Material::getPhongProperties() const {
         return m_phongProperties;
     }

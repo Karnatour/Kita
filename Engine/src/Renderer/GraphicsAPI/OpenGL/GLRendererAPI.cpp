@@ -1,5 +1,6 @@
 #include "../../../kitapch.h"
 #include "GLRendererAPI.h"
+#include "../../Scene/Entity.h"
 
 #include <complex>
 #include <glad/glad.h>
@@ -12,11 +13,23 @@ namespace Kita {
         KITA_ENGINE_DEBUG("OpenGL Debug callback funtion is set");
     }
 
-    void GLRendererAPI::setViewport(const int width, const int height) {
+    void GLRendererAPI::setViewport(const int width, const int height, const bool rewriteStoredPair) {
+        if (rewriteStoredPair) {
+            m_viewport = std::make_pair(width, height);
+        }
         glViewport(0, 0, width, height);
     }
 
-    void GLRendererAPI::render(const ::std::shared_ptr<Entity>& entity) {
+    void GLRendererAPI::restoreViewport() {
+        glViewport(0, 0, m_viewport.first, m_viewport.second);
+    }
+
+    void GLRendererAPI::render(const std::shared_ptr<Entity>& entity) {
+        if (entity->onRender(*this)) {
+            entity->setFirstFrame(false);
+            return;
+        }
+        //glEnable(GL_FRAMEBUFFER_SRGB);
         if (entity->getModel() != nullptr) {
             const auto& model = entity->getModel();
             for (const auto& mesh : model->getMeshes()) {
@@ -26,13 +39,14 @@ namespace Kita {
                 const auto& vertexArray = mesh->getVertexArray();
 
                 if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
-                    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticiesCount()));
+                    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticesCount()));
                 }
                 else {
                     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
                 }
             }
         }
+        entity->setFirstFrame(false);
     }
 
     void GLRendererAPI::clearColor(const float red, const float green, const float blue, const float alpha) {
@@ -42,6 +56,10 @@ namespace Kita {
 
     void GLRendererAPI::enableDepthTest() {
         glEnable(GL_DEPTH_TEST);
+    }
+
+    std::pair<int, int> GLRendererAPI::getViewport() const {
+        return m_viewport;
     }
 
     void GLRendererAPI::enableTextureInShader(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture) {
@@ -55,6 +73,10 @@ namespace Kita {
                 texture->bind(1);
                 shader->setUniformInt("specularTex", 1);
                 shader->setUniformBool("hasSpecularTex", true);
+                break;
+            case Texture::TextureType::CUBEMAP:
+                texture->bind(3);
+                shader->setUniformInt("cubemapTex",3);
                 break;
             default:
                 KITA_ENGINE_WARN("Texture type is NONE or Unknown, unable to bind into shader", texture->getPath().string());

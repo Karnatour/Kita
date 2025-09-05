@@ -1,0 +1,19 @@
+#pragma once
+#include "BufferType.h"
+#include "../../Core/DllTemplate.h"
+
+namespace Kita {
+    class KITAENGINE_API RenderBuffer {
+    public:
+        virtual ~RenderBuffer() = default;
+        virtual void createBuffer(const std::pair<int, int>& resolution, const BufferType& bufferType) = 0;
+        unsigned int getRBO() const;
+        virtual void bind() = 0;
+        static std::shared_ptr<RenderBuffer> createPtr();
+        std::pair<int, int> getResolution() const;
+
+    protected:
+        unsigned int m_rbo = 0;
+        std::pair<int, int> m_resolution;
+    };
+} // Kita

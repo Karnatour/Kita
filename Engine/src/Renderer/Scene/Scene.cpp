@@ -8,12 +8,18 @@
 namespace Kita {
     Scene::Scene() : m_camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)) {
         m_cameraUniformBuffer->createBuffer(sizeof(m_camera.getCameraData()), &m_camera.getCameraData());
+        m_skyboxEntity = std::make_shared<SkyboxEntity>("defaultSkybox.hdr");
     }
 
-    void Scene::render() const {
-        for (const auto& model : m_entities | std::views::values) {
-            Engine::getEngine()->getRenderer().getRendererAPI().render(model);
+    void Scene::render() const{
+        for (const auto& entity : m_entities | std::views::values) {
+            Engine::getEngine()->getRenderer().getRendererAPI().render(entity);
         }
+        glDepthFunc(GL_LEQUAL);
+        glDepthMask(GL_FALSE);
+        Engine::getEngine()->getRenderer().getRendererAPI().render(m_skyboxEntity);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
     }
 
     void Scene::addEntity(const std::shared_ptr<Entity>& entity) {
@@ -41,14 +47,14 @@ namespace Kita {
     void Scene::updateCameraBuffer() {
         CameraProperties& data = m_camera.getCameraData();
 
-        m_cameraUniformBuffer->bind(0);
-        m_cameraUniformBuffer->update(sizeof(data), &data);
-
         auto [width, height] = Engine::getEngine()->getWindow().getResolution();
-        data.projection = glm::perspective(glm::radians(m_camera.getZoom()), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+        data.projection = glm::perspective(glm::radians(m_camera.getZoom()), static_cast<float>(width) / static_cast<float>(height), 0.5f, 1000.0f);
         data.view = m_camera.getViewMatrix();
         data.position = glm::vec4(m_camera.getPosition(), 1.0f);
         data.front = glm::vec4(m_camera.getFront(), 1.0f);
+
+        m_cameraUniformBuffer->bind(0);
+        m_cameraUniformBuffer->update(sizeof(data), &data);
     }
 
     //Maybe move to LightEntity ????
