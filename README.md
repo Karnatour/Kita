@@ -9,8 +9,8 @@
 - [x] Uniform buffer
 - [x] Model loading
 - [x] Basic lighting
-- [ ] Skybox
-- [ ] Framebuffer
+- [x] Skybox
+- [x] Framebuffer
 - [ ] Editor
 - [ ] Layers
 - [ ] Support multiple textures
