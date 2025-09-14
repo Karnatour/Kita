@@ -9,11 +9,11 @@ layout(std140, binding = 0) uniform Camera {
 
 layout (location = 0) in vec3 aPos;
 
-out vec3 textureCoord;
+out vec3 texCoord;
 
 void main()
 {
-    textureCoord = aPos;
+    texCoord = aPos;
 
     mat4 viewNoTranslation = mat4(mat3(camera.view));
 

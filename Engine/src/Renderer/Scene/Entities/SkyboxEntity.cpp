@@ -13,10 +13,8 @@ namespace Kita {
         m_cubemapTexture->createCubemapTexture(std::make_pair(m_skyboxTexture->getWidth(), m_skyboxTexture->getHeight()));
 
         const auto resolution = Engine::getEngine()->getWindow().getResolution();
-        m_depthRenderBuffer->createBuffer(resolution, BufferType::DEPTH);
-        m_stencilRenderBuffer->createBuffer(resolution, BufferType::STENCIL);
 
-        m_frameBuffer->createBuffer(resolution, 0, m_depthRenderBuffer->getRBO(), m_stencilRenderBuffer->getRBO());
+        m_frameBuffer->createBuffer(resolution, {{BufferType::COLOR, FrameBuffer::AttachmentType::TEXTURE}});
 
         setupCubemapViews();
 
@@ -28,23 +26,28 @@ namespace Kita {
             return false;
         }
 
+        rendererApi.setDepthFunc(DepthFunctions::LEQUAL);
+        rendererApi.disableBufferWrite(BufferType::DEPTH);
+
         rendererApi.setViewport(m_skyboxTexture->getWidth(), m_skyboxTexture->getHeight(), false);
-        renderToFramebuffer();
+        renderToFramebuffer(rendererApi);
         rendererApi.restoreViewport();
 
         swapToFinalSkyboxMaterial();
 
+        rendererApi.enableBufferWrite(BufferType::DEPTH);
+        rendererApi.setDepthFunc(DepthFunctions::LESS);
         return true;
     }
 
     void SkyboxEntity::setupCubemapViews() {
         m_captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-        m_captureViews[0] = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), glm::vec3(0, -1, 0));
-        m_captureViews[1] = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, -1, 0));
-        m_captureViews[2] = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
-        m_captureViews[3] = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, -1, 0), glm::vec3(0, 0, -1));
-        m_captureViews[4] = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, -1, 0));
-        m_captureViews[5] = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, -1, 0));
+        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), glm::vec3(0, -1, 0)));
+        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, -1, 0)));
+        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)));
+        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, -1, 0), glm::vec3(0, 0, -1)));
+        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, -1, 0)));
+        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, -1, 0)));
     }
 
     void SkyboxEntity::prepareSkyboxModel() {
@@ -60,30 +63,25 @@ namespace Kita {
 
         m_model->addMesh(std::make_shared<Mesh>(Cube::vertices, Cube::indices));
 
-        m_model->getMeshes().at(0)->setMaterialIndex(0);
+        m_model->getMeshes().front()->setMaterialIndex(0);
     }
 
-    void SkyboxEntity::renderToFramebuffer() {
+    void SkyboxEntity::renderToFramebuffer(RendererAPI& rendererApi) {
         m_frameBuffer->bind();
-        m_model->getMaterials().at(0)->getShader()->bind();
+
+        const auto shader = m_model->getMaterials().front()->getShader();
+        shader->bind();
+
         for (int i = 0; i < 6; ++i) {
             m_frameBuffer->attachCubemapFace(m_cubemapTexture->getTexture(), i);
 
-            m_model->getMaterials().at(0)->getShader()->setUniformMat4("projection", m_captureProjection);
-            m_model->getMaterials().at(0)->getShader()->setUniformMat4("view", m_captureViews[i]);
+            shader->setUniformMat4("projection", m_captureProjection);
+            shader->setUniformMat4("view", m_captureViews[i]);
 
-            m_model->getMaterials().at(0)->getTextures().at(0)->bind(0);
+            m_model->getMaterials().front()->getTextures().front()->bind(0);
 
             for (const auto& mesh : m_model->getMeshes()) {
-                mesh->getVertexArray()->bind();
-                const auto& vertexArray = mesh->getVertexArray();
-
-                if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
-                    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticesCount()));
-                }
-                else {
-                    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
-                }
+                rendererApi.renderMesh(mesh);
             }
         }
         m_frameBuffer->unbind();
@@ -92,7 +90,7 @@ namespace Kita {
 
     void SkyboxEntity::swapToFinalSkyboxMaterial() {
         Engine::getEngine()->getRenderer().getShaderManager().addShader("DefaultSkyboxRenderVertex.glsl", "DefaultSkyboxRenderFragment.glsl");
-        m_model->getMaterials().at(0)->setShader(Engine::getEngine()->getRenderer().getShaderManager().getShader("DefaultSkyboxRenderVertex.glsl", "DefaultSkyboxRenderFragment.glsl"));
-        m_model->getMaterials().at(0)->replaceTexture(m_cubemapTexture, 0);
+        m_model->getMaterials().front()->setShader(Engine::getEngine()->getRenderer().getShaderManager().getShader("DefaultSkyboxRenderVertex.glsl", "DefaultSkyboxRenderFragment.glsl"));
+        m_model->getMaterials().front()->replaceTexture(m_cubemapTexture, 0);
     }
 } // Kita

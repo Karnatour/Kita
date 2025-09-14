@@ -54,7 +54,8 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
-        m_renderer->getRendererAPI().enableDepthTest();
+        m_renderer->getRendererAPI().enableCapability(Capabilities::DEPTH_TEST);
+        m_renderer->getRendererAPI().clearColor(0.07f, 0.09f, 0.15f, 1.0f);
         while (m_isRunning) {
             update();
             m_game->onUpdate();
@@ -63,7 +64,6 @@ namespace Kita {
             m_game->onRender();
 
             m_window->swapBuffers();
-            m_renderer->getRendererAPI().clearColor(0.07f, 0.09f, 0.15f, 1.0f);
         }
         m_game->onExit();
         exit();
@@ -89,6 +89,7 @@ namespace Kita {
     }
 
     void Engine::render() {
+        m_renderer->getRendererAPI().clearBit({ClearBit::COLOR, ClearBit::DEPTH});
     }
 
     void Engine::exit() {

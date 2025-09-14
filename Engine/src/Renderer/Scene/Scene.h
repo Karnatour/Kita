@@ -18,7 +18,8 @@ namespace Kita {
         void addEntity(const std::shared_ptr<Entity>& entity);
         Camera& getCamera();
         void update();
-        std::unordered_map<unsigned int, std::shared_ptr<Entity>>& getEntities();
+        const std::vector<std::shared_ptr<Entity>>& getEntities();
+        Entity* getEntityByID(unsigned int id) const ;
 
     private:
         void updateCameraBuffer();
@@ -26,7 +27,12 @@ namespace Kita {
         void updateLights() const;
         void addLight(LightEntity::LightProperties& lightProperties);
 
-        std::unordered_map<unsigned int, std::shared_ptr<Entity>> m_entities{};
+        //Iterating through map is slow so we use vector for rendering
+        std::vector<std::shared_ptr<Entity>> m_entities;
+        std::unordered_map<unsigned int, Entity*> m_entityLookup;
+
+        //Store special types of entities so we don't have to search them at runtime every frame
+        std::vector<std::shared_ptr<LightEntity>> m_lightEntities;
 
         Camera m_camera;
         std::shared_ptr<UniformBuffer> m_cameraUniformBuffer = UniformBuffer::createPtr();

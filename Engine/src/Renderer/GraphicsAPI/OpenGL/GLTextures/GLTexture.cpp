@@ -57,7 +57,6 @@ namespace Kita {
         stbi_set_flip_vertically_on_load(true);
         float* image = stbi_loadf((TextureManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
         if (image) {
-
             glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
             glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -88,6 +87,33 @@ namespace Kita {
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glTextureStorage2D(m_texture, 1, GL_RGB16F, resolution.first, resolution.second);
+    }
+
+    void GLTexture::createBufferTypeTexture(const BufferType& bufferType, const std::pair<int, int>& resolution) {
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        switch (bufferType) {
+            case BufferType::COLOR:
+                m_textureType = TextureType::COLOR;
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTextureStorage2D(m_texture, 1, GL_RGB8, resolution.first, resolution.second);
+                break;
+            case BufferType::DEPTH:
+                m_textureType = TextureType::DEPTH;
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureStorage2D(m_texture, 1, GL_DEPTH_COMPONENT24, resolution.first, resolution.second);
+                break;
+            case BufferType::STENCIL:
+                m_textureType = TextureType::STENCIL;
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureStorage2D(m_texture, 1, GL_STENCIL_INDEX8, resolution.first, resolution.second);
+                break;
+        }
     }
 
     void GLTexture::bind(const unsigned int position) {

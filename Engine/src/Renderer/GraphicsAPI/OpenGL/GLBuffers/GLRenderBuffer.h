@@ -7,10 +7,10 @@ namespace Kita {
     class GLRenderBuffer final : public RenderBuffer {
     public:
         ~GLRenderBuffer() override;
-        void createBuffer(const std::pair<int, int>& resolution, const BufferType& bufferType) override;
+        void createBuffer(const std::pair<int, int>& resolution, BufferType bufferType) override;
         void bind() override;
 
     private:
-        GLenum convertBufferTypeToInternalFormat(const BufferType& buffer);
+        GLenum convertBufferTypeToInternalFormat(BufferType buffer);
     };
 } // Kita

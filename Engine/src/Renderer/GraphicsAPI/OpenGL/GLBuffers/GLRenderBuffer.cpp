@@ -1,13 +1,11 @@
 #include "GLRenderBuffer.h"
 
-#include "../GLRendererAPI.h"
-
 namespace Kita {
     GLRenderBuffer::~GLRenderBuffer() {
         glDeleteRenderbuffers(1, &m_rbo);
     }
 
-    void GLRenderBuffer::createBuffer(const std::pair<int, int>& resolution, const BufferType& bufferType) {
+    void GLRenderBuffer::createBuffer(const std::pair<int, int>& resolution, const BufferType bufferType) {
         m_resolution = resolution;
         glCreateRenderbuffers(1, &m_rbo);
         glNamedRenderbufferStorage(m_rbo, convertBufferTypeToInternalFormat(bufferType), m_resolution.first, m_resolution.second);
@@ -17,7 +15,7 @@ namespace Kita {
         glBindRenderbuffer(GL_RENDERBUFFER, m_rbo);
     }
 
-    GLenum GLRenderBuffer::convertBufferTypeToInternalFormat(const BufferType& buffer) {
+    GLenum GLRenderBuffer::convertBufferTypeToInternalFormat(const BufferType buffer) {
         switch (buffer) {
             case BufferType::COLOR:
                 return GL_RGBA8;

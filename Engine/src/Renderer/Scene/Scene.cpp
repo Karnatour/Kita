@@ -6,27 +6,26 @@
 #include "../../Core/Engine.h"
 
 namespace Kita {
-    Scene::Scene() : m_camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 1.0f, 0.0f)) {
+    Scene::Scene() : m_camera(glm::vec3(-6.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) {
         m_cameraUniformBuffer->createBuffer(sizeof(m_camera.getCameraData()), &m_camera.getCameraData());
         m_skyboxEntity = std::make_shared<SkyboxEntity>("defaultSkybox.hdr");
     }
 
-    void Scene::render() const{
-        for (const auto& entity : m_entities | std::views::values) {
-            Engine::getEngine()->getRenderer().getRendererAPI().render(entity);
-        }
-        glDepthFunc(GL_LEQUAL);
-        glDepthMask(GL_FALSE);
-        Engine::getEngine()->getRenderer().getRendererAPI().render(m_skyboxEntity);
-        glDepthMask(GL_TRUE);
-        glDepthFunc(GL_LESS);
+    void Scene::render() const {
+        auto& rendererApi = Engine::getEngine()->getRenderer().getRendererAPI();
+
+        rendererApi.renderShadowPass(m_entities, m_lightEntities);
+
+        rendererApi.renderMainPass(m_entities, m_skyboxEntity);
     }
 
     void Scene::addEntity(const std::shared_ptr<Entity>& entity) {
-        m_entities.emplace(entity->getID(), entity);
+        m_entities.push_back(entity);
+        m_entityLookup[entity->getID()] = entity.get();
 
         if (const auto lightEntity = std::dynamic_pointer_cast<LightEntity>(entity)) {
             addLight(lightEntity->getLightProperties());
+            m_lightEntities.push_back(lightEntity);
         }
     }
 
@@ -40,8 +39,16 @@ namespace Kita {
         updateLights();
     }
 
-    std::unordered_map<unsigned int, std::shared_ptr<Entity>>& Scene::getEntities() {
+    const std::vector<std::shared_ptr<Entity>>& Scene::getEntities() {
         return m_entities;
+    }
+
+    Entity* Scene::getEntityByID(const unsigned int id) const {
+        if (m_entityLookup.contains(id)) {
+            return m_entityLookup.at(id);
+        }
+        KITA_ENGINE_WARN("Looked up entity with id {} doesn't exist", id);
+        return nullptr;
     }
 
     void Scene::updateCameraBuffer() {
@@ -57,10 +64,7 @@ namespace Kita {
         m_cameraUniformBuffer->update(sizeof(data), &data);
     }
 
-    //Maybe move to LightEntity ????
     std::vector<std::byte> Scene::buildLightsBuffer() const {
-        //16 because of std430 rules;
-
         const size_t totalSize = LightEntity::LIGHT_COUNT_SIZE + m_lights.lights.size() * sizeof(LightEntity::LightProperties);
         std::vector<std::byte> buffer(totalSize);
         std::memcpy(buffer.data(), &m_lights.lightCount, LightEntity::LIGHT_COUNT_SIZE);

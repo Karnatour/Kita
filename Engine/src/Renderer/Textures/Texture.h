@@ -1,7 +1,7 @@
 #pragma once
 #include "../src/Core/DllTemplate.h"
 #include <memory>
-#include <string>
+#include "../../Renderer/Structs/RendererTypes.h"
 
 namespace Kita {
     class KITAENGINE_API Texture {
@@ -10,13 +10,17 @@ namespace Kita {
             NONE = 0,
             DIFFUSE = 1,
             SPECULAR = 2,
-            CUBEMAP = 3
+            CUBEMAP = 3,
+            COLOR = 4,
+            DEPTH = 5,
+            STENCIL = 6
         };
 
         virtual ~Texture() = default;
         virtual bool createTexture2D(const std::filesystem::path& texturePath, const TextureType& textureType) = 0;
         virtual bool createSkyboxTexture2D(const std::filesystem::path& texturePath) = 0;
         virtual void createCubemapTexture(const std::pair<int, int>& resolution) = 0;
+        virtual void createBufferTypeTexture(const BufferType& bufferType, const std::pair<int, int>& resolution) = 0;
         virtual void bind(unsigned int position) = 0;
         static std::shared_ptr<Texture> createPtr();
         unsigned int getTexture() const;

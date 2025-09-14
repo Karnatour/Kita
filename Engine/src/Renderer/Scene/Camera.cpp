@@ -10,7 +10,7 @@
 namespace Kita {
     Camera::Camera(glm::vec3 position, glm::vec3 up) : m_position(position), m_up(up) {
         m_worldUp = up;
-        m_yaw = -90.0f;
+        m_yaw = 0.0f;
         m_pitch = 0.0f;
         m_movementSpeed = 10.0f;
         m_sensitivity = 0.1f;

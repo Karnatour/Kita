@@ -22,4 +22,8 @@ namespace Kita {
     std::pair<int, int> FrameBuffer::getResolution() const {
         return m_resolution;
     }
+
+    std::shared_ptr<Texture> FrameBuffer::getDepthTexture() const {
+        return m_depthTexture;
+    }
 } // Kita

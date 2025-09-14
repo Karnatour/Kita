@@ -11,17 +11,25 @@ namespace Kita {
     class GLRendererAPI final : public RendererAPI {
     public:
         void setupDebug() override;
+
         void setViewport(int width, int height, bool rewriteStoredPair) override;
         void restoreViewport() override;
-        void render(const std::shared_ptr<Entity>& entity) override;
+
         void clearColor(float red, float green, float blue, float alpha) override;
-        void enableDepthTest() override;
-        std::pair<int, int> getViewport() const;
+        void clearBit(std::initializer_list<ClearBit> bits) override;
+
+        void enableCapability(const Capabilities& capability) override;
+        void disableCapability(const Capabilities& capability) override;
+        void enableBufferWrite(const BufferType& bufferType) override;
+        void disableBufferWrite(const BufferType& bufferType) override;
+        void setDepthFunc(const DepthFunctions& function) override;
+
+        void drawArrays(const size_t& verticesCount) override;
+        void drawElements(const size_t& indicesCount) override;
 
     private:
-        void enableTextureInShader(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture);
-        void setMaterial(int materialIndex, const std::vector<std::shared_ptr<Material>>& materials, const Transformation& transformation);
+        static GLenum convertCapablityToGL(Capabilities capability);
+        static GLbitfield convertBitToGL(ClearBit bit);
         static void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
-        std::pair<int, int> m_viewport = std::make_pair(1600,900);
     };
 } // Kita

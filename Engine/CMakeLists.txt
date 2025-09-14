@@ -117,7 +117,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/RenderBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.h
-        src/Renderer/Buffers/BufferType.h
+        src/Renderer/Structs/RendererTypes.h
 )
 
 

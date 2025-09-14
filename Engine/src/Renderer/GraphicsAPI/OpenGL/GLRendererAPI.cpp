@@ -4,6 +4,7 @@
 
 #include <complex>
 #include <glad/glad.h>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Kita {
     void GLRendererAPI::setupDebug() {
@@ -24,79 +25,114 @@ namespace Kita {
         glViewport(0, 0, m_viewport.first, m_viewport.second);
     }
 
-    void GLRendererAPI::render(const std::shared_ptr<Entity>& entity) {
-        if (entity->onRender(*this)) {
-            entity->setFirstFrame(false);
-            return;
-        }
-        //glEnable(GL_FRAMEBUFFER_SRGB);
-        if (entity->getModel() != nullptr) {
-            const auto& model = entity->getModel();
-            for (const auto& mesh : model->getMeshes()) {
-                setMaterial(mesh->getMaterialIndex(), model->getMaterials(), entity->getTransformation());
-
-                mesh->getVertexArray()->bind();
-                const auto& vertexArray = mesh->getVertexArray();
-
-                if (vertexArray->getIBOobj()->getIndicesCount() == 0) {
-                    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertexArray->getVBOobj()->getVerticesCount()));
-                }
-                else {
-                    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertexArray->getIBOobj()->getIndicesCount()),GL_UNSIGNED_INT, nullptr);
-                }
-            }
-        }
-        entity->setFirstFrame(false);
-    }
-
     void GLRendererAPI::clearColor(const float red, const float green, const float blue, const float alpha) {
         glClearColor(red, green, blue, alpha);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void GLRendererAPI::enableDepthTest() {
-        glEnable(GL_DEPTH_TEST);
+    void GLRendererAPI::clearBit(const std::initializer_list<ClearBit> bits) {
+        GLbitfield mask = 0;
+        for (const auto bit : bits) {
+            mask |= convertBitToGL(bit);
+        }
+        glClear(mask);
     }
 
-    std::pair<int, int> GLRendererAPI::getViewport() const {
-        return m_viewport;
+    void GLRendererAPI::enableCapability(const Capabilities& capability) {
+        glEnable(convertCapablityToGL(capability));
     }
 
-    void GLRendererAPI::enableTextureInShader(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture) {
-        switch (texture->getType()) {
-            case Texture::TextureType::DIFFUSE:
-                texture->bind(0);
-                shader->setUniformInt("diffuseTex", 0);
-                shader->setUniformBool("hasDiffuseTex", true);
+    void GLRendererAPI::disableCapability(const Capabilities& capability) {
+        glDisable(convertCapablityToGL(capability));
+    }
+
+    void GLRendererAPI::enableBufferWrite(const BufferType& bufferType) {
+        switch (bufferType) {
+            case BufferType::COLOR:
+                //Enable all channels
+                glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
                 break;
-            case Texture::TextureType::SPECULAR:
-                texture->bind(1);
-                shader->setUniformInt("specularTex", 1);
-                shader->setUniformBool("hasSpecularTex", true);
+            case BufferType::DEPTH:
+                glDepthMask(GL_TRUE);
                 break;
-            case Texture::TextureType::CUBEMAP:
-                texture->bind(3);
-                shader->setUniformInt("cubemapTex",3);
-                break;
-            default:
-                KITA_ENGINE_WARN("Texture type is NONE or Unknown, unable to bind into shader", texture->getPath().string());
+            case BufferType::STENCIL:
+                glStencilMask(GL_TRUE);
                 break;
         }
     }
 
-    void GLRendererAPI::setMaterial(const int materialIndex, const std::vector<std::shared_ptr<Material>>& materials, const Transformation& transformation) {
-        if (materialIndex >= 0 && materialIndex < materials.size()) {
-            const auto& material = materials[materialIndex];
+    void GLRendererAPI::disableBufferWrite(const BufferType& bufferType) {
+        switch (bufferType) {
+            case BufferType::COLOR:
+                //Disable all channels
+                glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+                break;
+            case BufferType::DEPTH:
+                glDepthMask(GL_FALSE);
+                break;
+            case BufferType::STENCIL:
+                glStencilMask(GL_FALSE);
+                break;
+        }
+    }
 
-            material->getShader()->bind();
-            material->getShader()->setUniformBool("hasDiffuseTex", false);
-            material->getShader()->setUniformBool("hasSpecularTex", false);
+    void GLRendererAPI::setDepthFunc(const DepthFunctions& function) {
+        switch (function) {
+            case DepthFunctions::NEVER:
+                glDepthFunc(GL_NEVER);
+                break;
+            case DepthFunctions::LESS:
+                glDepthFunc(GL_LESS);
+                break;
+            case DepthFunctions::EQUAL:
+                glDepthFunc(GL_EQUAL);
+                break;
+            case DepthFunctions::LEQUAL:
+                glDepthFunc(GL_LEQUAL);
+                break;
+            case DepthFunctions::GREATER:
+                glDepthFunc(GL_GREATER);
+                break;
+            case DepthFunctions::NOTEQUAL:
+                glDepthFunc(GL_NOTEQUAL);
+                break;
+            case DepthFunctions::GEQUAL:
+                glDepthFunc(GL_GEQUAL);
+                break;
+            case DepthFunctions::ALWAYS:
+                glDepthFunc(GL_ALWAYS);
+                break;
+        }
+    }
 
-            for (const auto& texture : material->getTextures()) {
-                enableTextureInShader(material->getShader(), texture);
-            }
-            material->getShader()->setUniformMat4("model", transformation.getModelMatrix());
-            material->getPhongUniformBuffer()->bind(1);
+    void GLRendererAPI::drawArrays(const size_t& verticesCount) {
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCount));
+    }
+
+    void GLRendererAPI::drawElements(const size_t& indicesCount) {
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCount),GL_UNSIGNED_INT, nullptr);
+    }
+
+    GLenum GLRendererAPI::convertCapablityToGL(const Capabilities capability) {
+        switch (capability) {
+            case Capabilities::DEPTH_TEST:
+                return GL_DEPTH_TEST;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
+                break;
+        }
+    }
+
+    GLbitfield GLRendererAPI::convertBitToGL(const ClearBit bit) {
+        switch (bit) {
+            case ClearBit::COLOR:
+                return GL_COLOR_BUFFER_BIT;
+            case ClearBit::DEPTH:
+                return GL_DEPTH_BUFFER_BIT;
+            case ClearBit::STENCIL:
+                return GL_STENCIL_BUFFER_BIT;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(bit));
+                break;
         }
     }
 

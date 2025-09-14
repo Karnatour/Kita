@@ -18,6 +18,9 @@ namespace Kita {
         m_id = ++m_idCounter;
     }
 
+    // False - return false if we want to call default renderer entity render method
+    // True - return true if we want to skip default renderer entity render method
+    // We can combine special entity rendering with default model render by overriding the method but still returning false
     bool Entity::onRender(RendererAPI& rendererApi) {
         return false;
     }

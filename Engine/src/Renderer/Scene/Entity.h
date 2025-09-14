@@ -1,10 +1,11 @@
 #pragma once
 #include "Transformation.h"
-#include "../RendererAPI.h"
 #include "Primitives/Model.h"
 #include "../../Core/DllTemplate.h"
 
 namespace Kita {
+    class RendererAPI;
+
     class KITAENGINE_API Entity {
     public:
         Entity();

@@ -16,7 +16,7 @@ void Sandbox::onInit() {
     m_scene.addEntity(entity);
     entity->getTransformation().scale({0.005f,0.005f,0.005f});
     lightEntity2 = std::make_shared<Kita::LightEntity>(Kita::LightEntity::LightType::DIRECTIONAL);
-    lightEntity2->setDirection({-0.3f, -1.0f, -0.2f, 0.0f});
+    lightEntity2->setDirection({-0.1f, -0.7f, -0.2f, 0.0f});
     //m_scene.addEntity(lightEntity);
     m_scene.addEntity(lightEntity2);
     Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
@@ -24,6 +24,7 @@ void Sandbox::onInit() {
 
 void Sandbox::onUpdate() {
     m_scene.update();
+    KITA_ENGINE_DEBUG("X: {} Y: {} Z: {}",m_scene.getCamera().getPosition().x,m_scene.getCamera().getPosition().y,m_scene.getCamera().getPosition().z);
 }
 
 void Sandbox::onRender() {
