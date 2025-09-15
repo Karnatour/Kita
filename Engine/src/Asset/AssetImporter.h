@@ -8,7 +8,7 @@
 namespace Kita {
     class KITAENGINE_API AssetImporter {
     public:
-        static inline const std::filesystem::path MODELS_PREFIX = "../assets/models/";
+        static inline const std::filesystem::path MODELS_PREFIX = "../assets/models";
         static std::shared_ptr<Model> importModel(const std::filesystem::path& path, bool reimport = false);
 
     private:
