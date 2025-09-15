@@ -52,7 +52,7 @@ vec3 calculatePointLight(LightProperties light);
 vec3 calculateSpotLight(LightProperties light);
 vec3 calculatePhongVec(LightProperties light, float diff, float spec, float attenuation, bool applyAttenuation,float shadow);
 vec2 calculateShading(vec3 lightDir);
-float calculateShadow(vec4 fragPosLightSpace);
+float calculateShadow(vec4 fragPosLightSpace, vec3 lightDir);
 
 void main()
 {
@@ -70,7 +70,7 @@ vec3 calculateDirectionalLight(LightProperties light){
 
     float shadow = 0.0;
 
-    shadow = calculateShadow(fragPosLightSpace);
+    shadow = calculateShadow(fragPosLightSpace,lightDir);
 
     return calculatePhongVec(light, shading.x, shading.y, 0.0f, false, shadow);
 }
@@ -140,16 +140,31 @@ vec2 calculateShading(vec3 lightDir){
     return vec2(diff, spec);
 }
 
-float calculateShadow(vec4 fragPosLightSpace){
+float calculateShadow(vec4 fragPosLightSpace, vec3 lightDir){
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(depthTex, projCoords.xy).r;
-    // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
-    // check whether current frag pos is in shadow
-    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+    float bias = clamp(0.005 * tan(acos(clamp(dot(normalVec, lightDir), 0.0, 1.0))), 0.0, 0.01);
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(depthTex, 0);
+    int kernelSize = 2;
+    int samples = 0;
+
+    for(int x = -kernelSize; x <= kernelSize; ++x)
+    {
+        for(int y = -kernelSize; y <= kernelSize; ++y)
+        {
+            float pcfDepth = texture(depthTex, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            samples++;
+        }
+    }
+    shadow /= float(samples);
+
+    if(projCoords.z > 1.0){
+        shadow = 0.0;
+    }
 
     return shadow;
 }

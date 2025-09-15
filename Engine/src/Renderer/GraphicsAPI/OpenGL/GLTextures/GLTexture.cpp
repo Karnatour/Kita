@@ -91,8 +91,10 @@ namespace Kita {
 
     void GLTexture::createBufferTypeTexture(const BufferType& bufferType, const std::pair<int, int>& resolution) {
         glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
-        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        float borderColor[] = {1.0, 1.0, 1.0, 1.0};
+        glTextureParameterfv(m_texture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
         switch (bufferType) {
             case BufferType::COLOR:

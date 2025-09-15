@@ -27,4 +27,10 @@ namespace Kita {
         DEPTH,
         STENCIL
     };
+
+    enum class CullMode {
+        FRONT,
+        BACK,
+        FRONT_BACK
+    };
 }

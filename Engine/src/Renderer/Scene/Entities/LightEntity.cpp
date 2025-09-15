@@ -26,6 +26,7 @@ namespace Kita {
         material->addTexture(m_shadowProperties.depthMapFBO->getDepthTexture());
         m_model->addMaterial(material);
 
+        //TODO Create dummy triangle
         m_model->addMesh(std::make_shared<Mesh>(std::vector<Vertex>(), std::vector<unsigned int>()));
         m_model->getMeshes().front()->setMaterialIndex(1);
     }
