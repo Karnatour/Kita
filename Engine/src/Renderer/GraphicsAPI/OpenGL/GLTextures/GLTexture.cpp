@@ -28,6 +28,10 @@ namespace Kita {
             glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             switch (m_channels) {
+                case 2:
+                    glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
+                    glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, image);
+                    break;
                 case 3:
                     glTextureStorage2D(m_texture, levels, GL_RGB8, m_width, m_height);
                     glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, image);

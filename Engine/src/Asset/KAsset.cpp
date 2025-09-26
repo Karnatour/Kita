@@ -218,7 +218,7 @@ namespace Kita {
 
     void KAsset::writeTextures(MaterialHeader& materialHeader, const std::vector<std::shared_ptr<Texture>>& textures) {
         for (int i = 0; i < materialHeader.textureCount; i++) {
-            if (textures.at(i)->getPath().string().length() >= 63) {
+            if (textures.at(i)->getPath().string().length() >= 127) {
                 throw std::runtime_error("TexturePath is larger than 64 causing overflow " + textures.at(i)->getPath().string());
             }
             strcpy_s(materialHeader.texturePaths[i], textures.at(i)->getPath().string().c_str());

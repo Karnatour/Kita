@@ -21,7 +21,7 @@ namespace Kita {
         Assimp::Importer importer;
         const aiScene* aiScene = importer.ReadFile(
             filePath.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices |
-            aiProcess_ImproveCacheLocality | aiProcess_SortByPType | aiProcess_OptimizeMeshes | aiProcess_ValidateDataStructure);
+            aiProcess_ImproveCacheLocality | aiProcess_SortByPType | aiProcess_OptimizeMeshes | aiProcess_ValidateDataStructure | aiProcess_PreTransformVertices | aiProcess_GlobalScale);
 
         if (!aiScene || aiScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !aiScene->mRootNode) {
             KITA_ENGINE_ERROR("Assimp error while reading file, returning nullptr error: {}", importer.GetErrorString());

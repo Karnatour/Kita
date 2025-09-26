@@ -51,7 +51,7 @@ namespace Kita {
             float diffuse[3];
             float specular[3];
             float shininess;
-            char texturePaths[8][64];
+            char texturePaths[8][128];
             unsigned char textureTypes[64];
             char shaderPaths[2][64]; //vertex, fragment
         };
