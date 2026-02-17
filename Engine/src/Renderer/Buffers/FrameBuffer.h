@@ -17,26 +17,31 @@ namespace Kita {
         };
 
         virtual ~FrameBuffer() = default;
-        virtual void createBuffer(const std::pair<int, int>& resolution, std::initializer_list<AttachmentSpec> attachments) = 0;
+        virtual void createBuffer(const std::pair<int, int>& resolution, std::initializer_list<AttachmentSpec> attachments, bool highPrecision) = 0;
         virtual void attachCubemapFace(unsigned int cubemapTexture, int faceIndex) = 0;
         unsigned int getFBO() const;
         virtual void bind() = 0;
         virtual void unbind() = 0;
-        static std::shared_ptr<FrameBuffer> createPtr();
+        virtual void resize(const std::pair<int,int>& newResolution) = 0;
+        static std::unique_ptr<FrameBuffer> createPtr();
         std::pair<int, int> getResolution() const;
 
+        std::shared_ptr<Texture> getColorTexture() const;
         std::shared_ptr<Texture> getDepthTexture() const;
+
+        const RenderBuffer* getColorRenderBuffer() const;
+        const RenderBuffer* getDepthRenderBuffer() const;
     protected:
         unsigned int m_fbo = 0;
-        //Set to nullptr since we dont use all textures/RBOs always
-        std::shared_ptr<Texture> m_colorTexture = nullptr;
-        std::shared_ptr<Texture> m_depthTexture = nullptr;
-        std::shared_ptr<Texture> m_stencilTexture = nullptr;
+        std::shared_ptr<Texture> m_colorTexture;
+        std::shared_ptr<Texture> m_depthTexture;
 
-        std::shared_ptr<RenderBuffer> m_colorRenderBuffer = nullptr;
-        std::shared_ptr<RenderBuffer> m_depthRenderBuffer = nullptr;
-        std::shared_ptr<RenderBuffer> m_stencilRenderBuffer = nullptr;
+        std::unique_ptr<RenderBuffer> m_colorRenderBuffer;
+        std::unique_ptr<RenderBuffer> m_depthRenderBuffer;
 
         std::pair<int, int> m_resolution;
+
+        std::vector<AttachmentSpec> m_attachments;
+        bool m_highPrecision = false;
     };
 } // Kita

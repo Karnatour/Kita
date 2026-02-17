@@ -2,7 +2,6 @@
 #include "InputKeys.h"
 #include "../Events/KeyboardEvents.h"
 #include "../Events/MouseEvents.h"
-#include "../Events/EventManager.h"
 #include <vector>
 
 namespace Kita {
@@ -40,16 +39,16 @@ namespace Kita {
         static bool wasMouseScrolled();
         static MouseScroll getMouseScroll();
     private:
-        friend class EventManager;
         friend class Engine;
 
+        static void init();
         static void update();
-        static void updateKeyPress(KeyPressed& event);
-        static void updateKeyRelease(KeyReleased& event);
-        static void updateButtonPress(MousePressed& event);
-        static void updateButtonRelease(MouseReleased& event);
-        static void updateMouseMovement(MouseMoved& event);
-        static void updateMouseScroll(MouseScrolled& event);
+        static void updateKeyPress(const KeyPressed& event);
+        static void updateKeyRelease(const KeyReleased& event);
+        static void updateButtonPress(const MousePressed& event);
+        static void updateButtonRelease(const MouseReleased& event);
+        static void updateMouseMovement(const MouseMoved& event);
+        static void updateMouseScroll(const MouseScrolled& event);
 
         static std::vector<InputKeys::Modifiers> getSortedModifiers(int modifiersField);
 

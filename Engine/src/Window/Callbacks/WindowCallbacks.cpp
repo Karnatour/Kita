@@ -23,4 +23,9 @@ namespace Kita {
         WindowChangedFocus event(focused);
         EventManager::triggerEvent(event);
     }
+
+    void frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height) {
+        FrameBufferResized event(width,height);
+        EventManager::triggerEvent(event);
+    }
 }

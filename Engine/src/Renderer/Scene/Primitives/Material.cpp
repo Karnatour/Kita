@@ -10,18 +10,14 @@ namespace Kita {
         m_phongUniformBuffer->createBuffer(sizeof(PhongProperties), &m_phongProperties);
     }
 
-    Material::Material(const std::filesystem::path& texturePath,const Texture::TextureType& textureType) {
-        m_shader = Engine::getEngine()->getRenderer().getShaderManager().getShader(ShaderManager::DEFAULT_VERTEX,
-                                                                                   ShaderManager::DEFAULT_FRAGMENT);
-        auto& texManager = Engine::getEngine()->getRenderer().getTextureManager();
-        texManager.addTexture(texturePath, textureType);
-        addTexture(texManager.getTexture(texturePath));
+    Material::Material(const std::shared_ptr<Shader>& shader) {
+        m_shader = shader;
+        m_phongUniformBuffer->createBuffer(sizeof(PhongProperties), &m_phongProperties);
     }
 
     const std::shared_ptr<Shader>& Material::getShader() {
         return m_shader;
     }
-
 
     void Material::setShader(const std::shared_ptr<Shader>& shader) {
         m_shader = shader;

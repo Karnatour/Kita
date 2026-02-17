@@ -8,4 +8,5 @@ namespace Kita {
     void windowSizeCallbackFun(GLFWwindow* window, int width, int height);
     void windowCloseCallbackFun(GLFWwindow* window);
     void windowFocusCallbackFun(GLFWwindow* window, int focused);
+    void frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height);
 }

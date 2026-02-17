@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "../Core/DllTemplate.h"
+#include "../Events/WindowEvents.h"
 
 enum class CursorMode {
     DISABLED,
@@ -23,7 +24,8 @@ namespace Kita {
         void swapBuffers();
         void makeContextCurrent();
 
-        std::pair<int, int> getResolution() const;
+        std::pair<int, int> getWindowResolution() const;
+        std::pair<int, int> getFrameBufferResolution() const;
 
         std::string getTitle();
         void setTitle(const std::string& title);
@@ -36,11 +38,14 @@ namespace Kita {
         static void setErrorCallbackFun();
         void setWindowCallbacks();
         static void errorCallbackFun(int error_code, const char* description);
-        static void frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height);
 
         std::string m_title;
         GLFWwindow* m_window = nullptr;
         CursorMode m_cursorMode = CursorMode::SHOWN;
-        std::pair<int, int> m_resolution;
+        std::pair<int, int> m_windowResolution;
+        std::pair<int, int> m_frameBufferResolution;
+
+        static void updateWindowResolution(const WindowResized& event);
+        static void updateFrameBufferResolution(const FrameBufferResized& event);
     };
 } // Kita

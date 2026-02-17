@@ -14,7 +14,7 @@ namespace Kita {
     class KITAENGINE_API Material {
     public:
         Material();
-        explicit Material(const std::filesystem::path& texturePath,const Texture::TextureType& textureType);
+        explicit Material(const std::shared_ptr<Shader>& shader);
 
         const std::shared_ptr<Shader>& getShader();
         void setShader(const std::shared_ptr<Shader>& shader);
@@ -31,6 +31,7 @@ namespace Kita {
         std::shared_ptr<Shader> m_shader = nullptr;
         std::vector<std::shared_ptr<Texture>> m_textures;
         PhongProperties m_phongProperties;
+        //TODO One UBO as array for all materials, do something about materials that don't need phong properties
         std::shared_ptr<UniformBuffer> m_phongUniformBuffer = UniformBuffer::createPtr();
     };
 } // Kita

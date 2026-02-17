@@ -11,14 +11,13 @@
 namespace Kita {
     LightEntity::LightEntity(LightType lightType) {
         m_lightProperties.lightType = static_cast<int>(lightType);
-        m_shadowProperties.depthMapFBO->createBuffer(ShadowProperties::resolution, {{BufferType::DEPTH, FrameBuffer::AttachmentType::TEXTURE}});
+        m_shadowProperties.depthMapFBO->createBuffer(ShadowProperties::resolution, {{BufferType::DEPTH, FrameBuffer::AttachmentType::TEXTURE}},false);
         Engine::getEngine()->getRenderer().getShaderManager().addShader("DefaultShadowMapVertex.glsl", "DefaultEmptyFragment.glsl");
 
         m_model = std::make_shared<Model>();
 
         const auto depthMaterial = std::make_shared<Material>();
         depthMaterial->setShader(Engine::getEngine()->getRenderer().getShaderManager().getShader("DefaultShadowMapVertex.glsl", "DefaultEmptyFragment.glsl"));
-        depthMaterial->addTexture(m_shadowProperties.depthMapFBO->getDepthTexture());
         m_model->addMaterial(depthMaterial);
 
         const auto material = std::make_shared<Material>();

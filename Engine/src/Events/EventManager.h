@@ -8,11 +8,11 @@
 namespace Kita {
     class KITAENGINE_API EventManager {
     public:
-        static void attachEngineEvents();
         using eventCallbackFun = std::function<void(Event&)>;
 
         template <typename T>
         static void listenToEvent(std::function<void(T&)> listenerFun) {
+            static_assert(std::is_base_of_v<Event, T>, "T must derive from Event");
             auto& callbacks = getCallbacks(typeid(T));
             callbacks.push_back([listenerFun](Event& event) {
                 listenerFun(static_cast<T&>(event)); // Downcast Event to T
@@ -32,9 +32,6 @@ namespace Kita {
     private:
         static std::vector<eventCallbackFun>& getCallbacks(std::type_index type);
 
-        static inline std::unordered_map<std::type_index, std::vector<eventCallbackFun>> eventListeners;
-
-        static void setInputListeners();
-
+        static inline std::unordered_map<std::type_index, std::vector<eventCallbackFun>> m_eventListeners;
     };
 }

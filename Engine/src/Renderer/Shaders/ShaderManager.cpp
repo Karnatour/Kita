@@ -7,17 +7,17 @@ namespace Kita {
     }
 
     void ShaderManager::addShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
-        auto [iterator,inserted] = m_shaderMap.try_emplace(vertexPath.string() + ":" + fragmentPath.string(), Shader::createPtr());
+        const std::string key = vertexPath.string() + ":" + fragmentPath.string();
 
-        if (inserted) {
-            iterator->second->compileShader(vertexPath, fragmentPath);
-            KITA_ENGINE_DEBUG("Added shader to ShaderManager, [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.string(), fragmentPath.string());
+        if (m_shaderMap.contains(key)) {
+            KITA_ENGINE_DEBUG("Shader is already included in ShaderManager, [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.string(), fragmentPath.string());
+            return;
         }
-        else {
-            if (vertexPath != DEFAULT_VERTEX && fragmentPath != DEFAULT_FRAGMENT) {
-                KITA_ENGINE_WARN("Shader is already included in ShaderManager, [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.string(), fragmentPath.string());
-            }
-        }
+
+        auto shader = Shader::createPtr();
+        shader->compileShader(vertexPath, fragmentPath);
+        m_shaderMap.emplace(key, std::move(shader));
+        KITA_ENGINE_DEBUG("Added shader to ShaderManager, [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.string(), fragmentPath.string());
     }
 
     std::shared_ptr<Shader> ShaderManager::getShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) const {

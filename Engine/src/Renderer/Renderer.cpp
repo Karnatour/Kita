@@ -5,9 +5,8 @@ namespace Kita {
     Renderer::Renderer(const RenderingAPI api) {
         m_api = api;
         m_rendererAPI = RendererAPI::createPtr(api);
-        m_rendererAPI->setupDebug();
         m_shaderManager = std::make_unique<ShaderManager>();
-        m_textureManager = std::make_unique<TextureManager>();
+        m_rendererAPI->init(*this);
     }
 
     RenderingAPI Renderer::getAPI() {

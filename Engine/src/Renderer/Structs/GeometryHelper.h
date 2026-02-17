@@ -9,4 +9,10 @@ namespace Kita {
 
         static std::vector<unsigned int> indices;
     };
+
+    struct KITAENGINE_API Quad {
+        static std::vector<Vertex> vertices;
+
+        static std::vector<unsigned int> indices;
+    };
 }

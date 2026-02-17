@@ -1,11 +1,11 @@
 #pragma once
 
 namespace Kita {
-    enum class Capabilities {
+    enum class Capability {
         DEPTH_TEST
     };
 
-    enum class DepthFunctions {
+    enum class DepthFunction {
         NEVER,
         LESS,
         EQUAL,
@@ -19,7 +19,8 @@ namespace Kita {
     enum class BufferType {
         COLOR,
         DEPTH,
-        STENCIL
+        STENCIL,
+        DEPTH_STENCIL
     };
 
     enum class ClearBit {

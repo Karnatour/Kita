@@ -4,7 +4,6 @@ project(KitaEngine)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-
 #Create DLL
 add_library(KitaEngine SHARED
         src/Core/Logger.cpp
@@ -37,8 +36,6 @@ add_library(KitaEngine SHARED
         src/Window/Callbacks/KeyboardCallbacks.h
         src/Window/Callbacks/MouseCallbacks.cpp
         src/Window/Callbacks/MouseCallbacks.h
-        src/Events/EngineListeners.cpp
-        src/Events/EngineListeners.h
         src/Renderer/Buffers/VertexBuffer.cpp
         src/Renderer/Buffers/VertexBuffer.h
         src/Renderer/Buffers/VertexArray.cpp
@@ -120,7 +117,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Structs/RendererTypes.h
 )
 
-
+#Multithreaded compilation
+target_compile_options(KitaEngine PRIVATE /MP)
 
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC spdlog::spdlog)
@@ -151,4 +149,3 @@ target_precompile_headers(KitaEngine PRIVATE ${PROJECT_SOURCE_DIR}/src/kitapch.h
 
 #Add compile definitions for DLL
 target_compile_definitions(KitaEngine PRIVATE KITAENGINE_EXPORTS KITA_BUILD_DEBUG)
-

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Scene/Scene.h"
 #include "Structs/RenderingAPI.h"
 #include "../Core/DllTemplate.h"
@@ -22,7 +23,7 @@ namespace Kita {
         static inline RenderingAPI m_api = RenderingAPI::NONE;
         std::unique_ptr<RendererAPI> m_rendererAPI;
         std::unique_ptr<ShaderManager> m_shaderManager;
-        std::unique_ptr<TextureManager> m_textureManager;
+        std::unique_ptr<TextureManager> m_textureManager = std::make_unique<TextureManager>();
         std::unique_ptr<Scene> m_scene;
     };
 } // Kita

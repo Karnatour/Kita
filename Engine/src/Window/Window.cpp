@@ -19,11 +19,14 @@ namespace Kita {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
+        EventManager::listenToEvent<WindowResized>(updateWindowResolution);
+        EventManager::listenToEvent<FrameBufferResized>(updateFrameBufferResolution);
+
         KITA_ENGINE_INFO("Window initialized");
     }
 
     void Window::createWindow(const int width, const int height, const char* title) {
-        m_resolution = std::make_pair(width, height);
+        m_windowResolution = std::make_pair(width, height);
         KITA_ENGINE_INFO("Creating window: {} ({}x{})", title, width, height);
 
         m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
@@ -46,6 +49,8 @@ namespace Kita {
 
         glfwSwapInterval(1);
 
+        glfwGetFramebufferSize(m_window,&m_frameBufferResolution.first,&m_frameBufferResolution.second);
+
         KITA_ENGINE_INFO("Window {} created", title);
     }
 
@@ -58,15 +63,12 @@ namespace Kita {
         KITA_ENGINE_ERROR("GLFW error: {}", description);
     }
 
-    void Window::frameBufferSizeCallbackFun(GLFWwindow* window, int width, int height) {
-        Window* windowPtr = static_cast<Window*>(glfwGetWindowUserPointer(window));
+    void Window::updateWindowResolution(const WindowResized& event) {
+        Engine::getEngine()->getWindow().m_windowResolution = event.getSize();
+    }
 
-        if (window) {
-            windowPtr->m_resolution.first = width;
-            windowPtr->m_resolution.second = height;
-        }
-
-        Engine::getEngine()->getRenderer().getRendererAPI().setViewport(width, height, true);
+    void Window::updateFrameBufferResolution(const FrameBufferResized& event) {
+        Engine::getEngine()->getWindow().m_frameBufferResolution = event.getSize();
     }
 
     void Window::setErrorCallbackFun() {
@@ -89,12 +91,16 @@ namespace Kita {
         glfwMakeContextCurrent(m_window);
     }
 
-    std::string Window::getTitle() {
-        return m_title;
+    std::pair<int, int> Window::getWindowResolution() const {
+        return m_windowResolution;
     }
 
-    std::pair<int, int> Window::getResolution() const {
-        return m_resolution;
+    std::pair<int, int> Window::getFrameBufferResolution() const {
+        return m_frameBufferResolution;
+    }
+
+    std::string Window::getTitle() {
+        return m_title;
     }
 
     void Window::setCursorMode(const CursorMode mode) {

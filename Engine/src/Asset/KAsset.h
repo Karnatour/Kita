@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_set>
 
 #include "../Core/DllTemplate.h"
 #include "../Renderer/Scene/Primitives/Model.h"

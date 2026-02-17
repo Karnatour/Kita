@@ -37,11 +37,11 @@ namespace Kita {
         glClear(mask);
     }
 
-    void GLRendererAPI::enableCapability(const Capabilities& capability) {
+    void GLRendererAPI::enableCapability(const Capability& capability) {
         glEnable(convertCapablityToGL(capability));
     }
 
-    void GLRendererAPI::disableCapability(const Capabilities& capability) {
+    void GLRendererAPI::disableCapability(const Capability& capability) {
         glDisable(convertCapablityToGL(capability));
     }
 
@@ -56,6 +56,11 @@ namespace Kita {
                 break;
             case BufferType::STENCIL:
                 glStencilMask(GL_TRUE);
+                break;
+            case BufferType::DEPTH_STENCIL:
+                glDepthMask(GL_TRUE);
+                glStencilMask(GL_TRUE);
+
                 break;
         }
     }
@@ -72,33 +77,37 @@ namespace Kita {
             case BufferType::STENCIL:
                 glStencilMask(GL_FALSE);
                 break;
+            case BufferType::DEPTH_STENCIL:
+                glDepthMask(GL_FALSE);
+                glStencilMask(GL_FALSE);
+                break;
         }
     }
 
-    void GLRendererAPI::setDepthFunc(const DepthFunctions& function) {
+    void GLRendererAPI::setDepthFunc(const DepthFunction& function) {
         switch (function) {
-            case DepthFunctions::NEVER:
+            case DepthFunction::NEVER:
                 glDepthFunc(GL_NEVER);
                 break;
-            case DepthFunctions::LESS:
+            case DepthFunction::LESS:
                 glDepthFunc(GL_LESS);
                 break;
-            case DepthFunctions::EQUAL:
+            case DepthFunction::EQUAL:
                 glDepthFunc(GL_EQUAL);
                 break;
-            case DepthFunctions::LEQUAL:
+            case DepthFunction::LEQUAL:
                 glDepthFunc(GL_LEQUAL);
                 break;
-            case DepthFunctions::GREATER:
+            case DepthFunction::GREATER:
                 glDepthFunc(GL_GREATER);
                 break;
-            case DepthFunctions::NOTEQUAL:
+            case DepthFunction::NOTEQUAL:
                 glDepthFunc(GL_NOTEQUAL);
                 break;
-            case DepthFunctions::GEQUAL:
+            case DepthFunction::GEQUAL:
                 glDepthFunc(GL_GEQUAL);
                 break;
-            case DepthFunctions::ALWAYS:
+            case DepthFunction::ALWAYS:
                 glDepthFunc(GL_ALWAYS);
                 break;
         }
@@ -112,13 +121,13 @@ namespace Kita {
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCount),GL_UNSIGNED_INT, nullptr);
     }
 
-    GLenum GLRendererAPI::convertCapablityToGL(const Capabilities capability) {
+    GLenum GLRendererAPI::convertCapablityToGL(const Capability capability) {
         switch (capability) {
-            case Capabilities::DEPTH_TEST:
+            case Capability::DEPTH_TEST:
                 return GL_DEPTH_TEST;
             default:
                 KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
-                break;
+                return GL_NONE;
         }
     }
 
@@ -132,7 +141,7 @@ namespace Kita {
                 return GL_STENCIL_BUFFER_BIT;
             default:
                 KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(bit));
-                break;
+                return GL_NONE;
         }
     }
 
@@ -196,5 +205,19 @@ namespace Kita {
                 KITA_ENGINE_WARN("Undefined OpenGL debug severity");
                 break;
         }
-    };
+    }
+
+    GLenum GLRendererAPI::convertBufferTypeToInternalFormat(const BufferType buffer) {
+        switch (buffer) {
+            case BufferType::COLOR:
+                return GL_RGBA8;
+            case BufferType::DEPTH:
+                return GL_DEPTH_COMPONENT24;
+            case BufferType::DEPTH_STENCIL:
+                return GL_DEPTH24_STENCIL8;
+            default:
+                KITA_ENGINE_ERROR("Unknown bufferType when trying to convert BufferType to GL Internal format");
+                return GL_NONE;
+        }
+    }
 } // Kita

@@ -23,14 +23,14 @@ namespace Kita {
     MouseScrolled::MouseScrolled(const double x, const double y): m_x(x), m_y(y) {
     }
 
-    std::pair<double, double> MouseScrolled::getOffset() {
+    std::pair<double, double> MouseScrolled::getOffset() const {
         return std::make_pair(m_x, m_y);
     }
 
     MouseMoved::MouseMoved(const double x, const double y) : m_x(x), m_y(y) {
     }
 
-    std::pair<double, double> MouseMoved::getPosition() {
+    std::pair<double, double> MouseMoved::getPosition() const {
         return std::make_pair(m_x, m_y);
     }
 

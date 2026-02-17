@@ -4,8 +4,13 @@ out vec4 FragColor;
 in vec3 texCoord;
 
 uniform samplerCube cubemapTex;
-
+uniform bool hasCubemapTex;
 void main()
 {
-    FragColor = texture(cubemapTex, texCoord);
+    if (hasCubemapTex){
+        FragColor = texture(cubemapTex, texCoord);
+    }
+    else {
+        FragColor = vec4(1.0f,1.0f,1.0f,1.0f);
+    }
 }

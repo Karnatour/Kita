@@ -21,9 +21,10 @@ namespace Kita {
         m_window->createWindow(1600, 900, "Kita");
         m_renderer = std::make_unique<Renderer>(API);
 
-        EventManager::attachEngineEvents();
+        Input::init();
+        EventManager::listenToEvent<WindowClosed>(onWindowClosed);
 
-        m_currentFrameTime = std::chrono::system_clock::now();
+        m_currentFrameTime = std::chrono::steady_clock::now();
         Time::updateDeltaTime(m_currentFrameTime);
 
         KAsset::fetchExistingBakedFiles();
@@ -54,7 +55,7 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
-        m_renderer->getRendererAPI().enableCapability(Capabilities::DEPTH_TEST);
+        m_renderer->getRendererAPI().enableCapability(Capability::DEPTH_TEST);
         m_renderer->getRendererAPI().clearColor(0.07f, 0.09f, 0.15f, 1.0f);
         while (m_isRunning) {
             update();
@@ -73,26 +74,29 @@ namespace Kita {
         m_isRunning = false;
     }
 
-    Window& Engine::getWindow() const {
+    Window& Engine::getWindow() {
         return *m_window;
     }
 
-    Renderer& Engine::getRenderer() const {
+    Renderer& Engine::getRenderer() {
         return *m_renderer;
     }
 
     void Engine::update() {
-        m_currentFrameTime = std::chrono::system_clock::now();
+        m_currentFrameTime = std::chrono::steady_clock::now();
         Time::updateDeltaTime(m_currentFrameTime);
         Input::update();
         m_window->poolEvents();
     }
 
     void Engine::render() {
-        m_renderer->getRendererAPI().clearBit({ClearBit::COLOR, ClearBit::DEPTH});
     }
 
     void Engine::exit() {
         m_window->exit();
+    }
+
+    void Engine::onWindowClosed(WindowClosed& event) {
+        Engine::getEngine()->stop();
     }
 }

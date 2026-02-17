@@ -24,7 +24,7 @@ namespace Kita {
     class KITAENGINE_API MouseMoved final : public Event {
     public:
         MouseMoved(double x, double y);
-        std::pair<double, double> getPosition();
+        std::pair<double, double> getPosition() const;
     private:
         double m_x, m_y;
     };
@@ -40,7 +40,7 @@ namespace Kita {
     class KITAENGINE_API MouseScrolled final : public Event {
     public:
         MouseScrolled(double x, double y);
-        std::pair<double, double> getOffset();
+        std::pair<double, double> getOffset() const;
     private:
         double m_x,m_y; //Offset
     };

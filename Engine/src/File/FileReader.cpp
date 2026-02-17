@@ -1,6 +1,5 @@
 #include "../kitapch.h"
 #include "../File/FileReader.h"
-#include <filesystem>
 
 namespace Kita {
     std::string FileReader::readFile(const std::filesystem::path& path) {

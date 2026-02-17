@@ -17,6 +17,8 @@ namespace Kita {
         rendererApi.renderShadowPass(m_entities, m_lightEntities);
 
         rendererApi.renderMainPass(m_entities, m_skyboxEntity);
+
+        rendererApi.renderMainFrameBufferToScreen();
     }
 
     void Scene::addEntity(const std::shared_ptr<Entity>& entity) {
@@ -52,9 +54,10 @@ namespace Kita {
     }
 
     void Scene::updateCameraBuffer() {
+        //TODO Weird maybe make it better ?
         CameraProperties& data = m_camera.getCameraData();
 
-        auto [width, height] = Engine::getEngine()->getWindow().getResolution();
+        auto [width, height] = Engine::getEngine()->getWindow().getFrameBufferResolution();
         data.projection = glm::perspective(glm::radians(m_camera.getZoom()), static_cast<float>(width) / static_cast<float>(height), 0.5f, 1000.0f);
         data.view = m_camera.getViewMatrix();
         data.position = glm::vec4(m_camera.getPosition(), 1.0f);

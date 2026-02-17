@@ -10,11 +10,11 @@
 namespace Kita {
     SkyboxEntity::SkyboxEntity(const std::filesystem::path& texturePath) {
         m_skyboxTexture->createSkyboxTexture2D(texturePath);
-        m_cubemapTexture->createCubemapTexture(std::make_pair(m_skyboxTexture->getWidth(), m_skyboxTexture->getHeight()));
+        m_cubemapTexture->createCubemapTexture(std::make_pair(m_skyboxTexture->getWidth() / 2, m_skyboxTexture->getWidth() / 2));
 
-        const auto resolution = Engine::getEngine()->getWindow().getResolution();
+        const auto resolution = Engine::getEngine()->getWindow().getFrameBufferResolution();
 
-        m_frameBuffer->createBuffer(resolution, {{BufferType::COLOR, FrameBuffer::AttachmentType::TEXTURE}});
+        m_frameBuffer->createBuffer(resolution, {{BufferType::COLOR, FrameBuffer::AttachmentType::TEXTURE}}, true);
 
         setupCubemapViews();
 
@@ -26,28 +26,39 @@ namespace Kita {
             return false;
         }
 
-        rendererApi.setDepthFunc(DepthFunctions::LEQUAL);
+        rendererApi.setDepthFunc(DepthFunction::LEQUAL);
         rendererApi.disableBufferWrite(BufferType::DEPTH);
-
-        rendererApi.setViewport(m_skyboxTexture->getWidth(), m_skyboxTexture->getHeight(), false);
+        rendererApi.setViewport(m_cubemapTexture->getWidth(), m_cubemapTexture->getHeight(), false);
         renderToFramebuffer(rendererApi);
         rendererApi.restoreViewport();
 
         swapToFinalSkyboxMaterial();
 
         rendererApi.enableBufferWrite(BufferType::DEPTH);
-        rendererApi.setDepthFunc(DepthFunctions::LESS);
+        rendererApi.setDepthFunc(DepthFunction::LESS);
         return true;
     }
 
     void SkyboxEntity::setupCubemapViews() {
         m_captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(1, 0, 0), glm::vec3(0, -1, 0)));
-        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(-1, 0, 0), glm::vec3(0, -1, 0)));
-        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)));
-        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, -1, 0), glm::vec3(0, 0, -1)));
-        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, -1, 0)));
-        m_captureViews.push_back(glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, -1, 0)));
+        m_captureViews.push_back(
+            glm::lookAt(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // +X
+        );
+        m_captureViews.push_back(
+            glm::lookAt(glm::vec3(0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // -X
+        );
+        m_captureViews.push_back(
+            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)) // +Y
+        );
+        m_captureViews.push_back(
+            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)) // -Y
+        );
+        m_captureViews.push_back(
+            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // +Z
+        );
+        m_captureViews.push_back(
+            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // -Z
+        );
     }
 
     void SkyboxEntity::prepareSkyboxModel() {

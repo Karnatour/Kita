@@ -7,9 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 #Create Sandbox executable
 add_executable(Sandbox src/Sandbox.cpp
         src/Sandbox.h
-        src/main.cpp)
+        src/main.cpp
+)
+
+#Multithreaded compilation
+target_compile_options(Sandbox PRIVATE /MP)
 
 #Include KitaEngine DLL
 target_link_libraries(Sandbox PUBLIC KitaEngine)
 target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/include)
 add_dependencies(Sandbox KitaEngine)
+
+

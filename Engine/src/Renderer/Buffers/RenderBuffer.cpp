@@ -9,10 +9,10 @@ namespace Kita {
         return m_rbo;
     }
 
-    std::shared_ptr<RenderBuffer> RenderBuffer::createPtr() {
+    std::unique_ptr<RenderBuffer> RenderBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
-                return std::make_shared<GLRenderBuffer>();
+                return std::make_unique<GLRenderBuffer>();
             default:
                 KITA_ENGINE_ERROR("Trying to create RenderBuffer while RenderingAPI is not selected, returning nullptr");
                 return nullptr;

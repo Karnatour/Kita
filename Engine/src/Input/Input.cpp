@@ -1,14 +1,16 @@
 #include "../kitapch.h"
 #include "Input.h"
+
+#include "../Events/EventManager.h"
 #include "../Events/KeyboardEvents.h"
 #include "../Events/MouseEvents.h"
 
 namespace Kita {
-    void Input::updateKeyPress(KeyPressed& event) {
+    void Input::updateKeyPress(const KeyPressed& event) {
         m_keyboardPressedKeys.emplace_back(event.getKey(), getSortedModifiers(event.getModifiersField()));
     }
 
-    void Input::updateKeyRelease(KeyReleased& event) {
+    void Input::updateKeyRelease(const KeyReleased& event) {
         for (int i = 0; i < m_keyboardPressedKeys.size(); ++i) {
             if (m_keyboardPressedKeys[i].key == event.getKey()) {
                 m_keyboardPressedKeys.erase(m_keyboardPressedKeys.begin() + i);
@@ -19,7 +21,7 @@ namespace Kita {
     bool Input::isKeyPressed(const InputKeys::KeyboardKey key, std::vector<InputKeys::Modifiers> modifiers) {
         std::ranges::sort(modifiers);
 
-        for (auto [m_key, m_keyboardModifiers] : m_keyboardPressedKeys) {
+        for (const auto& [m_key, m_keyboardModifiers] : m_keyboardPressedKeys) {
             if (m_key == key && m_keyboardModifiers == modifiers) {
                 return true;
             }
@@ -28,11 +30,11 @@ namespace Kita {
     }
 
 
-    void Input::updateButtonPress(MousePressed& event) {
+    void Input::updateButtonPress(const MousePressed& event) {
         m_mousePressedKeys.emplace_back(event.getButton(), getSortedModifiers(event.getModifiersField()));
     }
 
-    void Input::updateButtonRelease(MouseReleased& event) {
+    void Input::updateButtonRelease(const MouseReleased& event) {
         for (int i = 0; i < m_mousePressedKeys.size(); ++i) {
             if (m_mousePressedKeys[i].button == event.getButton()) {
                 m_mousePressedKeys.erase(m_mousePressedKeys.begin() + i);
@@ -43,15 +45,16 @@ namespace Kita {
     bool Input::isMousePressed(const InputKeys::MouseButton button, std::vector<InputKeys::Modifiers> modifiers) {
         std::ranges::sort(modifiers);
 
-        for (auto [m_button, m_mouseModifiers] : m_mousePressedKeys) {
+        for (const auto& [m_button, m_mouseModifiers] : m_mousePressedKeys) {
             if (m_button == button && m_mouseModifiers == modifiers) {
                 return true;
             }
         }
+
         return false;
     }
 
-    void Input::updateMouseMovement(MouseMoved& event) {
+    void Input::updateMouseMovement(const MouseMoved& event) {
         m_mousePos.lastMousePosition = m_mousePos.mousePosition;
         m_mousePos.mousePosition = event.getPosition();
 
@@ -68,7 +71,7 @@ namespace Kita {
         return m_mousePos;
     }
 
-    void Input::updateMouseScroll(MouseScrolled& event) {
+    void Input::updateMouseScroll(const MouseScrolled& event) {
         m_mouseScroll.lastMouseScrollOffset = m_mouseScroll.mouseScrollOffset;
         m_mouseScroll.mouseScrollOffset = event.getOffset();
 
@@ -81,6 +84,15 @@ namespace Kita {
 
     MouseScroll Input::getMouseScroll() {
         return m_mouseScroll;
+    }
+
+    void Input::init() {
+        EventManager::listenToEvent<KeyPressed>(updateKeyPress);
+        EventManager::listenToEvent<KeyReleased>(updateKeyRelease);
+        EventManager::listenToEvent<MousePressed>(updateButtonPress);
+        EventManager::listenToEvent<MouseReleased>(updateButtonRelease);
+        EventManager::listenToEvent<MouseMoved>(updateMouseMovement);
+        EventManager::listenToEvent<MouseScrolled>(updateMouseScroll);
     }
 
     void Input::update() {

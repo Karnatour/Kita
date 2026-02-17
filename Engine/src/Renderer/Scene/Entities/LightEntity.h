@@ -20,7 +20,7 @@ namespace Kita {
 
         struct ShadowProperties {
             static constexpr std::pair<int, int> resolution = std::make_pair(4096, 4096);
-            std::shared_ptr<FrameBuffer> depthMapFBO = FrameBuffer::createPtr();
+            std::unique_ptr<FrameBuffer> depthMapFBO = FrameBuffer::createPtr();
         };
 
         struct Lights {

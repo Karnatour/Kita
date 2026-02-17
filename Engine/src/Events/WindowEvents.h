@@ -6,7 +6,7 @@ namespace Kita {
     class KITAENGINE_API WindowMoved final : public Event {
     public:
         WindowMoved(int x, int y);
-        std::pair<int, int> getPosition();
+        std::pair<int, int> getPosition() const;
 
         int m_x, m_y;
     };
@@ -14,7 +14,7 @@ namespace Kita {
     class KITAENGINE_API WindowResized final : public Event {
     public:
         WindowResized(int width, int height);
-        std::pair<int, int> getPosition();
+        std::pair<int, int> getSize() const;
 
     private:
         int m_width, m_height;
@@ -30,5 +30,14 @@ namespace Kita {
 
     private:
         bool m_isFocused;
+    };
+
+    class KITAENGINE_API FrameBufferResized final : public Event {
+    public:
+        FrameBufferResized(int width, int height);
+        std::pair<int, int> getSize() const;
+
+    private:
+        int m_width, m_height;
     };
 } // Kita

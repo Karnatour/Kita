@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <stb_image.h>
+#include <magic_enum/magic_enum.hpp>
 
 #include "../../../../Asset/AssetImporter.h"
 #include "../../../Textures/TextureManager.h"
@@ -28,16 +29,12 @@ namespace Kita {
             glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             switch (m_channels) {
-                case 2:
-                    glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
-                    glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, image);
-                    break;
                 case 3:
-                    glTextureStorage2D(m_texture, levels, GL_RGB8, m_width, m_height);
+                    glTextureStorage2D(m_texture, levels, GL_SRGB8, m_width, m_height);
                     glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, image);
                     break;
                 case 4:
-                    glTextureStorage2D(m_texture, levels, GL_RGBA8, m_width, m_height);
+                    glTextureStorage2D(m_texture, levels, GL_SRGB8_ALPHA8, m_width, m_height);
                     glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
                     break;
                 default:
@@ -68,7 +65,7 @@ namespace Kita {
             glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            glTextureStorage2D(m_texture, 1, GL_RGB16F, m_width, m_height);
+            glTextureStorage2D(m_texture, 1, GL_RGB32F, m_width, m_height);
             glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, image);
 
             stbi_image_free(image);
@@ -82,6 +79,8 @@ namespace Kita {
 
     void GLTexture::createCubemapTexture(const std::pair<int, int>& resolution) {
         m_textureType = TextureType::CUBEMAP;
+        m_width = resolution.first;
+        m_height = resolution.second;
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_texture);
 
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -90,22 +89,24 @@ namespace Kita {
         glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTextureStorage2D(m_texture, 1, GL_RGB16F, resolution.first, resolution.second);
+        glTextureStorage2D(m_texture, 1, GL_RGB32F, resolution.first, resolution.second);
     }
 
-    void GLTexture::createBufferTypeTexture(const BufferType& bufferType, const std::pair<int, int>& resolution) {
+    void GLTexture::createBufferTypeTexture(const std::pair<int, int>& resolution, const BufferType& bufferType, const bool highPrecision) {
         glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
         float borderColor[] = {1.0, 1.0, 1.0, 1.0};
         glTextureParameterfv(m_texture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
+        const auto colorInternalFormat = highPrecision ? GL_RGBA32F : GL_RGBA8;
+
         switch (bufferType) {
             case BufferType::COLOR:
                 m_textureType = TextureType::COLOR;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTextureStorage2D(m_texture, 1, GL_RGB8, resolution.first, resolution.second);
+                glTextureStorage2D(m_texture, 1, colorInternalFormat, resolution.first, resolution.second);
                 break;
             case BufferType::DEPTH:
                 m_textureType = TextureType::DEPTH;
@@ -113,16 +114,23 @@ namespace Kita {
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 glTextureStorage2D(m_texture, 1, GL_DEPTH_COMPONENT24, resolution.first, resolution.second);
                 break;
-            case BufferType::STENCIL:
-                m_textureType = TextureType::STENCIL;
+            case BufferType::DEPTH_STENCIL:
+                m_textureType = TextureType::DEPTH;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTextureStorage2D(m_texture, 1, GL_STENCIL_INDEX8, resolution.first, resolution.second);
+                glTextureStorage2D(m_texture, 1, GL_DEPTH24_STENCIL8, resolution.first, resolution.second);
+                break;
+            default:
+                KITA_ENGINE_ERROR("Trying to create unsupported buffertype framebuffer texture {}",magic_enum::enum_name(bufferType));
                 break;
         }
     }
 
     void GLTexture::bind(const unsigned int position) {
         glBindTextureUnit(position, m_texture);
+    }
+
+    void GLTexture::destroy() {
+        glDeleteTextures(1, &m_texture);
     }
 } // Kita

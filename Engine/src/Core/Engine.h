@@ -20,16 +20,17 @@ namespace Kita {
         void run();
         void stop();
 
-        Window& getWindow() const;
-        Renderer& getRenderer() const;
+        Window& getWindow();
+        Renderer& getRenderer();
     private:
         void render();
         void update();
         void exit();
+        static void onWindowClosed(WindowClosed& event);
         bool m_isRunning = false;
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Renderer> m_renderer;
         std::shared_ptr<IGameInstance> m_game;
-        std::chrono::time_point<std::chrono::system_clock> m_currentFrameTime;
+        std::chrono::time_point<std::chrono::steady_clock> m_currentFrameTime;
     };
 }

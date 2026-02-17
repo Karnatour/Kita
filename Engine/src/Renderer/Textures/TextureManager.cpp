@@ -3,19 +3,15 @@
 
 namespace Kita {
     void TextureManager::addTexture(const std::filesystem::path& texturePath, const Texture::TextureType& textureType) {
-        auto [iterator,inserted] = m_textureMap.try_emplace(texturePath, Texture::createPtr());
+        if (m_textureMap.contains(texturePath)) {
+            KITA_ENGINE_DEBUG("Texture is already included in TextureManager, {}", texturePath.string());
+            return;
+        }
 
-        if (inserted) {
-            if (iterator->second->createTexture2D(texturePath, textureType)) {
-                KITA_ENGINE_DEBUG("Added texture to TextureManager, {}", texturePath.string());
-            }
-            else {
-                m_textureMap.erase(iterator);
-            }
-        }
-        else {
-            KITA_ENGINE_WARN("Texture is already included in TextureManager, {}", texturePath.string());
-        }
+        auto texture = Texture::createPtr();
+        texture->createTexture2D(texturePath, textureType);
+        m_textureMap.emplace(texturePath, std::move(texture));
+        KITA_ENGINE_DEBUG("Added texture to TextureManager, {}", texturePath.string());
     }
 
     std::shared_ptr<Texture> TextureManager::getTexture(const std::filesystem::path& texturePath) const {
