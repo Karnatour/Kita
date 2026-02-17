@@ -28,13 +28,19 @@ namespace Kita {
             glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+            const bool useSRGB = (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR);
+
             switch (m_channels) {
+                case 2:
+                    glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
+                    glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, image);
+                    break;
                 case 3:
-                    glTextureStorage2D(m_texture, levels, GL_SRGB8, m_width, m_height);
+                    glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8 : GL_RGB8, m_width, m_height);
                     glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, image);
                     break;
                 case 4:
-                    glTextureStorage2D(m_texture, levels, GL_SRGB8_ALPHA8, m_width, m_height);
+                    glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8, m_width, m_height);
                     glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
                     break;
                 default:
@@ -121,7 +127,7 @@ namespace Kita {
                 glTextureStorage2D(m_texture, 1, GL_DEPTH24_STENCIL8, resolution.first, resolution.second);
                 break;
             default:
-                KITA_ENGINE_ERROR("Trying to create unsupported buffertype framebuffer texture {}",magic_enum::enum_name(bufferType));
+                KITA_ENGINE_ERROR("Trying to create unsupported buffertype framebuffer texture {}", magic_enum::enum_name(bufferType));
                 break;
         }
     }
