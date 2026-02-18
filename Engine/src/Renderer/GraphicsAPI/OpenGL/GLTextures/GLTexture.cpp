@@ -29,7 +29,6 @@ namespace Kita {
             glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             const bool useSRGB = (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR);
-
             switch (m_channels) {
                 case 2:
                     glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);

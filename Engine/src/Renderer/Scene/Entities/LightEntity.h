@@ -10,9 +10,9 @@ namespace Kita {
             glm::vec4 position = {0.0f, 0.0f, 3.0f, 1.0f};
             glm::vec4 direction = {0.0f, 0.0f, 3.0f, 1.0f};
             glm::vec4 attenuation = {1.0f, 0.09f, 0.032f, 1.0f};
-            glm::vec4 ambient = {0.02f, 0.03f, 0.05f, 1.0f};
-            glm::vec4 diffuse = {0.15f, 0.2f, 0.3f, 1.0f};
-            glm::vec4 specular = {0.3f, 0.4f, 0.5f, 1.0f};
+            glm::vec4 ambient = {0.05f, 0.06f, 0.08f, 1.0f};
+            glm::vec4 diffuse = {1.2f, 1.1f, 0.9f, 1.0f};
+            glm::vec4 specular = {1.5f, 1.4f, 1.3f, 1.0f};
             glm::vec4 cutOff = {glm::cos(glm::radians(12.5f)), glm::cos(glm::radians(15.0f)), 1.0f, 1.0f};
             glm::mat4 lightSpaceMatrix = 1.0f;
             alignas(16) int lightType;
