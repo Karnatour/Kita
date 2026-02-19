@@ -104,19 +104,17 @@ vec3 calculateSpotLight(LightProperties light){
 vec3 calculatePhongVec(LightProperties light, float diff, float spec, float attenuation, bool applyAttenuation, float shadow){
     vec3 ambient, diffuse, specular;
     if (hasDiffuseTex) {
-        ambient = light.ambient.xyz * vec3(texture(diffuseTex, texCoord));
-        diffuse = light.diffuse.xyz * diff * vec3(texture(diffuseTex, texCoord));
-    }
-    else {
-        ambient = light.ambient.xyz;
-        diffuse = light.diffuse.xyz * diff;
+        ambient = light.ambient.xyz * phongProperties.ambient.xyz * vec3(texture(diffuseTex, texCoord));
+        diffuse = light.diffuse.xyz * phongProperties.diffuse.xyz * diff * vec3(texture(diffuseTex, texCoord));
+    } else {
+        ambient = light.ambient.xyz * phongProperties.ambient.xyz;
+        diffuse = light.diffuse.xyz * phongProperties.diffuse.xyz * diff;
     }
 
     if (hasSpecularTex) {
-        specular = light.specular.xyz * spec * vec3(texture(specularTex, texCoord));
-    }
-    else {
-        specular = light.specular.xyz * spec;
+        specular = light.specular.xyz * phongProperties.specular.xyz * spec * vec3(texture(specularTex, texCoord));
+    } else {
+        specular = light.specular.xyz * phongProperties.specular.xyz * spec;
     }
 
     if (applyAttenuation){

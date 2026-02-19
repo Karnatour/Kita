@@ -155,6 +155,9 @@ namespace Kita {
             phongProperties.shininess = shininnes;
         }
 
+        if (phongProperties.ambient.x == 0.0f && phongProperties.ambient.y == 0.0f && phongProperties.ambient.z == 0.0f) {
+            phongProperties.ambient = {0.3f, 0.3f, 0.3f, 1.0f};
+        }
         material->setPhongProperties(phongProperties);
     }
 } // Kita

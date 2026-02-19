@@ -6,7 +6,6 @@
 #include <filesystem>
 
 namespace Kita {
-    //TODO Fix material/shader lifetime
     class KITAENGINE_API ShaderManager {
     public:
         static inline const std::filesystem::path SHADER_PREFIX = "../assets/shaders/";
