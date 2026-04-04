@@ -1,40 +1,37 @@
 #pragma once
-#include "Transformation.h"
-#include "Primitives/Model.h"
+#include "Scene.h"
+#include "entt/entt.hpp"
 #include "../../Core/DllTemplate.h"
 
 namespace Kita {
-    class RendererAPI;
 
     class KITAENGINE_API Entity {
     public:
-        Entity();
-        Entity(const Entity& original);
-        explicit Entity(const std::shared_ptr<Model>& model);
-        Entity(const std::shared_ptr<Model>& model, const Transformation& transformation);
-        virtual ~Entity() = default;
+        Entity() = default;
+        explicit Entity(Scene* scene);
 
-        virtual bool onRender(RendererAPI& rendererApi);
+        template <typename... Ts>
+        bool hasAllComponents() const {
+            return m_scene->m_registry.all_of<Ts...>(m_enttEntity);
+        }
 
-        void setModel(const std::shared_ptr<Model>& model);
-        void setTransformation(const Transformation& transformation);
+        template <typename... Ts>
+        bool hasAnyComponent() const {
+            return m_scene->m_registry.any_of<Ts...>(m_enttEntity);
+        }
 
-        bool shouldRenderOnce() const;
-        bool isFirstFrame() const;
-        void setFirstFrame(bool isFirstFrame);
-        std::shared_ptr<Model>& getModel();
-        Transformation& getTransformation();
+        template <typename T, typename... Args>
+        void addComponent(Args&&... arg) {
+            m_scene->m_registry.emplace<T>(m_enttEntity, std::forward<Args>(arg)...);
+        }
 
-        unsigned int getID() const;
+        template <typename T>
+        void removeComponent() const {
+            m_scene->m_registry.remove<T>(m_enttEntity);
+        }
 
-        std::shared_ptr<Entity> clone() const;
-
-    protected:
-        inline static unsigned int m_idCounter = 0;
-        unsigned int m_id;
-        std::shared_ptr<Model> m_model;
-        Transformation m_transformation;
-        bool m_renderOnce = false;
-        bool m_firstFrame = true;
+    private:
+        Scene* m_scene = nullptr;
+        entt::entity m_enttEntity = entt::null;
     };
 } // Kita

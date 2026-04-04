@@ -17,7 +17,6 @@ namespace Kita {
     private:
         std::vector<std::shared_ptr<Mesh>> m_meshes;
         std::vector<std::shared_ptr<Material>> m_materials;
-        std::filesystem::path m_path;
 
     };
 } // Kita

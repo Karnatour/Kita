@@ -23,3 +23,4 @@
 
 #include "Core/Logger.h"
 #include "File/FileReader.h"
+#include "Core/Assert.h"

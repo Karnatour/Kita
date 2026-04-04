@@ -5,17 +5,14 @@
 
 namespace Kita {
     Material::Material() {
-        m_shader = Engine::getEngine()->getRenderer().getShaderManager().getShader(ShaderManager::DEFAULT_VERTEX,
-                                                                                   ShaderManager::DEFAULT_FRAGMENT);
-        m_phongUniformBuffer->createBuffer(sizeof(PhongProperties), &m_phongProperties);
+        m_shader = Engine::getEngine()->getRenderer().getShaderManager().getShader(ShaderManager::DEFAULT_VERTEX, ShaderManager::DEFAULT_FRAGMENT);
     }
 
     Material::Material(const std::shared_ptr<Shader>& shader) {
         m_shader = shader;
-        m_phongUniformBuffer->createBuffer(sizeof(PhongProperties), &m_phongProperties);
     }
 
-    const std::shared_ptr<Shader>& Material::getShader() {
+    const std::shared_ptr<Shader>& Material::getShader() const {
         return m_shader;
     }
 
@@ -23,16 +20,28 @@ namespace Kita {
         m_shader = shader;
     }
 
-    const std::vector<std::shared_ptr<Texture>>& Material::getTextures() {
-        return m_textures;
+    const std::shared_ptr<Texture>& Material::getDiffuseTexture() const {
+        return m_diffuseTexture;
     }
 
-    void Material::addTexture(const std::shared_ptr<Texture>& texture) {
-        m_textures.push_back(texture);
+    void Material::setDiffuseTexture(const std::shared_ptr<Texture>& diffuseTexture)  {
+        m_diffuseTexture = diffuseTexture;
     }
 
-    void Material::replaceTexture(std::shared_ptr<Texture>& texture, const size_t position) {
-        m_textures.at(position).swap(texture);
+    const std::shared_ptr<Texture>& Material::getSpecularTexture() const {
+        return m_specularTexture;
+    }
+
+    void Material::setSpecularTexture(const std::shared_ptr<Texture>& specularTexture) {
+        m_specularTexture = specularTexture;
+    }
+
+    const std::shared_ptr<Texture>& Material::getNormalTexture() const {
+        return m_normalTexture;
+    }
+
+    void Material::setNormalTexture(const std::shared_ptr<Texture>& normalTexture) {
+        m_normalTexture = normalTexture;
     }
 
     const PhongProperties& Material::getPhongProperties() const {
@@ -41,11 +50,5 @@ namespace Kita {
 
     void Material::setPhongProperties(const PhongProperties& phongProperties) {
         m_phongProperties = phongProperties;
-        m_phongUniformBuffer->bind(1);
-        m_phongUniformBuffer->update(sizeof(m_phongProperties), &m_phongProperties);
-    }
-
-    const std::shared_ptr<UniformBuffer>& Material::getPhongUniformBuffer() {
-        return m_phongUniformBuffer;
     }
 } // Kita

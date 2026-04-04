@@ -1,6 +1,6 @@
 <img src="Engine/assets/textures/logo.png" alt="logo" width="256"/>
 
-*A 3D game engine built with CMake and written in C++ 20*
+*A 3D game engine built with CMake and written in C++ 23*
 
 ---
 
@@ -13,7 +13,7 @@
 - **stb** (Image loading)
 - **assimp** (Asset importer)
 - **magic enum** (Used for printing enum values)
-
+- **EnTT** (ECS library)
 ---
 
 ## Features

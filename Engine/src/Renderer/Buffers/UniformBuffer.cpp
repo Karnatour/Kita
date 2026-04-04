@@ -12,9 +12,10 @@ namespace Kita {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
                 return std::make_shared<GLUniformBuffer>();
+            case RenderingAPI::NONE:
+                KITA_ENGINE_ASSERT(false, "RenderingAPI::NONE is not a valid selection");
             default:
-                KITA_ENGINE_ERROR("Trying to create UniformBuffer while RenderingAPI is not selected, returning nullptr");
-                return nullptr;
+                KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
     }
 } // Kita

@@ -12,11 +12,8 @@ namespace Kita {
         Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
         Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, int materialIndex);
         std::shared_ptr<VertexArray> getVertexArray() const;
-        int getMaterialIndex() const;
-        void setMaterialIndex(int materialIndex);
 
     private:
         std::shared_ptr<VertexArray> m_vao = VertexArray::createPtr();
-        int m_materialIndex;
     };
 } // Kita

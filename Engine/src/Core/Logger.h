@@ -7,8 +7,8 @@ namespace Kita {
     class KITAENGINE_API Logger {
     public:
         static void init();
-        static std::shared_ptr<spdlog::logger>& getEngineInstance();
-        static std::shared_ptr<spdlog::logger>& getUserInstance();
+        static const std::shared_ptr<spdlog::logger>& getEngineInstance();
+        static const std::shared_ptr<spdlog::logger>& getUserInstance();
 
     private:
         static inline std::shared_ptr<spdlog::logger> m_engineInstance = nullptr;

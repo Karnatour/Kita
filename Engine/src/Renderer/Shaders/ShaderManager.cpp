@@ -2,7 +2,7 @@
 #include "ShaderManager.h"
 
 namespace Kita {
-    ShaderManager::ShaderManager() {
+    void ShaderManager::init() {
         addShader(DEFAULT_VERTEX, DEFAULT_FRAGMENT);
     }
 
@@ -17,7 +17,7 @@ namespace Kita {
         auto shader = Shader::createPtr();
         shader->compileShader(vertexPath, fragmentPath);
         m_shaderMap.emplace(key, std::move(shader));
-        KITA_ENGINE_DEBUG("Added shader to ShaderManager, [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.string(), fragmentPath.string());
+        KITA_ENGINE_DEBUG("Added shader to ShaderManager: [VERTEX]->{}, [FRAGMENT]->{}", vertexPath.string(), fragmentPath.string());
     }
 
     std::shared_ptr<Shader> ShaderManager::getShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) const {

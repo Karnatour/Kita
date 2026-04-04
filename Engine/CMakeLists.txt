@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(KitaEngine)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #Create DLL
@@ -115,6 +115,15 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.h
         src/Renderer/Structs/RendererTypes.h
+        src/Core/Assert.h
+        src/Renderer/Scene/Components/Components.h
+        src/Renderer/Scene/Components/TransformationComponent.h
+        src/Renderer/Scene/Components/MaterialComponent.h
+        src/Renderer/Scene/Components/ParentComponent.h
+        src/Renderer/Scene/Components/LightComponent.h
+        src/Renderer/Scene/Components/TextureComponent.h
+        src/Renderer/Scene/Components/MeshComponent.h
+        src/Renderer/Scene/Components/RenderTags.h
 )
 
 #Multithreaded compilation
@@ -139,6 +148,9 @@ target_link_libraries(KitaEngine PUBLIC assimp::assimp)
 
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(KitaEngine PRIVATE magic_enum::magic_enum)
+
+find_package(EnTT CONFIG REQUIRED)
+target_link_libraries(KitaEngine PRIVATE EnTT::EnTT)
 
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")

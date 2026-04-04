@@ -2,62 +2,6 @@
 #include "Entity.h"
 
 namespace Kita {
-    Entity::Entity() {
-        m_id = ++m_idCounter;
-    }
-
-    Entity::Entity(const Entity& original) : m_model(original.m_model) {
-        m_id = ++m_idCounter;
-    }
-
-    Entity::Entity(const std::shared_ptr<Model>& model) : m_model(model) {
-        m_id = ++m_idCounter;
-    }
-
-    Entity::Entity(const std::shared_ptr<Model>& model, const Transformation& transformation) : m_model(model), m_transformation(transformation) {
-        m_id = ++m_idCounter;
-    }
-
-    // False - return false if we want to call default renderer entity render method
-    // True - return true if we want to skip default renderer entity render method
-    // We can combine special entity rendering with default model render by overriding the method but still returning false
-    bool Entity::onRender(RendererAPI& rendererApi) {
-        return false;
-    }
-
-    void Entity::setModel(const std::shared_ptr<Model>& model) {
-        m_model = model;
-    }
-
-    void Entity::setTransformation(const Transformation& transformation) {
-        m_transformation = transformation;
-    }
-
-    bool Entity::shouldRenderOnce() const {
-        return m_renderOnce;
-    }
-
-    bool Entity::isFirstFrame() const {
-        return m_firstFrame;
-    }
-
-    std::shared_ptr<Model>& Entity::getModel() {
-        return m_model;
-    }
-
-    Transformation& Entity::getTransformation() {
-        return m_transformation;
-    }
-
-    unsigned int Entity::getID() const {
-        return m_id;
-    }
-
-    std::shared_ptr<Entity> Entity::clone() const {
-        return std::make_shared<Entity>(*this);
-    }
-
-    void Entity::setFirstFrame(const bool isFirstFrame) {
-        m_firstFrame = isFirstFrame;
+    Entity::Entity(Scene* scene) : m_scene(scene), m_enttEntity(m_scene->m_registry.create()) {
     }
 } // Kita

@@ -15,7 +15,7 @@ namespace Kita {
             static_assert(std::is_base_of_v<Event, T>, "T must derive from Event");
             auto& callbacks = getCallbacks(typeid(T));
             callbacks.push_back([listenerFun](Event& event) {
-                listenerFun(static_cast<T&>(event)); // Downcast Event to T
+                return listenerFun(static_cast<T&>(event)); // Downcast Event to T
             });
         }
 

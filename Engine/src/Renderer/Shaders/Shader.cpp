@@ -11,11 +11,12 @@ namespace Kita {
 
     std::shared_ptr<Shader> Shader::createPtr() {
         switch (Renderer::getAPI()) {
-        case RenderingAPI::OPENGL:
-            return std::make_shared<GLShader>();
-        default:
-            KITA_ENGINE_ERROR("Trying to create Shader while RenderingAPI is not selected, returning nullptr");
-            return nullptr;
+            case RenderingAPI::OPENGL:
+                return std::make_shared<GLShader>();
+            case RenderingAPI::NONE:
+                KITA_ENGINE_ASSERT(false, "RenderingAPI::NONE is not a valid selection");
+            default:
+                KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
     }
 

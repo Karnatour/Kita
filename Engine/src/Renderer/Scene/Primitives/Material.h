@@ -1,14 +1,9 @@
 #pragma once
 
-#include <filesystem>
-
 #include "../../../Core/DllTemplate.h"
 #include "../../Shaders/Shader.h"
 #include "../../Structs/PhongProperties.h"
 #include "../../Textures/Texture.h"
-#include <vector>
-
-#include "../../Buffers/UniformBuffer.h"
 
 namespace Kita {
     class KITAENGINE_API Material {
@@ -16,22 +11,26 @@ namespace Kita {
         Material();
         explicit Material(const std::shared_ptr<Shader>& shader);
 
-        const std::shared_ptr<Shader>& getShader();
+        const std::shared_ptr<Shader>& getShader() const;
         void setShader(const std::shared_ptr<Shader>& shader);
 
-        const std::vector<std::shared_ptr<Texture>>& getTextures();
-        void addTexture(const std::shared_ptr<Texture>& texture);
-        void replaceTexture(std::shared_ptr<Texture>& texture, size_t position);
+        const std::shared_ptr<Texture>& getDiffuseTexture() const;
+        void setDiffuseTexture(const std::shared_ptr<Texture>& diffuseTexture);
+
+        const std::shared_ptr<Texture>& getSpecularTexture() const;
+        void setSpecularTexture(const std::shared_ptr<Texture>& specularTexture);
+
+        const std::shared_ptr<Texture>& getNormalTexture() const;
+        void setNormalTexture(const std::shared_ptr<Texture>& normalTexture);
 
         const PhongProperties& getPhongProperties() const;
         void setPhongProperties(const PhongProperties& phongProperties);
 
-        const std::shared_ptr<UniformBuffer>& getPhongUniformBuffer();
     private:
-        std::shared_ptr<Shader> m_shader = nullptr;
-        std::vector<std::shared_ptr<Texture>> m_textures;
+        std::shared_ptr<Shader> m_shader;
+        std::shared_ptr<Texture> m_diffuseTexture;
+        std::shared_ptr<Texture> m_specularTexture;
+        std::shared_ptr<Texture> m_normalTexture;
         PhongProperties m_phongProperties;
-        //TODO One UBO as array for all materials, do something about materials that don't need phong properties
-        std::shared_ptr<UniformBuffer> m_phongUniformBuffer = UniformBuffer::createPtr();
     };
 } // Kita

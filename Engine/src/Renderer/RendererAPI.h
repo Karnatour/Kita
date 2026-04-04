@@ -16,7 +16,7 @@ namespace Kita {
     class KITAENGINE_API RendererAPI {
     public:
         virtual ~RendererAPI() = default;
-        void init(Renderer& renderer);
+        void init(const Renderer& renderer);
         static std::unique_ptr<RendererAPI> createPtr(RenderingAPI api);
         virtual void setupDebug() = 0;
 
@@ -47,7 +47,7 @@ namespace Kita {
         std::pair<int, int> m_viewport = std::make_pair(1600, 900);
     private:
         void renderSkyboxEntity(const std::shared_ptr<SkyboxEntity>& skyboxEntity);
-        void prepareScreenQuadModel(Renderer& renderer);
+        void prepareScreenQuadModel(const Renderer& renderer);
         void enableTextureInShader(const std::shared_ptr<Shader>& shader, const std::shared_ptr<Texture>& texture);
         void setMaterial(int materialIndex, const std::vector<std::shared_ptr<Material>>& materials, const Transformation& transformation);
         void setMaterial(int materialIndex, const std::vector<std::shared_ptr<Material>>& materials);

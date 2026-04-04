@@ -14,7 +14,7 @@ namespace Kita {
 
     void GLShader::compileShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
         m_path = std::make_pair(vertexPath, fragmentPath);
-        KITA_ENGINE_DEBUG("Starting compilation of shaders, [VERTEX]->{}, [FRAGMENT]->{}", m_path.first.string(), m_path.second.string());
+        KITA_ENGINE_DEBUG("Starting compilation of shaders: [VERTEX]->{}, [FRAGMENT]->{}", m_path.first.string(), m_path.second.string());
 
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
         compileGLShader(vertexShader, ShaderManager::SHADER_PREFIX / m_path.first);

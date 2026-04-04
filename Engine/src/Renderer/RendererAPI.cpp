@@ -39,7 +39,7 @@ namespace Kita {
         m_mainFramebuffer->unbind();
     }
 
-    void RendererAPI::init(Renderer& renderer) {
+    void RendererAPI::init(const Renderer& renderer) {
         setupDebug();
         m_mainFramebuffer->createBuffer(m_viewport, std::initializer_list<FrameBuffer::AttachmentSpec>{
                                             {BufferType::COLOR, FrameBuffer::AttachmentType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachmentType::RENDERBUFFER}
@@ -89,7 +89,7 @@ namespace Kita {
         enableCapability(Capability::DEPTH_TEST);
     }
 
-    void RendererAPI::prepareScreenQuadModel(Renderer& renderer) {
+    void RendererAPI::prepareScreenQuadModel(const Renderer& renderer) {
         m_screenQuadModel = std::make_unique<Model>();
 
         renderer.getShaderManager().addShader("DefaultFrameBufferVertex.glsl", "DefaultFrameBufferFragment.glsl");

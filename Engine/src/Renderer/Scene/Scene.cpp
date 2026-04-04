@@ -21,14 +21,8 @@ namespace Kita {
         rendererApi.renderMainFrameBufferToScreen();
     }
 
-    void Scene::addEntity(const std::shared_ptr<Entity>& entity) {
-        m_entities.push_back(entity);
-        m_entityLookup[entity->getID()] = entity.get();
-
-        if (const auto lightEntity = std::dynamic_pointer_cast<LightEntity>(entity)) {
-            addLight(lightEntity->getLightProperties());
-            m_lightEntities.push_back(lightEntity);
-        }
+    Entity Scene::createEntity() {
+        return Entity(this);
     }
 
     Camera& Scene::getCamera() {
