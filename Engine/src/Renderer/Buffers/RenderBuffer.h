@@ -1,6 +1,6 @@
 #pragma once
 #include "../../Core/DllTemplate.h"
-#include "../../Renderer/Structs/RendererTypes.h"
+#include "../Types/RendererTypes.h"
 
 namespace Kita {
     class KITAENGINE_API RenderBuffer {

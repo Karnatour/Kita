@@ -1,16 +1,15 @@
 #pragma once
 #include <vector>
 #include "Vertex.h"
-#include "../../Core/DllTemplate.h"
 
 namespace Kita {
-    struct KITAENGINE_API Cube {
+    struct Cube {
         static std::vector<Vertex> vertices;
 
         static std::vector<unsigned int> indices;
     };
 
-    struct KITAENGINE_API Quad {
+    struct Quad {
         static std::vector<Vertex> vertices;
 
         static std::vector<unsigned int> indices;

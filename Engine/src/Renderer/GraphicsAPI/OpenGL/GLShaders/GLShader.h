@@ -1,7 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 
-#include "../../../Shaders/Shader.h"
+#include "../../../../Assets/Shader.h"
 
 namespace Kita {
     class GLShader final : public Shader {

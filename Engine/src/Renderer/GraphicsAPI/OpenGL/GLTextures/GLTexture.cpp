@@ -5,7 +5,7 @@
 #include <stb_image.h>
 #include <magic_enum/magic_enum.hpp>
 
-#include "../../../../Asset/AssetImporter.h"
+#include "../../../../Assets/AssetImporter.h"
 #include "../../../Textures/TextureManager.h"
 
 namespace Kita {

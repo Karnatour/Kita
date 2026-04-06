@@ -1,6 +1,6 @@
 #pragma once
 #include "../../Core/DllTemplate.h"
-#include "Shader.h"
+#include "../../Assets/Shader.h"
 #include <unordered_map>
 #include <memory>
 #include <filesystem>

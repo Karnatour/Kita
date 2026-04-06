@@ -2,7 +2,7 @@
 #include <complex>
 
 #include "../Core/DllTemplate.h"
-#include "Structs/RenderingAPI.h"
+#include "Types/RenderingAPI.h"
 #include <memory>
 
 #include "Scene/Entity.h"

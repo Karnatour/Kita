@@ -1,7 +1,7 @@
 #pragma once
 #include "../src/Core/DllTemplate.h"
 #include <memory>
-#include "../../Renderer/Structs/RendererTypes.h"
+#include "../Renderer/Types/RendererTypes.h"
 
 namespace Kita {
     class KITAENGINE_API Texture {

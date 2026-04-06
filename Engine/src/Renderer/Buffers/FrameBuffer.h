@@ -1,7 +1,7 @@
 #pragma once
 #include "RenderBuffer.h"
 #include "../../Core/DllTemplate.h"
-#include "../Textures/Texture.h"
+#include "../../Assets/Texture.h"
 
 namespace Kita {
     class KITAENGINE_API FrameBuffer {

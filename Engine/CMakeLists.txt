@@ -48,18 +48,18 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h
-        src/Renderer/Structs/Vertex.h
+        src/Renderer/Util/Vertex.h
         src/Renderer/Renderer.cpp
         src/Renderer/Renderer.h
         src/Renderer/Scene/Primitives/Mesh.cpp
         src/Renderer/Scene/Primitives/Mesh.h
         src/Renderer/Scene/Scene.cpp
         src/Renderer/Scene/Scene.h
-        src/Renderer/Structs/RenderingAPI.h
+        src/Renderer/Types/RenderingAPI.h
         src/Renderer/Shaders/ShaderManager.cpp
         src/Renderer/Shaders/ShaderManager.h
-        src/Renderer/Shaders/Shader.cpp
-        src/Renderer/Shaders/Shader.h
+        src/Assets/Shader.cpp
+        src/Assets/Shader.h
         src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.h
         src/File/FileReader.cpp
@@ -68,8 +68,8 @@ add_library(KitaEngine SHARED
         src/Renderer/RendererAPI.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLRendererAPI.h
-        src/Renderer/Textures/Texture.cpp
-        src/Renderer/Textures/Texture.h
+        src/Assets/Texture.cpp
+        src/Assets/Texture.h
         src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.h
         src/Renderer/Textures/TextureManager.cpp
@@ -83,21 +83,19 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/UniformBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h
-        src/Renderer/Structs/GeometryHelper.h
-        src/Asset/KAsset.cpp
-        src/Asset/KAsset.h
+        src/Renderer/Util/GeometryUtil.h
+        src/Assets/KAsset.cpp
+        src/Assets/KAsset.h
         src/Renderer/Scene/Primitives/Material.cpp
         src/Renderer/Scene/Primitives/Material.h
         src/Renderer/Scene/Primitives/Model.cpp
         src/Renderer/Scene/Primitives/Model.h
-        src/Renderer/Structs/PhongProperties.h
-        src/Asset/AssetImporter.cpp
-        src/Asset/AssetImporter.h
-        src/Renderer/Structs/GeometryHelper.cpp
+        src/Renderer/Util/PhongProperties.h
+        src/Assets/AssetImporter.cpp
+        src/Assets/AssetImporter.h
+        src/Renderer/Util/GeometryUtil.cpp
         src/Renderer/Scene/Entity.cpp
         src/Renderer/Scene/Entity.h
-        src/Renderer/Scene/Transformation.cpp
-        src/Renderer/Scene/Transformation.h
         src/Renderer/Scene/Entities/LightEntity.cpp
         src/Renderer/Scene/Entities/LightEntity.h
         src/Renderer/Buffers/ShaderStorageBuffer.cpp
@@ -114,16 +112,21 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/RenderBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.h
-        src/Renderer/Structs/RendererTypes.h
+        src/Renderer/Types/RendererTypes.h
         src/Core/Assert.h
         src/Renderer/Scene/Components/Components.h
         src/Renderer/Scene/Components/TransformationComponent.h
         src/Renderer/Scene/Components/MaterialComponent.h
         src/Renderer/Scene/Components/ParentComponent.h
         src/Renderer/Scene/Components/LightComponent.h
-        src/Renderer/Scene/Components/TextureComponent.h
         src/Renderer/Scene/Components/MeshComponent.h
         src/Renderer/Scene/Components/RenderTags.h
+        src/Renderer/Scene/Components/UpdateTags.h
+        src/Renderer/Util/TransformationUtil.cpp
+        src/Renderer/Util/TransformationUtil.h
+        src/Assets/Asset.h
+        src/Assets/AssetManager.cpp
+        src/Assets/AssetManager.h
 )
 
 #Multithreaded compilation

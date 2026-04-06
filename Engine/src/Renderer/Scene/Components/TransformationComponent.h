@@ -3,6 +3,6 @@
 
 namespace Kita {
     struct TransformationComponent {
-        Transformation transformation;
+        glm::mat4 m_model = glm::mat4(1.0f);
     };
 } //Kita

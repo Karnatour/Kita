@@ -1,5 +1,5 @@
 #include "../../kitapch.h"
-#include "GeometryHelper.h"
+#include "GeometryUtil.h"
 
 namespace Kita {
     std::vector<Vertex> Cube::vertices = {

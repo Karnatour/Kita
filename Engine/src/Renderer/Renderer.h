@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scene/Scene.h"
-#include "Structs/RenderingAPI.h"
+#include "Types/RenderingAPI.h"
 #include "../Core/DllTemplate.h"
 #include "Shaders/ShaderManager.h"
 #include <memory>

@@ -1,5 +1,5 @@
 #pragma once
-#include "Texture.h"
+#include "../../Assets/Texture.h"
 #include "../src/Core/DllTemplate.h"
 
 namespace Kita {

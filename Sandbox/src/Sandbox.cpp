@@ -2,7 +2,7 @@
 
 #include <glm/ext/matrix_transform.hpp>
 #include <magic_enum/magic_enum.hpp>
-#include "../../Engine/src/Asset/KAsset.h"
+#include "../../Engine/src/Assets/KAsset.h"
 
 std::shared_ptr<Kita::LightEntity> lightEntity;
 std::shared_ptr<Kita::LightEntity> lightEntity2;

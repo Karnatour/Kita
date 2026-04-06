@@ -2,9 +2,9 @@
 #include "Engine.h"
 
 #include "Time.h"
-#include "../Asset/KAsset.h"
+#include "../Assets/KAsset.h"
 #include "../Window/Window.h"
-#include "../Events/EventManager.h"
+#include "../Event/EventManager.h"
 #include "../Input/Input.h"
 
 namespace Kita {

@@ -1,8 +1,8 @@
-#include "../../kitapch.h"
-#include "Texture.h"
+#include "../kitapch.h"
+#include "../Renderer/Textures/Texture.h"
 
-#include "../Renderer.h"
-#include "../GraphicsAPI/OpenGL/GLTextures/GLTexture.h"
+#include "../Renderer/Renderer.h"
+#include "../Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.h"
 
 namespace Kita {
     std::shared_ptr<Texture> Texture::createPtr() {

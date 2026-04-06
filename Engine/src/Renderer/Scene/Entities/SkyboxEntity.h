@@ -2,7 +2,7 @@
 #include "../Entity.h"
 #include "../../../Core/DllTemplate.h"
 #include "../../Buffers/FrameBuffer.h"
-#include "../../Textures/Texture.h"
+#include "../../../Assets/Texture.h"
 
 namespace Kita {
     class KITAENGINE_API SkyboxEntity final : public Entity {

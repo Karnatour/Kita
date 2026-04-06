@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "../../Core/DllTemplate.h"
+#include "../Core/DllTemplate.h"
 #include <memory>
 #include <glm/glm.hpp>
 
@@ -10,7 +10,7 @@ namespace Kita {
         virtual ~Shader() = default;
         virtual void bind() = 0;
         unsigned int getProgram() const;
-        static std::shared_ptr<Shader> createPtr();
+        static std::unique_ptr<Shader> createPtr();
         virtual void compileShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) = 0;
 
         virtual void setUniformBool(const std::string& location, bool value) = 0;

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../../../Core/DllTemplate.h"
-#include "../../Shaders/Shader.h"
-#include "../../Structs/PhongProperties.h"
-#include "../../Textures/Texture.h"
+#include "../../../Assets/Shader.h"
+#include "../../Util/PhongProperties.h"
+#include "../../../Assets/Texture.h"
 
 namespace Kita {
     class KITAENGINE_API Material {

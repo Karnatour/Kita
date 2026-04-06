@@ -6,7 +6,7 @@
 
 #include "../../RendererAPI.h"
 #include "../../../Core/Engine.h"
-#include "../../Structs/GeometryHelper.h"
+#include "../../Util/GeometryUtil.h"
 
 namespace Kita {
     LightEntity::LightEntity(LightType lightType) {

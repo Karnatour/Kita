@@ -6,7 +6,7 @@
 #include "GraphicsAPI/OpenGL/GLRendererAPI.h"
 #include "Scene/Entities/LightEntity.h"
 #include "Scene/Entities/SkyboxEntity.h"
-#include "Structs/GeometryHelper.h"
+#include "Util/GeometryUtil.h"
 
 namespace Kita {
     void RendererAPI::renderShadowPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::vector<std::shared_ptr<LightEntity>>& lightEntities) {
