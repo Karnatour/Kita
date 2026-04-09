@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "Vertex.h"
+#include "../Vertex.h"
 
 namespace Kita {
     struct Cube {

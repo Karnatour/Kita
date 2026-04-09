@@ -1,14 +1,14 @@
 #include "../kitapch.h"
-#include "../Renderer/Textures/Texture.h"
+#include "../Assets/Texture.h"
 
 #include "../Renderer/Renderer.h"
 #include "../Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.h"
 
 namespace Kita {
-    std::shared_ptr<Texture> Texture::createPtr() {
+    std::unique_ptr<Texture> Texture::createPtr() {
         switch (Renderer::getAPI()) {
         case RenderingAPI::OPENGL:
-            return std::make_shared<GLTexture>();
+            return std::make_unique<GLTexture>();
         default:
             KITA_ENGINE_ERROR("Trying to create Texture while RenderingAPI is not selected, returning nullptr");
             return nullptr;

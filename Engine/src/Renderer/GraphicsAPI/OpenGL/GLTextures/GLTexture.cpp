@@ -6,20 +6,19 @@
 #include <magic_enum/magic_enum.hpp>
 
 #include "../../../../Assets/AssetImporter.h"
-#include "../../../Textures/TextureManager.h"
+#include "../../../../Assets/AssetManager.h"
 
 namespace Kita {
     GLTexture::~GLTexture() {
         glDeleteTextures(1, &m_texture);
     }
 
-    bool GLTexture::createTexture2D(const std::filesystem::path& texturePath, const TextureType& textureType) {
+    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::filesystem::path& texturePath, const TextureType textureType, std::optional<std::pair<int, int>> resolution) {
         m_path = texturePath;
         m_textureType = textureType;
         stbi_set_flip_vertically_on_load(true);
-        unsigned char* image = stbi_load((TextureManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
-        if (image) {
-            int levels = static_cast<int>(floor(log2(std::max(m_width, m_height))) + 1);
+        if (unsigned char* image = stbi_load((AssetManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
+            const int levels = static_cast<int>(floor(log2(std::max(m_width, m_height))) + 1);
             glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
             //TODO: Support parameter option
@@ -44,7 +43,7 @@ namespace Kita {
                     break;
                 default:
                     KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.string());
-                    return false;
+                    return std::unexpected(TextureError::FILE);
             }
 
             glGenerateTextureMipmap(m_texture);
@@ -52,17 +51,16 @@ namespace Kita {
         }
         else {
             KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.string());
-            return false;
+            return std::unexpected(TextureError::FILE);
         }
-        return true;
+        return {};
     }
 
     bool GLTexture::createSkyboxTexture2D(const std::filesystem::path& texturePath) {
         m_path = texturePath;
         m_textureType = TextureType::DIFFUSE;
         stbi_set_flip_vertically_on_load(true);
-        float* image = stbi_loadf((TextureManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
-        if (image) {
+        if (float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
             glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

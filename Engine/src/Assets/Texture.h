@@ -1,10 +1,14 @@
 #pragma once
 #include "../src/Core/DllTemplate.h"
 #include <memory>
+#include <filesystem>
+#include <expected>
+
+#include "Asset.h"
 #include "../Renderer/Types/RendererTypes.h"
 
 namespace Kita {
-    class KITAENGINE_API Texture {
+    class KITAENGINE_API Texture : public Asset {
     public:
         enum class TextureType {
             NONE = 0,
@@ -13,17 +17,23 @@ namespace Kita {
             CUBEMAP = 3,
             COLOR = 4,
             DEPTH = 5,
-            STENCIL = 6
+            STENCIL = 6,
+            SKYBOX = 7
+        };
+
+        enum class TextureError {
+            FILE = 0,
+            GRAPHICS_API = 1
         };
 
         virtual ~Texture() = default;
-        virtual bool createTexture2D(const std::filesystem::path& texturePath, const TextureType& textureType) = 0;
+        virtual std::expected<void,TextureError> createTexture(const std::filesystem::path& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution = std::nullopt) = 0;
         virtual bool createSkyboxTexture2D(const std::filesystem::path& texturePath) = 0;
         virtual void createCubemapTexture(const std::pair<int, int>& resolution) = 0;
-        virtual void createBufferTypeTexture(const std::pair<int, int>& resolution, const BufferType& bufferType, bool highPrecision) = 0;
+        virtual void createBufferTypeTexture(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision) = 0;
         virtual void bind(unsigned int position) = 0;
         virtual void destroy() = 0;
-        static std::shared_ptr<Texture> createPtr();
+        static std::unique_ptr<Texture> createPtr();
         unsigned int getTexture() const;
         int getWidth() const;
         int getHeight() const;

@@ -8,7 +8,7 @@ namespace Kita {
     public:
         ~GLShader() override;
         void bind() override;
-        void compileShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) override;
+        std::expected<void, ShaderError> createShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) override;
 
         void setUniformBool(const std::string& location, bool value) override;
         void setUniformFloat(const std::string& location, float value) override;
@@ -21,7 +21,7 @@ namespace Kita {
         void setUniformMat4(const std::string& location, const glm::mat4& value) override;
 
     private:
-        void compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath);
-        void compileGLProgram(GLuint vertexShader, GLuint fragmentShader);
+        std::expected<void, ShaderError> compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath);
+        std::expected<void, ShaderError> linkGLProgram(GLuint vertexShader, GLuint fragmentShader);
     };
 } // Kita

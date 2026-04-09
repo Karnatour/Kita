@@ -1,7 +1,7 @@
 #include "../../../../kitapch.h"
 #include "GLShader.h"
 
-#include "../../../Shaders/ShaderManager.h"
+#include "../../../../Assets/AssetManager.h"
 
 namespace Kita {
     void GLShader::bind() {
@@ -12,24 +12,28 @@ namespace Kita {
         glDeleteProgram(m_program);
     }
 
-    void GLShader::compileShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
+    std::expected<void, Shader::ShaderError> GLShader::createShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
         m_path = std::make_pair(vertexPath, fragmentPath);
         KITA_ENGINE_DEBUG("Starting compilation of shaders: [VERTEX]->{}, [FRAGMENT]->{}", m_path.first.string(), m_path.second.string());
 
         GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        compileGLShader(vertexShader, ShaderManager::SHADER_PREFIX / m_path.first);
-
         GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        compileGLShader(fragmentShader, ShaderManager::SHADER_PREFIX / m_path.second);
-
-        compileGLProgram(vertexShader, fragmentShader);
+        auto result = compileGLShader(vertexShader, AssetManager::SHADER_PREFIX / m_path.first)
+                      .and_then([&]() {
+                          return compileGLShader(fragmentShader, AssetManager::SHADER_PREFIX / m_path.second);
+                      })
+                      .and_then([&]() {
+                          return linkGLProgram(vertexShader, fragmentShader);
+                      });
 
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
+
+        return result;
     }
 
-    void GLShader::compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath) {
-        const std::string& shaderSource = FileReader::readFile(shaderPath);
+    std::expected<void, Shader::ShaderError> GLShader::compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath) {
+        const std::string shaderSource = FileReader::readFile(shaderPath);
         const char* sourcePtr = shaderSource.data();
 
         glShaderSource(shader, 1, &sourcePtr, nullptr);
@@ -43,10 +47,12 @@ namespace Kita {
             std::string log(logLength, ' ');
             glGetShaderInfoLog(shader, logLength, nullptr, log.data());
             KITA_ENGINE_ERROR("Shader compilation failed ({}): {}", shaderPath.string(), log);
+            return std::unexpected(ShaderError::COMPILATION);
         }
+        return {};
     }
 
-    void GLShader::compileGLProgram(const GLuint vertexShader, const GLuint fragmentShader) {
+    std::expected<void, Shader::ShaderError> GLShader::linkGLProgram(const GLuint vertexShader, const GLuint fragmentShader) {
         m_program = glCreateProgram();
         glAttachShader(m_program, vertexShader);
         glAttachShader(m_program, fragmentShader);
@@ -60,7 +66,10 @@ namespace Kita {
             std::string log(logLength, ' ');
             glGetProgramInfoLog(m_program, logLength, nullptr, log.data());
             KITA_ENGINE_ERROR("Shader program linking failed: {}", log);
+            return std::unexpected(ShaderError::LINKING);
         }
+
+        return {};
     }
 
     void GLShader::setUniformBool(const std::string& location, const bool value) {

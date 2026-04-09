@@ -37,7 +37,7 @@
 #include "../src/Renderer/Shaders/ShaderManager.h"
 #include "../src/Renderer/Util/GeometryUtil.h"
 #include "../src/Renderer/Util/PhongProperties.h"
-#include "../src/Renderer/Util/Vertex.h"
+#include "../../src/Renderer/Vertex.h"
 #include "../../src/Assets/Texture.h"
 #include "../src/Renderer/Textures/TextureManager.h"
 

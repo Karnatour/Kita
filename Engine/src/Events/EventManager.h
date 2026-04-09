@@ -10,16 +10,15 @@ namespace Kita {
     public:
         using eventCallbackFun = std::function<void(Event&)>;
 
-        template <typename T>
+        template <std::derived_from<Event> T>
         static void listenToEvent(std::function<void(T&)> listenerFun) {
-            static_assert(std::is_base_of_v<Event, T>, "T must derive from Event");
             auto& callbacks = getCallbacks(typeid(T));
             callbacks.push_back([listenerFun](Event& event) {
                 return listenerFun(static_cast<T&>(event)); // Downcast Event to T
             });
         }
 
-        template <typename T>
+        template <std::derived_from<Event> T>
         static void triggerEvent(T& event) {
             auto& callbacks = getCallbacks(typeid(T));
             //KITA_ENGINE_DEBUG("Event triggered: {} | Callbacks count: {}", typeid(T).name(), callbacks.size());

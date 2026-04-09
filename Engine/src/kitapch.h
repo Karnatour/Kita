@@ -20,6 +20,7 @@
 #include <chrono>
 #include <ranges>
 #include <fstream>
+#include <expected>
 
 #include "Core/Logger.h"
 #include "File/FileReader.h"

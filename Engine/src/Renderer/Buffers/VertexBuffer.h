@@ -1,5 +1,5 @@
 #pragma once
-#include "../Util/Vertex.h"
+#include "../Vertex.h"
 #include <memory>
 #include <vector>
 #include "../../Core/DllTemplate.h"

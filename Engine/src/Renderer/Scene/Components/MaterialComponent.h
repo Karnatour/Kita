@@ -1,9 +1,11 @@
 #pragma once
-#include <memory>
-#include "../Primitives/Material.h"
+#include "../../../Assets/AssetManager.h"
 
 namespace Kita {
     struct MaterialComponent {
-        std::shared_ptr<Material> material;
+        AssetManager::AssetID m_shader;
+        AssetManager::AssetID m_diffuseTexture;
+        AssetManager::AssetID m_specularTexture;
+        AssetManager::AssetID m_normalTexture;
     };
 } //Kita

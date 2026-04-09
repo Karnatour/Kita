@@ -48,7 +48,7 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h
-        src/Renderer/Util/Vertex.h
+        src/Renderer/Vertex.h
         src/Renderer/Renderer.cpp
         src/Renderer/Renderer.h
         src/Renderer/Scene/Primitives/Mesh.cpp
@@ -56,8 +56,6 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/Scene.cpp
         src/Renderer/Scene/Scene.h
         src/Renderer/Types/RenderingAPI.h
-        src/Renderer/Shaders/ShaderManager.cpp
-        src/Renderer/Shaders/ShaderManager.h
         src/Assets/Shader.cpp
         src/Assets/Shader.h
         src/Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.cpp
@@ -72,8 +70,6 @@ add_library(KitaEngine SHARED
         src/Assets/Texture.h
         src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.h
-        src/Renderer/Textures/TextureManager.cpp
-        src/Renderer/Textures/TextureManager.h
         vendor/stb_image/stb_image_init.cpp
         src/Renderer/Scene/Camera.cpp
         src/Renderer/Scene/Camera.h
@@ -90,7 +86,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/Primitives/Material.h
         src/Renderer/Scene/Primitives/Model.cpp
         src/Renderer/Scene/Primitives/Model.h
-        src/Renderer/Util/PhongProperties.h
+        src/Renderer/PhongProperties.h
         src/Assets/AssetImporter.cpp
         src/Assets/AssetImporter.h
         src/Renderer/Util/GeometryUtil.cpp

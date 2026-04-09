@@ -5,13 +5,19 @@
 #include <glm/glm.hpp>
 
 namespace Kita {
-    class KITAENGINE_API Shader {
+    class KITAENGINE_API Shader : public Asset {
     public:
+        enum class ShaderError {
+            FILE,
+            COMPILATION,
+            LINKING
+        };
+
         virtual ~Shader() = default;
         virtual void bind() = 0;
         unsigned int getProgram() const;
         static std::unique_ptr<Shader> createPtr();
-        virtual void compileShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) = 0;
+        virtual std::expected<void, ShaderError> createShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) = 0;
 
         virtual void setUniformBool(const std::string& location, bool value) = 0;
         virtual void setUniformFloat(const std::string& location, float value) = 0;

@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "../../Core/DllTemplate.h"
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
     struct KITAENGINE_API Vertex {
