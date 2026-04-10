@@ -5,13 +5,12 @@
 
 namespace Kita {
     GLVertexBuffer::~GLVertexBuffer() {
-        glDeleteBuffers(1,&m_vbo);
+        glDeleteBuffers(1, &m_vbo);
     }
 
-    void GLVertexBuffer::createBuffer(const std::vector<Vertex>& vertices) {
-        m_vertices = vertices;
-        m_verticesCount = vertices.size();
+    void GLVertexBuffer::createBuffer(std::vector<Vertex> vertices) {
+        m_vertices = std::move(vertices);
         glCreateBuffers(1, &m_vbo);
-        glNamedBufferStorage(m_vbo, static_cast<GLsizeiptr>(sizeof(Vertex) * vertices.size()), vertices.data(),GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(m_vbo, static_cast<GLsizeiptr>(sizeof(Vertex) * m_vertices.size()), m_vertices.data(),GL_DYNAMIC_STORAGE_BIT);
     }
 } // Kita

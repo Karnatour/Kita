@@ -1,19 +1,24 @@
 #pragma once
 #include "../../Buffers/VertexArray.h"
 #include "../../Buffers/VertexBuffer.h"
+#include "../../Buffers/IndexBuffer.h"
 #include <memory>
 #include <vector>
 
+#include "../../../Assets/Asset.h"
 #include "../../../Core/DllTemplate.h"
 
 namespace Kita {
-    class KITAENGINE_API Mesh {
+    class KITAENGINE_API Mesh : public Asset {
     public:
-        Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
-        Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, int materialIndex);
-        std::shared_ptr<VertexArray> getVertexArray() const;
+        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+        const std::unique_ptr<VertexArray>& getVertexArray() const;
+        const std::unique_ptr<VertexBuffer>& getVertexBuffer() const;
+        const std::unique_ptr<IndexBuffer>& getIndexBuffer() const;
 
     private:
-        std::shared_ptr<VertexArray> m_vao = VertexArray::createPtr();
+        std::unique_ptr<VertexArray> m_vao = VertexArray::createPtr();
+        std::unique_ptr<VertexBuffer> m_vbo = VertexBuffer::createPtr();
+        std::unique_ptr<IndexBuffer> m_ibo;
     };
 } // Kita

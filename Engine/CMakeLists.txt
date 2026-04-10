@@ -82,8 +82,6 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/GeometryUtil.h
         src/Assets/KAsset.cpp
         src/Assets/KAsset.h
-        src/Renderer/Scene/Primitives/Material.cpp
-        src/Renderer/Scene/Primitives/Material.h
         src/Renderer/Scene/Primitives/Model.cpp
         src/Renderer/Scene/Primitives/Model.h
         src/Renderer/PhongProperties.h

@@ -8,10 +8,10 @@ namespace Kita {
         return m_ibo;
     }
 
-    std::shared_ptr<IndexBuffer> IndexBuffer::createPtr() {
+    std::unique_ptr<IndexBuffer> IndexBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
-                return std::make_shared<GLIndexBuffer>();
+                return std::make_unique<GLIndexBuffer>();
             case RenderingAPI::NONE:
                 KITA_ENGINE_ASSERT(false, "RenderingAPI::NONE is not a valid selection");
             default:
@@ -19,11 +19,7 @@ namespace Kita {
         }
     }
 
-    size_t IndexBuffer::getIndicesCount() const {
-        return m_indicesCount;
-    }
-
-    std::vector<unsigned int>& IndexBuffer::getIndices() {
+    const std::vector<unsigned int>& IndexBuffer::getIndices() {
         return m_indices;
     }
 }

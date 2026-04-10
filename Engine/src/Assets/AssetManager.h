@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "../Core/Assert.h"
+#include "../Renderer/Scene/Primitives/Mesh.h"
 
 namespace Kita {
     template <typename T>
@@ -51,6 +52,14 @@ namespace Kita {
         }
     };
 
+    template <>
+    struct AssetBuilder<Mesh> {
+        template <typename... Args>
+        static std::unique_ptr<Mesh> build(Args&&... args) {
+            return std::make_unique<Mesh>(args...);
+        }
+    };
+
 
     class KITAENGINE_API AssetManager {
     public:
@@ -61,6 +70,18 @@ namespace Kita {
         static inline const std::filesystem::path DEFAULT_VERTEX = "DefaultVertex.glsl";
         static inline const std::filesystem::path DEFAULT_FRAGMENT = "DefaultFragment.glsl";
         static inline const std::filesystem::path DEFAULT_TEXTURE = "DefaultTexture.png";
+
+        template <std::derived_from<Asset> T, typename... Args>
+        static std::unique_ptr<T> buildAsset(const std::filesystem::path& path, Args&&... args) {
+            if constexpr (requires {
+                AssetBuilder<T>::build(path, std::forward<Args>(args)...);
+            }) {
+                return AssetBuilder<T>::build(path, std::forward<Args>(args)...);
+            }
+            else {
+                return AssetBuilder<T>::build(std::forward<Args>(args)...);
+            }
+        }
 
         template <std::derived_from<Asset> T>
         const T& getAsset(const std::filesystem::path& path) const {
@@ -96,17 +117,18 @@ namespace Kita {
         }
 
         template <std::derived_from<Asset> T, typename... Args>
-        const T& getOrCreateAsset(const std::filesystem::path& path, const bool replace = false, Args&&... args) {
+        const T& getOrCreateAsset(const std::optional<std::filesystem::path>& path = std::nullopt, const bool replace = false, Args&&... args) {
             // get unordered_map of correct type
             auto& bucket = getBucket<T>();
-            const std::string pathString = path.string();
+            std::string pathString;
             std::optional<AssetID> ID;
 
-            if (replace) {
-                ID = getIDForStringPath(pathString);
+            if (path.has_value()) {
+                pathString = path.value().string();
+                ID = replace ? getIDForStringPath(pathString) : getOrAddStringPath(pathString);
             }
             else {
-                ID = getOrAddStringPath(pathString);
+                ID = getNextID();
             }
 
             // try to find the asset first
@@ -118,7 +140,7 @@ namespace Kita {
 
             // try to build the new asset if it's not present in map
             if (ID.has_value()) {
-                if (auto asset = AssetBuilder<T>::build(path, std::forward<Args>(args)...); asset != nullptr) {
+                if (auto asset = AssetBuilder<T>::buildAsset(path, std::forward<Args>(args)...); asset != nullptr) {
                     auto [insertedIt, _] = bucket.insert_or_assign(ID.value(), std::move(asset));
                     return *insertedIt->second;
                 }
@@ -134,21 +156,21 @@ namespace Kita {
         }
 
         template <std::derived_from<Asset> T, typename... Args>
-        void createAsset(const std::filesystem::path& path, const bool replace = false, const bool setAsDefault = false, Args&&... args) {
+        void createAsset(const std::optional<std::filesystem::path>& path, const bool replace = false, const bool setAsDefault = false, Args&&... args) {
             // get unordered_map of correct type
             auto& bucket = getBucket<T>();
-            const std::string pathString = path.string();
+            std::string pathString;
             std::optional<AssetID> ID;
 
-            if (replace) {
-                ID = getIDForStringPath(pathString);
+            if (path.has_value()) {
+                pathString = path.value().string();
+                ID = replace ? getIDForStringPath(pathString) : getOrAddStringPath(pathString);
             }
             else {
-                ID = getOrAddStringPath(pathString);
+                ID = getNextID();
             }
 
-
-            if (auto asset = AssetBuilder<T>::build(path, std::forward<Args>(args)...); asset != nullptr) {
+            if (auto asset = AssetBuilder<T>::buildAsset(path, std::forward<Args>(args)...); asset != nullptr) {
                 // replace default asset
                 if (setAsDefault) {
                     if (auto [_, ok] = bucket.insert_or_assign(defaultID, std::move(asset)); ok) {

@@ -8,14 +8,12 @@ namespace Kita {
     class KITAENGINE_API VertexBuffer {
     public:
         virtual ~VertexBuffer() = default;
-        virtual void createBuffer(const std::vector<Vertex>& vertices) = 0;
+        virtual void createBuffer(std::vector<Vertex> vertices) = 0;
         unsigned int getVBO() const;
-        static std::shared_ptr<VertexBuffer> createPtr();
-        size_t getVerticesCount() const;
-        std::vector<Vertex>& getVertices();
+        static std::unique_ptr<VertexBuffer> createPtr();
+        const std::vector<Vertex>& getVertices();
     protected:
         unsigned int m_vbo = 0;
-        size_t m_verticesCount = 0;
         std::vector<Vertex> m_vertices;
     };
 } // Kita

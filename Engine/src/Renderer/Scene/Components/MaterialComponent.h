@@ -3,9 +3,9 @@
 
 namespace Kita {
     struct MaterialComponent {
-        AssetManager::AssetID m_shader;
-        AssetManager::AssetID m_diffuseTexture;
-        AssetManager::AssetID m_specularTexture;
-        AssetManager::AssetID m_normalTexture;
+        AssetManager::AssetID shader;
+        AssetManager::AssetID diffuseTexture;
+        AssetManager::AssetID specularTexture;
+        AssetManager::AssetID normalTexture;
     };
 } //Kita

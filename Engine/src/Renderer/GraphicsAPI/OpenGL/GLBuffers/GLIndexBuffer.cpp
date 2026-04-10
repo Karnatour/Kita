@@ -8,10 +8,9 @@ namespace Kita {
         glDeleteBuffers(1, &m_ibo);
     }
 
-    void GLIndexBuffer::createBuffer(const std::vector<unsigned int>& indices) {
-        m_indices = indices;
-        m_indicesCount = indices.size();
+    void GLIndexBuffer::createBuffer(std::vector<unsigned int> indices) {
+        m_indices = std::move(indices);
         glCreateBuffers(1, &m_ibo);
-        glNamedBufferStorage(m_ibo, static_cast<GLsizeiptr>(sizeof(unsigned int) * indices.size()), indices.data(),GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(m_ibo, static_cast<GLsizeiptr>(sizeof(unsigned int) * m_indices.size()), m_indices.data(),GL_DYNAMIC_STORAGE_BIT);
     }
 } // Kita

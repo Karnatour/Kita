@@ -2,16 +2,24 @@
 #include "Mesh.h"
 
 namespace Kita {
-    Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) {
-        m_vao->createBuffer(vertices, indices);
+    Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
+        m_vbo->createBuffer(std::move(vertices));
+        if (!indices.empty()) {
+            m_ibo = IndexBuffer::createPtr();
+            m_ibo->createBuffer(std::move(indices));
+        }
+        m_vao->createBuffer(m_vbo, m_ibo);
     }
 
-    Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const int materialIndex) {
-        m_vao->createBuffer(vertices, indices);
-    }
-
-    std::shared_ptr<VertexArray> Mesh::getVertexArray() const {
+    const std::unique_ptr<VertexArray>& Mesh::getVertexArray() const {
         return m_vao;
     }
 
+    const std::unique_ptr<VertexBuffer>& Mesh::getVertexBuffer() const {
+        return m_vbo;
+    }
+
+    const std::unique_ptr<IndexBuffer>& Mesh::getIndexBuffer() const {
+        return m_ibo;
+    }
 } // Kita
