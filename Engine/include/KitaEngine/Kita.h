@@ -25,7 +25,7 @@
 #include "../src/Renderer/Buffers/VertexArray.h"
 #include "../src/Renderer/Buffers/VertexBuffer.h"
 #include "../src/Renderer/Scene/Components/Components.h"
-#include "../src/Renderer/Scene/Camera.h"
+#include "../../src/Renderer/Util/CameraUtil.h"
 #include "../src/Renderer/Scene/Entity.h"
 #include "../src/Renderer/Scene/Scene.h"
 #include "../src/Renderer/Scene/Transformation.h"

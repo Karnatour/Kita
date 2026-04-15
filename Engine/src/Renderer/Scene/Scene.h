@@ -1,7 +1,7 @@
 #pragma once
 #include <entt/entity/registry.hpp>
 
-#include "Camera.h"
+#include "../Util/CameraUtil.h"
 #include "../../Core/DllTemplate.h"
 
 namespace Kita {
@@ -13,7 +13,7 @@ namespace Kita {
         void update();
         void render() const;
         Entity createEntity();
-        Camera& getCamera();
+        CameraUtil& getCamera();
         Entity* getEntityByID(unsigned int id) const;
 
     private:

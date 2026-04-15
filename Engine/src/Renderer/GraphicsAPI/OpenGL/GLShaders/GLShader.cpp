@@ -33,8 +33,12 @@ namespace Kita {
     }
 
     std::expected<void, Shader::ShaderError> GLShader::compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath) {
-        const std::string shaderSource = FileReader::readFile(shaderPath);
-        const char* sourcePtr = shaderSource.data();
+        const std::optional<std::string> shaderSource = FileReader::readFile(shaderPath);
+        if (!shaderSource.has_value()) {
+            return std::unexpected(ShaderError(ShaderErrorCode::FILE, shaderPath.string()));
+        }
+
+        const char* sourcePtr = shaderSource.value().data();
 
         glShaderSource(shader, 1, &sourcePtr, nullptr);
         glCompileShader(shader);
@@ -47,7 +51,7 @@ namespace Kita {
             std::string log(logLength, ' ');
             glGetShaderInfoLog(shader, logLength, nullptr, log.data());
             KITA_ENGINE_ERROR("Shader compilation failed ({}): {}", shaderPath.string(), log);
-            return std::unexpected(ShaderError::COMPILATION);
+            return std::unexpected(ShaderError(ShaderErrorCode::COMPILATION, shaderPath.string()));
         }
         return {};
     }
@@ -66,7 +70,7 @@ namespace Kita {
             std::string log(logLength, ' ');
             glGetProgramInfoLog(m_program, logLength, nullptr, log.data());
             KITA_ENGINE_ERROR("Shader program linking failed: {}", log);
-            return std::unexpected(ShaderError::LINKING);
+            return std::unexpected(ShaderError(ShaderErrorCode::COMPILATION, m_path.first.string() + m_path.second.string()));
         }
 
         return {};

@@ -23,13 +23,11 @@ namespace Kita {
 
         enum class TextureError {
             FILE = 0,
-            GRAPHICS_API = 1
+            USUPPORTED_NUM_OF_CHANNELS = 1
         };
 
         virtual ~Texture() = default;
-        virtual std::expected<void,TextureError> createTexture(const std::filesystem::path& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution = std::nullopt) = 0;
-        virtual bool createSkyboxTexture2D(const std::filesystem::path& texturePath) = 0;
-        virtual void createCubemapTexture(const std::pair<int, int>& resolution) = 0;
+        virtual std::expected<void,TextureError> createTexture(const std::filesystem::path& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution) = 0;
         virtual void createBufferTypeTexture(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision) = 0;
         virtual void bind(unsigned int position) = 0;
         virtual void destroy() = 0;

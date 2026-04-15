@@ -24,12 +24,12 @@ namespace Kita {
         return m_resolution;
     }
 
-    std::shared_ptr<Texture> FrameBuffer::getColorTexture() const {
-        return m_colorTexture;
+    const Texture* FrameBuffer::getColorTexture() const {
+        return m_colorTexture.get();
     }
 
-    std::shared_ptr<Texture> FrameBuffer::getDepthTexture() const {
-        return m_depthTexture;
+    const Texture* FrameBuffer::getDepthTexture() const {
+        return m_depthTexture.get();
     }
 
     const RenderBuffer* FrameBuffer::getColorRenderBuffer() const {

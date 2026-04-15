@@ -2,6 +2,8 @@
 
 namespace Kita {
     void AssetManager::addDefaultAssets() {
+        createAsset<Texture>(DEFAULT_TEXTURE, {.setAsDefault = true}, Texture::TextureType::DIFFUSE, std::nullopt);
+        createAsset<Shader>(std::nullopt, {.setAsDefault = true}, DEFAULT_VERTEX, DEFAULT_FRAGMENT);
     }
 
     AssetManager::AssetID AssetManager::getNextID() {

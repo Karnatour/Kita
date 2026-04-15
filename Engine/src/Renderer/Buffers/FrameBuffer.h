@@ -26,15 +26,16 @@ namespace Kita {
         static std::unique_ptr<FrameBuffer> createPtr();
         std::pair<int, int> getResolution() const;
 
-        std::shared_ptr<Texture> getColorTexture() const;
-        std::shared_ptr<Texture> getDepthTexture() const;
+        const Texture* getColorTexture() const;
+        const Texture* getDepthTexture() const;
 
         const RenderBuffer* getColorRenderBuffer() const;
         const RenderBuffer* getDepthRenderBuffer() const;
     protected:
         unsigned int m_fbo = 0;
-        std::shared_ptr<Texture> m_colorTexture;
-        std::shared_ptr<Texture> m_depthTexture;
+
+        std::unique_ptr<Texture> m_colorTexture;
+        std::unique_ptr<Texture> m_depthTexture;
 
         std::unique_ptr<RenderBuffer> m_colorRenderBuffer;
         std::unique_ptr<RenderBuffer> m_depthRenderBuffer;

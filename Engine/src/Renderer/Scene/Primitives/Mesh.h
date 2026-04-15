@@ -12,9 +12,9 @@ namespace Kita {
     class KITAENGINE_API Mesh : public Asset {
     public:
         Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
-        const std::unique_ptr<VertexArray>& getVertexArray() const;
-        const std::unique_ptr<VertexBuffer>& getVertexBuffer() const;
-        const std::unique_ptr<IndexBuffer>& getIndexBuffer() const;
+        const VertexArray& getVertexArray() const;
+        const VertexBuffer& getVertexBuffer() const;
+        const IndexBuffer* getIndexBuffer() const;
 
     private:
         std::unique_ptr<VertexArray> m_vao = VertexArray::createPtr();

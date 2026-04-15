@@ -5,14 +5,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h"
 
 namespace Kita {
-    const std::unique_ptr<VertexBuffer>& VertexArray::getVBOobj() const {
-        return m_vbo;
-    }
-
-    const std::unique_ptr<IndexBuffer>& VertexArray::getIBOobj() const {
-        return m_ibo;
-    }
-
     unsigned int VertexArray::getVAO() const {
         return m_vao;
     }

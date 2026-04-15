@@ -3,11 +3,6 @@
 #include <glad/glad.h>
 
 namespace Kita {
-    class Transformation;
-    class Material;
-    class Texture;
-    class Shader;
-
     class GLRendererAPI final : public RendererAPI {
     public:
         void setupDebug() override;
@@ -32,7 +27,6 @@ namespace Kita {
         static GLbitfield convertBitToGL(ClearBit bit);
 
     private:
-
         static void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
     };
 } // Kita

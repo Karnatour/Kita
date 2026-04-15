@@ -2,11 +2,11 @@
 #include "../File/FileReader.h"
 
 namespace Kita {
-    std::string FileReader::readFile(const std::filesystem::path& path) {
+    std::optional<std::string> FileReader::readFile(const std::filesystem::path& path) {
         std::ifstream file(path, std::ios::binary);
         if (!file) {
-            KITA_ENGINE_ERROR("Unable to read file {} returning empty string", path.string());
-            return "";
+            KITA_ENGINE_ERROR("Unable to read file {}", path.string());
+            return std::nullopt;
         }
 
         const std::size_t fileSize = std::filesystem::file_size(path);

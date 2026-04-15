@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Core/DllTemplate.h"
+#include <memory>
 
 namespace Kita {
     class KITAENGINE_API ShaderStorageBuffer {

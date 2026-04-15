@@ -13,54 +13,73 @@ namespace Kita {
         glDeleteTextures(1, &m_texture);
     }
 
-    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::filesystem::path& texturePath, const TextureType textureType, std::optional<std::pair<int, int>> resolution) {
+    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::filesystem::path& texturePath, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
         m_path = texturePath;
         m_textureType = textureType;
-        stbi_set_flip_vertically_on_load(true);
-        if (unsigned char* image = stbi_load((AssetManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
-            const int levels = static_cast<int>(floor(log2(std::max(m_width, m_height))) + 1);
-            glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
-            //TODO: Support parameter option
-            glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            const bool useSRGB = (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR);
-            switch (m_channels) {
-                case 2:
-                    glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
-                    glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, image);
-                    break;
-                case 3:
-                    glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8 : GL_RGB8, m_width, m_height);
-                    glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, image);
-                    break;
-                case 4:
-                    glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8, m_width, m_height);
-                    glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
-                    break;
-                default:
-                    KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.string());
-                    return std::unexpected(TextureError::FILE);
-            }
-
-            glGenerateTextureMipmap(m_texture);
-            stbi_image_free(image);
+        switch (textureType) {
+            case TextureType::NONE:
+                KITA_ENGINE_ASSERT(false, "TextureType::NONE is not a valid selection");
+            case TextureType::DIFFUSE:
+            case TextureType::SPECULAR:
+                break;
+            case TextureType::CUBEMAP:
+                return createCubemapTexture(resolution.value());
+            case TextureType::COLOR:
+            case TextureType::DEPTH:
+            case TextureType::STENCIL:
+                break;
+            case TextureType::SKYBOX:
+                return createSkyboxTexture();
         }
-        else {
+
+        stbi_set_flip_vertically_on_load(true);
+        unsigned char* image = stbi_load((AssetManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
+
+        if (!image) {
             KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.string());
             return std::unexpected(TextureError::FILE);
         }
+
+        const int levels = static_cast<int>(floor(log2(std::max(m_width, m_height))) + 1);
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
+
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        const bool useSRGB = (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR);
+        switch (m_channels) {
+            case 2:
+                glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, image);
+                break;
+            case 3:
+                glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8 : GL_RGB8, m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, image);
+                break;
+            case 4:
+                glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8, m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
+                break;
+            default:
+                KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.string());
+                return std::unexpected(TextureError::USUPPORTED_NUM_OF_CHANNELS);
+        }
+
+        if (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR || textureType == TextureType::SPECULAR) {
+            glGenerateTextureMipmap(m_texture);
+        }
+
+        stbi_image_free(image);
         return {};
     }
 
-    bool GLTexture::createSkyboxTexture2D(const std::filesystem::path& texturePath) {
-        m_path = texturePath;
-        m_textureType = TextureType::DIFFUSE;
+    std::expected<void, Texture::TextureError> GLTexture::createSkyboxTexture() {
         stbi_set_flip_vertically_on_load(true);
-        if (float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
+        if (float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / m_path).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
             glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -74,14 +93,13 @@ namespace Kita {
             stbi_image_free(image);
         }
         else {
-            KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.string());
-            return false;
+            KITA_ENGINE_ERROR("Unable to load texture, {}", m_path.string());
+            return std::unexpected(TextureError::FILE);
         }
-        return true;
+        return {};
     }
 
-    void GLTexture::createCubemapTexture(const std::pair<int, int>& resolution) {
-        m_textureType = TextureType::CUBEMAP;
+    std::expected<void, Texture::TextureError> GLTexture::createCubemapTexture(const std::pair<int, int>& resolution) {
         m_width = resolution.first;
         m_height = resolution.second;
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_texture);
@@ -93,13 +111,15 @@ namespace Kita {
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glTextureStorage2D(m_texture, 1, GL_RGB32F, resolution.first, resolution.second);
+
+        return {};
     }
 
-    void GLTexture::createBufferTypeTexture(const std::pair<int, int>& resolution, const BufferType& bufferType, const bool highPrecision) {
+    void GLTexture::createBufferTypeTexture(const std::pair<int, int> resolution, const BufferType bufferType, const bool highPrecision) {
         glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        float borderColor[] = {1.0, 1.0, 1.0, 1.0};
+        constexpr float borderColor[] = {1.0, 1.0, 1.0, 1.0};
         glTextureParameterfv(m_texture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
         const auto colorInternalFormat = highPrecision ? GL_RGBA32F : GL_RGBA8;

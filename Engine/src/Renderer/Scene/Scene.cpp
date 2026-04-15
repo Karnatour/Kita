@@ -25,7 +25,7 @@ namespace Kita {
         return Entity(this);
     }
 
-    Camera& Scene::getCamera() {
+    CameraUtil& Scene::getCamera() {
         return m_camera;
     }
 

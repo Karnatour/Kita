@@ -11,15 +11,15 @@ namespace Kita {
         m_vao->createBuffer(m_vbo, m_ibo);
     }
 
-    const std::unique_ptr<VertexArray>& Mesh::getVertexArray() const {
-        return m_vao;
+    const VertexArray& Mesh::getVertexArray() const {
+        return *m_vao;
     }
 
-    const std::unique_ptr<VertexBuffer>& Mesh::getVertexBuffer() const {
-        return m_vbo;
+    const VertexBuffer& Mesh::getVertexBuffer() const {
+        return *m_vbo;
     }
 
-    const std::unique_ptr<IndexBuffer>& Mesh::getIndexBuffer() const {
-        return m_ibo;
+    const IndexBuffer* Mesh::getIndexBuffer() const {
+        return m_ibo.get();
     }
 } // Kita

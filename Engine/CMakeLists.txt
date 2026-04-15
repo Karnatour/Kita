@@ -71,8 +71,8 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLTextures/GLTexture.h
         vendor/stb_image/stb_image_init.cpp
-        src/Renderer/Scene/Camera.cpp
-        src/Renderer/Scene/Camera.h
+        src/Renderer/Util/CameraUtil.cpp
+        src/Renderer/Util/CameraUtil.h
         src/Core/Time.cpp
         src/Core/Time.h
         src/Renderer/Buffers/UniformBuffer.cpp
@@ -82,8 +82,6 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/GeometryUtil.h
         src/Assets/KAsset.cpp
         src/Assets/KAsset.h
-        src/Renderer/Scene/Primitives/Model.cpp
-        src/Renderer/Scene/Primitives/Model.h
         src/Renderer/PhongProperties.h
         src/Assets/AssetImporter.cpp
         src/Assets/AssetImporter.h
@@ -121,6 +119,7 @@ add_library(KitaEngine SHARED
         src/Assets/Asset.h
         src/Assets/AssetManager.cpp
         src/Assets/AssetManager.h
+        src/Renderer/Scene/Components/CameraComponent.h
 )
 
 #Multithreaded compilation

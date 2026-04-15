@@ -1,5 +1,5 @@
 #include "../kitapch.h"
-#include "../Renderer/Shaders/Shader.h"
+#include "Shader.h"
 
 #include "../Renderer/Renderer.h"
 #include "../Renderer/GraphicsAPI/OpenGL/GLShaders/GLShader.h"

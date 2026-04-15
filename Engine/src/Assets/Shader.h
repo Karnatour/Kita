@@ -4,13 +4,20 @@
 #include <memory>
 #include <glm/glm.hpp>
 
+#include "Asset.h"
+
 namespace Kita {
     class KITAENGINE_API Shader : public Asset {
     public:
-        enum class ShaderError {
+        enum class ShaderErrorCode {
             FILE,
             COMPILATION,
             LINKING
+        };
+
+        struct ShaderError {
+            ShaderErrorCode code;
+            std::string file;
         };
 
         virtual ~Shader() = default;
