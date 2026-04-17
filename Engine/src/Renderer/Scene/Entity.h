@@ -4,11 +4,11 @@
 #include "../../Core/DllTemplate.h"
 
 namespace Kita {
-
     class KITAENGINE_API Entity {
     public:
         Entity() = default;
         explicit Entity(Scene* scene);
+        Entity(Scene* scene, entt::entity entityID);
 
         template <typename... Ts>
         bool hasAllComponents() const {
@@ -28,6 +28,11 @@ namespace Kita {
         template <typename T>
         void removeComponent() const {
             m_scene->m_registry.remove<T>(m_enttEntity);
+        }
+
+        template <typename T>
+        T& getComponent() {
+            return m_scene->m_registry.get<T>(m_enttEntity);
         }
 
     private:

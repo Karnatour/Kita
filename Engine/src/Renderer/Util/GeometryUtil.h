@@ -1,17 +1,13 @@
 #pragma once
 #include <vector>
-#include "../Vertex.h"
+#include "../Properties/VertexProperties.h"
 
-namespace Kita {
-    struct Cube {
-        static std::vector<Vertex> vertices;
-
-        static std::vector<unsigned int> indices;
+namespace Kita::Geometry {
+    struct MeshData {
+        std::vector<VertexProperties> vertices;
+        std::vector<unsigned int> indices;
     };
 
-    struct Quad {
-        static std::vector<Vertex> vertices;
-
-        static std::vector<unsigned int> indices;
-    };
+    MeshData getCubeData();
+    MeshData getQuadData();
 }

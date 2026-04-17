@@ -62,12 +62,12 @@ namespace Kita {
     }
 
     std::vector<std::byte> Scene::buildLightsBuffer() const {
-        const size_t totalSize = LightEntity::LIGHT_COUNT_SIZE + m_lights.lights.size() * sizeof(LightEntity::LightProperties);
+        const size_t totalSize = LightUtil::LIGHT_COUNT_SIZE + m_lights.lights.size() * sizeof(LightUtil::LightProperties);
         std::vector<std::byte> buffer(totalSize);
-        std::memcpy(buffer.data(), &m_lights.lightCount, LightEntity::LIGHT_COUNT_SIZE);
+        std::memcpy(buffer.data(), &m_lights.lightCount, LightUtil::LIGHT_COUNT_SIZE);
 
         for (size_t i = 0; i < m_lights.lights.size(); ++i) {
-            std::memcpy(buffer.data() + LightEntity::LIGHT_COUNT_SIZE + i * sizeof(LightEntity::LightProperties), m_lights.lights[i], sizeof(LightEntity::LightProperties));
+            std::memcpy(buffer.data() + LightUtil::LIGHT_COUNT_SIZE + i * sizeof(LightUtil::LightProperties), m_lights.lights[i], sizeof(LightUtil::LightProperties));
         }
         return buffer;
     }
@@ -79,7 +79,7 @@ namespace Kita {
         m_lightsShaderStorageBuffer->update(buffer.size(), buffer.data());
     }
 
-    void Scene::addLight(LightEntity::LightProperties& lightProperties) {
+    void Scene::addLight(LightUtil::LightProperties& lightProperties) {
         m_lights.lights.push_back(&lightProperties);
         m_lights.lightCount = static_cast<int>(m_lights.lights.size());
 
@@ -87,7 +87,7 @@ namespace Kita {
 
         if (m_lights.lights.size() == 1) {
             // buffer.size() * LightEntity::MAX_LIGHTS isn't ideal since we include INT lightCount in the size, but reallocating should happen if we don't have enough space
-            m_lightsShaderStorageBuffer->createBuffer(buffer.size() * LightEntity::MAX_LIGHTS, buffer.data());
+            m_lightsShaderStorageBuffer->createBuffer(buffer.size() * LightUtil::MAX_LIGHTS, buffer.data());
         }
 
         m_lightsShaderStorageBuffer->bind(2);

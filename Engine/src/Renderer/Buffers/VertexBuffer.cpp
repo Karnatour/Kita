@@ -20,7 +20,7 @@ namespace Kita {
         }
     }
 
-    const std::vector<Vertex>& VertexBuffer::getVertices() {
+    const std::vector<VertexProperties>& VertexBuffer::getVertices() {
         return m_vertices;
     }
 } // Kita

@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "Scene/Entity.h"
-#include "Scene/Entities/LightEntity.h"
+#include "Scene/Entities/LightUtil.h"
 #include "Scene/Entities/SkyboxEntity.h"
 #include "../Events/WindowEvents.h"
 
@@ -23,7 +23,7 @@ namespace Kita {
         virtual void setViewport(int width, int height, bool rewriteStoredPair) = 0;
         virtual void restoreViewport() = 0;
 
-        void renderShadowPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::vector<std::shared_ptr<LightEntity>>& lightEntities);
+        void renderShadowPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::vector<std::shared_ptr<LightUtil>>& lightEntities);
         void renderMainPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::shared_ptr<SkyboxEntity>& skyboxEntity);
         void renderMainFrameBufferToScreen();
 

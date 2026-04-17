@@ -1,6 +1,6 @@
 #include "../../../../kitapch.h"
 #include "GLVertexArray.h"
-#include "../../../Vertex.h"
+#include "../../../Properties/VertexProperties.h"
 #include <glad/glad.h>
 
 namespace Kita {
@@ -11,29 +11,29 @@ namespace Kita {
     void GLVertexArray::createBuffer(const std::unique_ptr<VertexBuffer>& vbo, const std::unique_ptr<IndexBuffer>& ibo) {
         glCreateVertexArrays(1, &m_vao);
 
-        glVertexArrayVertexBuffer(m_vao, 0, vbo->getVBO(), 0, sizeof(Vertex));
+        glVertexArrayVertexBuffer(m_vao, 0, vbo->getVBO(), 0, sizeof(VertexProperties));
         if (ibo != nullptr) {
             glVertexArrayElementBuffer(m_vao, ibo->getIBO());
         }
 
         //Position
         glEnableVertexArrayAttrib(m_vao, 0);
-        glVertexArrayAttribFormat(m_vao, 0, 3,GL_FLOAT,GL_FALSE,offsetof(Vertex, position));
+        glVertexArrayAttribFormat(m_vao, 0, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, position));
         glVertexArrayAttribBinding(m_vao, 0, 0);
 
         //Color
         glEnableVertexArrayAttrib(m_vao, 1);
-        glVertexArrayAttribFormat(m_vao, 1, 4,GL_FLOAT,GL_FALSE,offsetof(Vertex, color));
+        glVertexArrayAttribFormat(m_vao, 1, 4,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, color));
         glVertexArrayAttribBinding(m_vao, 1, 0);
 
         //Texture
         glEnableVertexArrayAttrib(m_vao, 2);
-        glVertexArrayAttribFormat(m_vao, 2, 2,GL_FLOAT,GL_FALSE,offsetof(Vertex, texture));
+        glVertexArrayAttribFormat(m_vao, 2, 2,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, texture));
         glVertexArrayAttribBinding(m_vao, 2, 0);
 
         //Normal
         glEnableVertexArrayAttrib(m_vao, 3);
-        glVertexArrayAttribFormat(m_vao, 3, 3,GL_FLOAT,GL_FALSE,offsetof(Vertex, normal));
+        glVertexArrayAttribFormat(m_vao, 3, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, normal));
         glVertexArrayAttribBinding(m_vao, 3, 0);
     }
 

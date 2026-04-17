@@ -29,7 +29,7 @@
 #include "../src/Renderer/Scene/Entity.h"
 #include "../src/Renderer/Scene/Scene.h"
 #include "../src/Renderer/Scene/Transformation.h"
-#include "../src/Renderer/Scene/Entities/LightEntity.h"
+#include "../src/Renderer/Scene/Entities/LightUtil.h"
 #include "../src/Renderer/Scene/Primitives/Material.h"
 #include "../src/Renderer/Scene/Primitives/Mesh.h"
 #include "../src/Renderer/Scene/Primitives/Model.h"
@@ -37,7 +37,7 @@
 #include "../src/Renderer/Shaders/ShaderManager.h"
 #include "../src/Renderer/Util/GeometryUtil.h"
 #include "../src/Renderer/Util/PhongProperties.h"
-#include "../../src/Renderer/Vertex.h"
+#include "../../src/Renderer/Properties/VertexProperties.h"
 #include "../../src/Assets/Texture.h"
 #include "../src/Renderer/Textures/TextureManager.h"
 

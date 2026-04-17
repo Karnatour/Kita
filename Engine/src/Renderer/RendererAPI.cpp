@@ -4,15 +4,14 @@
 #include "../Core/Engine.h"
 #include "../Events/EventManager.h"
 #include "GraphicsAPI/OpenGL/GLRendererAPI.h"
-#include "Scene/Entities/LightEntity.h"
+#include "Scene/Entities/LightUtil.h"
 #include "Scene/Entities/SkyboxEntity.h"
 #include "Util/GeometryUtil.h"
 
 namespace Kita {
-    void RendererAPI::renderShadowPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::vector<std::shared_ptr<LightEntity>>& lightEntities) {
+    void RendererAPI::renderShadowPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::vector<std::shared_ptr<LightUtil>>& lightEntities) {
         for (auto& lightEntity : lightEntities) {
             lightEntity->beginShadowMapRender(*this);
-
             for (auto& entity : entities) {
                 if (auto model = entity->getModel()) {
                     for (auto& mesh : model->getMeshes()) {

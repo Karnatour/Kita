@@ -48,7 +48,7 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h
-        src/Renderer/Vertex.h
+        src/Renderer/Properties/VertexProperties.h
         src/Renderer/Renderer.cpp
         src/Renderer/Renderer.h
         src/Renderer/Scene/Primitives/Mesh.cpp
@@ -82,14 +82,14 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/GeometryUtil.h
         src/Assets/KAsset.cpp
         src/Assets/KAsset.h
-        src/Renderer/PhongProperties.h
+        src/Renderer/Properties/PhongProperties.h
         src/Assets/AssetImporter.cpp
         src/Assets/AssetImporter.h
         src/Renderer/Util/GeometryUtil.cpp
         src/Renderer/Scene/Entity.cpp
         src/Renderer/Scene/Entity.h
-        src/Renderer/Scene/Entities/LightEntity.cpp
-        src/Renderer/Scene/Entities/LightEntity.h
+        src/Renderer/Scene/Entities/LightUtil.cpp
+        src/Renderer/Scene/Entities/LightUtil.h
         src/Renderer/Buffers/ShaderStorageBuffer.cpp
         src/Renderer/Buffers/ShaderStorageBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.cpp
@@ -120,6 +120,9 @@ add_library(KitaEngine SHARED
         src/Assets/AssetManager.cpp
         src/Assets/AssetManager.h
         src/Renderer/Scene/Components/CameraComponent.h
+        src/Renderer/Systems/CameraSystem.cpp
+        src/Renderer/Systems/CameraSystem.h
+        src/Renderer/Properties/CameraProperties.h
 )
 
 #Multithreaded compilation

@@ -7,16 +7,19 @@
 
 #include "../../../Assets/Asset.h"
 #include "../../../Core/DllTemplate.h"
+#include "../../Util/GeometryUtil.h"
 
 namespace Kita {
     class KITAENGINE_API Mesh : public Asset {
     public:
-        Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+        Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);
+        Mesh(Geometry::MeshData data);
         const VertexArray& getVertexArray() const;
         const VertexBuffer& getVertexBuffer() const;
         const IndexBuffer* getIndexBuffer() const;
 
     private:
+        void create(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);
         std::unique_ptr<VertexArray> m_vao = VertexArray::createPtr();
         std::unique_ptr<VertexBuffer> m_vbo = VertexBuffer::createPtr();
         std::unique_ptr<IndexBuffer> m_ibo;

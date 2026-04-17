@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <expected>
 #include <filesystem>
 #include "Shader.h"
 #include "Texture.h"

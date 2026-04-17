@@ -2,7 +2,15 @@
 #include "Mesh.h"
 
 namespace Kita {
-    Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
+    Mesh::Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices) {
+        create(std::move(vertices), std::move(indices));
+    }
+
+    Mesh::Mesh(Geometry::MeshData data) {
+        create(std::move(data.vertices), std::move(data.indices));
+    }
+
+    void Mesh::create(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices) {
         m_vbo->createBuffer(std::move(vertices));
         if (!indices.empty()) {
             m_ibo = IndexBuffer::createPtr();
