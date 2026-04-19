@@ -8,10 +8,10 @@ namespace Kita {
         return m_ubo;
     }
 
-    std::shared_ptr<UniformBuffer> UniformBuffer::createPtr() {
+    std::unique_ptr<UniformBuffer> UniformBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
-                return std::make_shared<GLUniformBuffer>();
+                return std::make_unique<GLUniformBuffer>();
             case RenderingAPI::NONE:
                 KITA_ENGINE_ASSERT(false, "RenderingAPI::NONE is not a valid selection");
             default:

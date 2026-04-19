@@ -12,6 +12,8 @@ void onSomething(Kita::KeyPressed& event) {
 }
 
 void Sandbox::onInit() {
+    m_scene.addDefaultSystems();
+
     auto entity = std::make_shared<Kita::Entity>(Kita::AssetImporter::importModel("Sponza-master/sponza.obj", true));
     m_scene.addEntity(entity);
     entity->getTransformation().scale({0.005f, 0.005f, 0.005f});

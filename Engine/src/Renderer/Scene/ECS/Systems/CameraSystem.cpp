@@ -1,9 +1,9 @@
-#include "../../kitapch.h"
+#include "../../../../kitapch.h"
+#include "../../../../Core/Time.h"
+#include "../../../../Core/Engine.h"
+#include "../../../../Input/Input.h"
+#include "../Components/CameraComponent.h"
 #include "CameraSystem.h"
-#include "../../Core/Time.h"
-#include "../../Core/Engine.h"
-#include "../../Input/Input.h"
-#include "../Scene/Components/CameraComponent.h"
 
 namespace Kita {
     void CameraSystem::updateOrientationVectors(CameraProperties& properties) {
@@ -41,14 +41,36 @@ namespace Kita {
     }
 
     void CameraSystem::update(Scene& scene) {
-        for (const auto camera : scene.view<CameraComponent>()) {
-            Entity entity(&scene,camera);
-            CameraProperties& properties = entity.getComponent<CameraComponent>().properties;
+        for (auto [entity,camera] : scene.view<CameraComponent>().each()) {
+            CameraProperties& properties = camera.properties;
 
             updatePosition(properties);
             updateEulerAngles(properties);
             updateZoom(properties);
         }
+    }
+
+    void CameraSystem::render(Scene& scene) {
+        // lazy creation on render thread
+        if (m_cameraUBO == nullptr) {
+            m_cameraUBO = UniformBuffer::createPtr();
+            m_cameraUBO->createBuffer(sizeof(CameraUBOLayout), &m_activeCameraData);
+        }
+
+        auto activeCamera = Entity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
+        updateActiveCameraData(activeCamera.getComponent<CameraComponent>().properties);
+
+        m_cameraUBO->bind(0);
+        m_cameraUBO->upload(sizeof(CameraUBOLayout), &m_activeCameraData);
+    }
+
+    void CameraSystem::updateActiveCameraData(const CameraProperties& properties) {
+        m_activeCameraData.view = CameraUtil::getViewMatrix(properties);
+        m_activeCameraData.projection = CameraUtil::getProjectionMatrix(properties, Engine::getEngine()->getRenderer().getViewport());
+        m_activeCameraData.position = glm::vec4(properties.position, 1.0f);
+        m_activeCameraData.front = glm::vec4(properties.front, 1.0f);
+        m_activeCameraData.params.x = properties.zNear;
+        m_activeCameraData.params.y = properties.zFar;
     }
 
     void CameraSystem::updateEulerAngles(CameraProperties& properties) {

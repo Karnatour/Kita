@@ -29,6 +29,7 @@ namespace Kita {
         virtual ~Texture() = default;
         virtual std::expected<void,TextureError> createTexture(const std::filesystem::path& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution) = 0;
         virtual void createBufferTypeTexture(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision) = 0;
+        virtual void createBufferTypeTextureArray(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision, int layersCount) = 0;
         virtual void bind(unsigned int position) = 0;
         virtual void destroy() = 0;
         static std::unique_ptr<Texture> createPtr();

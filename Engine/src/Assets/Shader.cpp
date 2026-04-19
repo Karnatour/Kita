@@ -20,7 +20,14 @@ namespace Kita {
         }
     }
 
-    const std::pair<std::filesystem::path, std::filesystem::path>& Shader::getPath() const {
-        return m_path;
+    const std::vector<Shader::ShaderInfo>& Shader::getShadersInfo() const {
+        return m_shaders;
+    }
+
+    void Shader::replaceDefines(std::string& shaderSource, const std::vector<ShaderDefine>& defines, const std::string& shaderPath) {
+        for (const auto& [define, value] : defines) {
+            KITA_ENGINE_DEBUG("Replacing for shader {}: define: {} value: {}", shaderPath, define, value);
+            StringUtil::replaceAll(shaderSource, define, value);
+        }
     }
 } // Kita

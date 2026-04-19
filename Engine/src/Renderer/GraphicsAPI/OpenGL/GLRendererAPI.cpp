@@ -1,6 +1,6 @@
 #include "../../../kitapch.h"
 #include "GLRendererAPI.h"
-#include "../../Scene/Entity.h"
+#include "../../Scene/ECS/Entity.h"
 
 #include <complex>
 #include <glad/glad.h>
@@ -29,7 +29,7 @@ namespace Kita {
         glClearColor(red, green, blue, alpha);
     }
 
-    void GLRendererAPI::clearBit(const std::initializer_list<ClearBit> bits) {
+    void GLRendererAPI::clearBit(const std::span<const ClearBit> bits) {
         GLbitfield mask = 0;
         for (const auto bit : bits) {
             mask |= convertBitToGL(bit);
@@ -37,15 +37,15 @@ namespace Kita {
         glClear(mask);
     }
 
-    void GLRendererAPI::enableCapability(const Capability& capability) {
+    void GLRendererAPI::enableCapability(const Capability capability) {
         glEnable(convertCapablityToGL(capability));
     }
 
-    void GLRendererAPI::disableCapability(const Capability& capability) {
+    void GLRendererAPI::disableCapability(const Capability capability) {
         glDisable(convertCapablityToGL(capability));
     }
 
-    void GLRendererAPI::enableBufferWrite(const BufferType& bufferType) {
+    void GLRendererAPI::enableBufferWrite(const BufferType bufferType) {
         switch (bufferType) {
             case BufferType::COLOR:
                 //Enable all channels
@@ -60,12 +60,11 @@ namespace Kita {
             case BufferType::DEPTH_STENCIL:
                 glDepthMask(GL_TRUE);
                 glStencilMask(GL_TRUE);
-
                 break;
         }
     }
 
-    void GLRendererAPI::disableBufferWrite(const BufferType& bufferType) {
+    void GLRendererAPI::disableBufferWrite(const BufferType bufferType) {
         switch (bufferType) {
             case BufferType::COLOR:
                 //Disable all channels
@@ -84,7 +83,7 @@ namespace Kita {
         }
     }
 
-    void GLRendererAPI::setDepthFunc(const DepthFunction& function) {
+    void GLRendererAPI::setDepthFunc(const DepthFunction function) {
         switch (function) {
             case DepthFunction::NEVER:
                 glDepthFunc(GL_NEVER);
@@ -113,11 +112,11 @@ namespace Kita {
         }
     }
 
-    void GLRendererAPI::drawArrays(const size_t& verticesCount) {
+    void GLRendererAPI::drawArrays(const size_t verticesCount) {
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCount));
     }
 
-    void GLRendererAPI::drawElements(const size_t& indicesCount) {
+    void GLRendererAPI::drawElements(const size_t indicesCount) {
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCount),GL_UNSIGNED_INT, nullptr);
     }
 

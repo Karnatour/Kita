@@ -11,10 +11,11 @@ namespace Kita {
         glDeleteFramebuffers(1, &m_fbo);
     }
 
-    void GLFrameBuffer::createBuffer(const std::pair<int, int>& resolution, const std::initializer_list<AttachmentSpec> attachments, const bool highPrecision) {
+    void GLFrameBuffer::createBuffer(const std::pair<int, int>& resolution,const std::span<const AttachInfo> attachments, const bool highPrecision, const int layers) {
         m_resolution = resolution;
-        m_attachments = attachments;
+        m_attachments = std::ranges::to<std::vector>(attachments);
         m_highPrecision = highPrecision;
+        m_layers = layers;
 
         glCreateFramebuffers(1, &m_fbo);
 
@@ -53,10 +54,10 @@ namespace Kita {
     void GLFrameBuffer::createAndAttachAttachments() {
         for (const auto& [bufferType, attachmentType] : m_attachments) {
             switch (attachmentType) {
-                case AttachmentType::RENDERBUFFER:
+                case AttachType::RENDERBUFFER:
                     createAndAttachRenderBuffer(bufferType);
                     break;
-                case AttachmentType::TEXTURE:
+                case AttachType::TEXTURE:
                     createAndAttachTexture(bufferType, m_highPrecision);
                     break;
             }
@@ -81,7 +82,7 @@ namespace Kita {
                 glNamedFramebufferRenderbuffer(m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthRenderBuffer->getRBO());
                 break;
             default:
-                KITA_ENGINE_ERROR("Trying to create and attach unsupported buffertype framebuffer renderbuffer {}",magic_enum::enum_name(bufferType));
+                KITA_ENGINE_ERROR("Trying to create and attach unsupported buffertype framebuffer renderbuffer {}", magic_enum::enum_name(bufferType));
                 break;
         }
     }
@@ -90,21 +91,27 @@ namespace Kita {
         switch (bufferType) {
             case BufferType::COLOR:
                 m_colorTexture = Texture::createPtr();
-                m_colorTexture->createBufferTypeTexture(m_resolution, bufferType, highPrecision);
+                m_layers > 1
+                    ? m_colorTexture->createBufferTypeTextureArray(m_resolution, bufferType, highPrecision, m_layers)
+                    : m_colorTexture->createBufferTypeTexture(m_resolution, bufferType, highPrecision);
                 glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, m_colorTexture->getTexture(), 0);
                 break;
             case BufferType::DEPTH:
                 m_depthTexture = Texture::createPtr();
-                m_depthTexture->createBufferTypeTexture(m_resolution, bufferType, highPrecision);
+                m_layers > 1
+                    ? m_depthTexture->createBufferTypeTextureArray(m_resolution, bufferType, highPrecision, m_layers)
+                    : m_depthTexture->createBufferTypeTexture(m_resolution, bufferType, highPrecision);
                 glNamedFramebufferTexture(m_fbo, GL_DEPTH_ATTACHMENT, m_depthTexture->getTexture(), 0);
                 break;
             case BufferType::DEPTH_STENCIL:
                 m_depthTexture = Texture::createPtr();
-                m_depthTexture->createBufferTypeTexture(m_resolution, bufferType, highPrecision);
+                m_layers > 1
+                    ? m_depthTexture->createBufferTypeTextureArray(m_resolution, bufferType, highPrecision, m_layers)
+                    : m_depthTexture->createBufferTypeTexture(m_resolution, bufferType, highPrecision);
                 glNamedFramebufferTexture(m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, m_depthTexture->getTexture(), 0);
                 break;
             default:
-                KITA_ENGINE_ERROR("Trying to create and attach unsupported buffertype framebuffer texture {}",magic_enum::enum_name(bufferType));
+                KITA_ENGINE_ERROR("Trying to create and attach unsupported buffertype framebuffer texture {}", magic_enum::enum_name(bufferType));
                 break;
         }
     }
@@ -112,10 +119,10 @@ namespace Kita {
     void GLFrameBuffer::destroyAttachments() {
         for (const auto& [bufferType, attachmentType] : m_attachments) {
             switch (attachmentType) {
-                case AttachmentType::RENDERBUFFER:
+                case AttachType::RENDERBUFFER:
                     bufferType == BufferType::COLOR ? m_colorRenderBuffer->destroy() : m_depthRenderBuffer->destroy();
                     break;
-                case AttachmentType::TEXTURE:
+                case AttachType::TEXTURE:
                     bufferType == BufferType::COLOR ? m_colorTexture->destroy() : m_depthTexture->destroy();
                     break;
             }

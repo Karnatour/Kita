@@ -6,18 +6,18 @@
 namespace Kita {
     class KITAENGINE_API FrameBuffer {
     public:
-        enum class AttachmentType {
+        enum class AttachType {
             RENDERBUFFER,
             TEXTURE
         };
 
-        struct AttachmentSpec {
+        struct AttachInfo {
             BufferType bufferType;
-            AttachmentType attachmentType;
+            AttachType attachmentType;
         };
 
         virtual ~FrameBuffer() = default;
-        virtual void createBuffer(const std::pair<int, int>& resolution, std::initializer_list<AttachmentSpec> attachments, bool highPrecision) = 0;
+        virtual void createBuffer(const std::pair<int, int>& resolution, std::span<const AttachInfo> attachments, bool highPrecision, int layers) = 0;
         virtual void attachCubemapFace(unsigned int cubemapTexture, int faceIndex) = 0;
         unsigned int getFBO() const;
         virtual void bind() = 0;
@@ -42,7 +42,8 @@ namespace Kita {
 
         std::pair<int, int> m_resolution;
 
-        std::vector<AttachmentSpec> m_attachments;
+        std::vector<AttachInfo> m_attachments;
         bool m_highPrecision = false;
+        int m_layers = 0;
     };
 } // Kita

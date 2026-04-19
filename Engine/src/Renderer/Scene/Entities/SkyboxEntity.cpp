@@ -14,7 +14,7 @@ namespace Kita {
 
         const auto resolution = Engine::getEngine()->getWindow().getFrameBufferResolution();
 
-        m_frameBuffer->createBuffer(resolution, {{BufferType::COLOR, FrameBuffer::AttachmentType::TEXTURE}}, true);
+        m_frameBuffer->createBuffer(resolution, {{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}}, true);
 
         setupCubemapViews();
 

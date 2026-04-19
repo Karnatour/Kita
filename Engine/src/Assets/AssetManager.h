@@ -14,7 +14,7 @@
 namespace Kita {
     template <typename T>
     struct AssetBuilder {
-        static_assert(std::is_void_v<T>, "Unknown AssetBuilder specialization");
+        static_assert(std::is_void_v<T>, "[AssetBuilder] Unknown AssetBuilder specialization");
     };
 
     template <>
@@ -26,13 +26,13 @@ namespace Kita {
                 return std::move(shader);
             }
             else if (result.error().code == Shader::ShaderErrorCode::FILE) {
-                KITA_ENGINE_ERROR("File error while building shader {}", result.error().file);
+                KITA_ENGINE_ERROR("[AssetBuilder] File error while building shader {}", result.error().file);
             }
             else if (result.error().code == Shader::ShaderErrorCode::COMPILATION) {
-                KITA_ENGINE_ERROR("Compilation error while building shader {}", result.error().file);
+                KITA_ENGINE_ERROR("[AssetBuilder] Compilation error while building shader {}", result.error().file);
             }
             else if (result.error().code == Shader::ShaderErrorCode::LINKING) {
-                KITA_ENGINE_ERROR("Linker error while building shader {}", result.error().file);
+                KITA_ENGINE_ERROR("[AssetBuilder] Linker error while building shader program");
             }
             return nullptr;
         }
@@ -47,10 +47,10 @@ namespace Kita {
                 return std::move(texture);
             }
             else if (result.error() == Texture::TextureError::FILE) {
-                KITA_ENGINE_ERROR("File error while building texture {}", path.string());
+                KITA_ENGINE_ERROR("[AssetBuilder] File error while building texture {}", path.string());
             }
             else if (result.error() == Texture::TextureError::USUPPORTED_NUM_OF_CHANNELS) {
-                KITA_ENGINE_ERROR("Unsupported number of channels while building texture {}", path.string());
+                KITA_ENGINE_ERROR("[AssetBuilder] Unsupported number of channels while building texture {}", path.string());
             }
             return nullptr;
         }
@@ -71,30 +71,14 @@ namespace Kita {
 
         static inline const std::filesystem::path SHADER_PREFIX = "../assets/shaders/";
         static inline const std::filesystem::path TEXTURE_PREFIX = "../assets/textures/";
-        static inline const std::filesystem::path DEFAULT_VERTEX = "DefaultVertex.glsl";
-        static inline const std::filesystem::path DEFAULT_FRAGMENT = "DefaultFragment.glsl";
+        static inline const std::filesystem::path DEFAULT_VERTEX = "KitaDefaultVertex.glsl";
+        static inline const std::filesystem::path DEFAULT_FRAGMENT = "KitaDefaultFragment.glsl";
         static inline const std::filesystem::path DEFAULT_TEXTURE = "DefaultTexture.png";
 
         struct AssetOptions {
             bool replace = false;
             bool setAsDefault = false;
         };
-
-        template <std::derived_from<Asset> T, typename... Args>
-        static std::unique_ptr<T> buildAsset(const std::optional<std::filesystem::path>& path, Args&&... args) {
-            if constexpr (requires {
-                AssetBuilder<T>::build(std::forward<Args>(args)...);
-            }) {
-                return AssetBuilder<T>::build(std::forward<Args>(args)...);
-            }
-            else {
-                if (!path) {
-                    KITA_ENGINE_ERROR("This asset type {} needs path for creation. Default asset will be used", typeid(T).name());
-                    return nullptr;
-                }
-                return AssetBuilder<T>::build(path.value(), std::forward<Args>(args)...);
-            }
-        }
 
         template <std::derived_from<Asset> T>
         const T& getAsset(const std::filesystem::path& path) const {
@@ -107,9 +91,9 @@ namespace Kita {
             }
 
             // return default if asset for key isn't found
-            KITA_ENGINE_ERROR("Asset for key not found, returning default, key: {}", key);
+            KITA_ENGINE_ERROR("[AssetBuilder] Asset for key not found, returning default, key: {}", key);
             auto it = bucket.find(defaultID);
-            KITA_ENGINE_ASSERT(it != bucket.end(), "Default asset not found");
+            KITA_ENGINE_ASSERT(it != bucket.end(), "[AssetBuilder] Default asset not found");
             return *it->second;
         }
 
@@ -123,9 +107,9 @@ namespace Kita {
             }
 
             // return default if asset for key isn't found
-            KITA_ENGINE_ERROR("Asset for ID not found, returning default, ID: {}", ID);
+            KITA_ENGINE_ERROR("[AssetBuilder] Asset for ID not found, returning default, ID: {}", ID);
             auto it = bucket.find(defaultID);
-            KITA_ENGINE_ASSERT(it != bucket.end(), "Default asset not found");
+            KITA_ENGINE_ASSERT(it != bucket.end(), "[AssetBuilder] Default asset not found");
             return *it->second;
         }
 
@@ -159,12 +143,12 @@ namespace Kita {
                 }
             }
             else {
-                KITA_ENGINE_ERROR("Trying to replace invalid ID for {}", pathString);
+                KITA_ENGINE_ERROR("[AssetBuilder] Trying to replace invalid ID for {}", pathString);
             }
 
             // if the built asset is invalid return the default one
             auto defaultIt = bucket.find(defaultID);
-            KITA_ENGINE_ASSERT(defaultIt != bucket.end(), "Default asset not found");
+            KITA_ENGINE_ASSERT(defaultIt != bucket.end(), "[AssetBuilder] Default asset not found");
             return *defaultIt->second;
         }
 
@@ -187,14 +171,14 @@ namespace Kita {
                 // replace default asset
                 if (options.setAsDefault) {
                     if (auto [_, ok] = bucket.insert_or_assign(defaultID, std::move(asset)); ok) {
-                        KITA_ENGINE_INFO("Set default asset for {}", typeid(T).name());
+                        KITA_ENGINE_INFO("[AssetBuilder] Set default asset for {}", typeid(T).name());
                     }
                     return;
                 }
 
                 if (options.replace) {
                     if (!ID.has_value()) {
-                        KITA_ENGINE_ERROR("Trying to replace invalid ID", pathString);
+                        KITA_ENGINE_ERROR("[AssetBuilder] Trying to replace invalid ID", pathString);
                         return;
                     }
                     bucket.insert_or_assign(ID.value(), std::move(asset));
@@ -203,16 +187,33 @@ namespace Kita {
                     auto [_, inserted] = bucket.try_emplace(ID.value(), std::move(asset));
 
                     if (!inserted) {
-                        KITA_ENGINE_ERROR("Asset already exists at {}", pathString);
+                        KITA_ENGINE_ERROR("[AssetBuilder] Asset already exists at {}", pathString);
                     }
                 }
             }
         }
 
     private:
+        friend class Engine;
+
         static constexpr AssetID defaultID = 0;
 
-        friend class Engine;
+        template <std::derived_from<Asset> T, typename... Args>
+        static std::unique_ptr<T> buildAsset(const std::optional<std::filesystem::path>& path, Args&&... args) {
+            if constexpr (requires {
+                AssetBuilder<T>::build(std::forward<Args>(args)...);
+            }) {
+                return AssetBuilder<T>::build(std::forward<Args>(args)...);
+            }
+            else {
+                if (!path) {
+                    KITA_ENGINE_ERROR("[AssetBuilder] This asset type {} needs path for creation. Default asset will be used", typeid(T).name());
+                    return nullptr;
+                }
+                return AssetBuilder<T>::build(path.value(), std::forward<Args>(args)...);
+            }
+        }
+
         void addDefaultAssets();
 
         AssetID getNextID();

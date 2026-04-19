@@ -5,7 +5,7 @@ namespace Kita {
     class GLFrameBuffer final : public FrameBuffer {
     public:
         ~GLFrameBuffer() override;
-        void createBuffer(const std::pair<int, int>& resolution, std::initializer_list<AttachmentSpec> attachments, bool highPrecision) override;
+        void createBuffer(const std::pair<int, int>& resolution, std::span<const AttachInfo> attachments, bool highPrecision, int layers) override;
         void bind() override;
         void unbind() override;
         void attachCubemapFace(unsigned cubemapTexture, int faceIndex) override;

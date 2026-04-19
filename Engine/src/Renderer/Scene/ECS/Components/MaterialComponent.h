@@ -1,5 +1,5 @@
 #pragma once
-#include "../../../Assets/AssetManager.h"
+#include "../../../../Assets/AssetManager.h"
 
 namespace Kita {
     struct MaterialComponent {

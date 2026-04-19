@@ -5,7 +5,6 @@
 #include "../Events/EventManager.h"
 #include "GraphicsAPI/OpenGL/GLRendererAPI.h"
 #include "Scene/Entities/LightUtil.h"
-#include "Scene/Entities/SkyboxEntity.h"
 #include "Util/GeometryUtil.h"
 
 namespace Kita {
@@ -27,7 +26,7 @@ namespace Kita {
 
     void RendererAPI::renderMainPass(const std::vector<std::shared_ptr<Entity>>& entities, const std::shared_ptr<SkyboxEntity>& skyboxEntity) {
         m_mainFramebuffer->bind();
-        clearBit(std::initializer_list{ClearBit::COLOR, ClearBit::DEPTH, ClearBit::STENCIL});
+        clearBit({ClearBit::COLOR, ClearBit::DEPTH, ClearBit::STENCIL});
 
         for (const auto& entity : entities) {
             renderEntity(entity);
@@ -40,8 +39,8 @@ namespace Kita {
 
     void RendererAPI::init(const Renderer& renderer) {
         setupDebug();
-        m_mainFramebuffer->createBuffer(m_viewport, std::initializer_list<FrameBuffer::AttachmentSpec>{
-                                            {BufferType::COLOR, FrameBuffer::AttachmentType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachmentType::RENDERBUFFER}
+        m_mainFramebuffer->createBuffer(m_viewport, {
+                                            {BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachType::RENDERBUFFER}
                                         }, true);
         prepareScreenQuadModel(renderer);
         EventManager::listenToEvent<FrameBufferResized>(onFrameBufferResize);
@@ -78,7 +77,7 @@ namespace Kita {
     void RendererAPI::renderMainFrameBufferToScreen() {
         m_mainFramebuffer->unbind();
         disableCapability(Capability::DEPTH_TEST);
-        clearBit(std::initializer_list{ClearBit::COLOR});
+        clearBit({ClearBit::COLOR});
 
         for (const auto& mesh : m_screenQuadModel->getMeshes()) {
             setMaterial(mesh->getMaterialIndex(), m_screenQuadModel->getMaterials());

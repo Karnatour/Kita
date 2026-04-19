@@ -12,19 +12,18 @@ namespace Kita {
         glBindBufferBase(GL_UNIFORM_BUFFER, position, m_ubo);
     }
 
-    void GLUniformBuffer::update(const unsigned int size, const void* data) {
-        GLint bufferSize = 0;
-        glGetNamedBufferParameteriv(m_ubo, GL_BUFFER_SIZE, &bufferSize);
-        if (size == bufferSize) {
+    void GLUniformBuffer::upload(const unsigned int size, const void* data) {
+        if (size == m_size) {
             glNamedBufferSubData(m_ubo, 0, size, data);
         }
         else {
-            KITA_ENGINE_WARN("Input size doesn't match with uniform buffer size Before:{} New:{}",bufferSize,size);
+            KITA_ENGINE_WARN("Input size doesn't match with uniform buffer size Before:{} New:{}", m_size, size);
         }
     }
 
     void GLUniformBuffer::createBuffer(const unsigned int size, const void* data) {
+        m_size = size;
         glCreateBuffers(1, &m_ubo);
-        glNamedBufferStorage(m_ubo, size, data,GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(m_ubo, m_size, data,GL_DYNAMIC_STORAGE_BIT);
     }
 } // Kita

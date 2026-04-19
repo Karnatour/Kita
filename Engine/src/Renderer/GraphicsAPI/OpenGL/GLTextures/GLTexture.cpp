@@ -122,26 +122,56 @@ namespace Kita {
         constexpr float borderColor[] = {1.0, 1.0, 1.0, 1.0};
         glTextureParameterfv(m_texture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-        const auto colorInternalFormat = highPrecision ? GL_RGBA32F : GL_RGBA8;
+        switch (bufferType) {
+            case BufferType::COLOR:
+                m_textureType = TextureType::COLOR;
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTextureStorage2D(m_texture, 1, highPrecision ? GL_RGBA32F : GL_RGBA8, resolution.first, resolution.second);
+                break;
+            case BufferType::DEPTH:
+                m_textureType = TextureType::DEPTH;
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureStorage2D(m_texture, 1, highPrecision ? GL_DEPTH_COMPONENT32F : GL_DEPTH_COMPONENT24, resolution.first, resolution.second);
+                break;
+            case BufferType::DEPTH_STENCIL:
+                m_textureType = TextureType::DEPTH;
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureStorage2D(m_texture, 1, highPrecision ? GL_DEPTH32F_STENCIL8 : GL_DEPTH24_STENCIL8, resolution.first, resolution.second);
+                break;
+            default:
+                KITA_ENGINE_ERROR("Trying to create unsupported buffertype framebuffer texture {}", magic_enum::enum_name(bufferType));
+                break;
+        }
+    }
+
+    void GLTexture::createBufferTypeTextureArray(const std::pair<int, int> resolution, const BufferType bufferType, const bool highPrecision, const int layersCount) {
+        glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_texture);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        constexpr float borderColor[] = {1.0, 1.0, 1.0, 1.0};
+        glTextureParameterfv(m_texture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
         switch (bufferType) {
             case BufferType::COLOR:
                 m_textureType = TextureType::COLOR;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTextureStorage2D(m_texture, 1, colorInternalFormat, resolution.first, resolution.second);
+                glTextureStorage3D(m_texture, 1, highPrecision ? GL_RGBA32F : GL_RGBA8, resolution.first, resolution.second, layersCount);
                 break;
             case BufferType::DEPTH:
                 m_textureType = TextureType::DEPTH;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTextureStorage2D(m_texture, 1, GL_DEPTH_COMPONENT24, resolution.first, resolution.second);
+                glTextureStorage3D(m_texture, 1, highPrecision ? GL_DEPTH_COMPONENT32F : GL_DEPTH_COMPONENT24, resolution.first, resolution.second, layersCount);
                 break;
             case BufferType::DEPTH_STENCIL:
                 m_textureType = TextureType::DEPTH;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTextureStorage2D(m_texture, 1, GL_DEPTH24_STENCIL8, resolution.first, resolution.second);
+                glTextureStorage3D(m_texture, 1, highPrecision ? GL_DEPTH32F_STENCIL8 : GL_DEPTH24_STENCIL8, resolution.first, resolution.second, layersCount);
                 break;
             default:
                 KITA_ENGINE_ERROR("Trying to create unsupported buffertype framebuffer texture {}", magic_enum::enum_name(bufferType));

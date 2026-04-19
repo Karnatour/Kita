@@ -11,16 +11,16 @@ namespace Kita {
         void restoreViewport() override;
 
         void clearColor(float red, float green, float blue, float alpha) override;
-        void clearBit(std::initializer_list<ClearBit> bits) override;
+        void clearBit(std::span<const ClearBit> bits) override;
 
-        void enableCapability(const Capability& capability) override;
-        void disableCapability(const Capability& capability) override;
-        void enableBufferWrite(const BufferType& bufferType) override;
-        void disableBufferWrite(const BufferType& bufferType) override;
-        void setDepthFunc(const DepthFunction& function) override;
+        void enableCapability(Capability capability) override;
+        void disableCapability(Capability capability) override;
+        void enableBufferWrite(BufferType bufferType) override;
+        void disableBufferWrite(BufferType bufferType) override;
+        void setDepthFunc(DepthFunction function) override;
 
-        void drawArrays(const size_t& verticesCount) override;
-        void drawElements(const size_t& indicesCount) override;
+        void drawArrays(size_t verticesCount) override;
+        void drawElements(size_t indicesCount) override;
 
         static GLenum convertBufferTypeToInternalFormat(BufferType buffer);
         static GLenum convertCapablityToGL(Capability capability);

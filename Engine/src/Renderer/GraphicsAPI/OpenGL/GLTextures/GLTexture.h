@@ -7,6 +7,7 @@ namespace Kita {
         ~GLTexture() override;
         std::expected<void, TextureError> createTexture(const std::filesystem::path& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution) override;
         void createBufferTypeTexture(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision) override;
+        void createBufferTypeTextureArray(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision, int layersCount) override;
         void bind(unsigned int position) override;
         void destroy() override;
 

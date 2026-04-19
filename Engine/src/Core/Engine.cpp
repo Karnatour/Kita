@@ -4,7 +4,7 @@
 #include "Time.h"
 #include "../Assets/KAsset.h"
 #include "../Window/Window.h"
-#include "../Event/EventManager.h"
+#include "../Events/EventManager.h"
 #include "../Input/Input.h"
 
 namespace Kita {
@@ -16,16 +16,20 @@ namespace Kita {
     }
 
     void Engine::init(RenderingAPI API) {
+        m_currentFrameTime = std::chrono::steady_clock::now();
+        Time::updateDeltaTime(m_currentFrameTime);
+
         m_window = std::make_unique<Window>();
         m_window->init();
         m_window->createWindow(1600, 900, "Kita");
+
         m_renderer = std::make_unique<Renderer>(API);
+
+        m_assetManager = std::make_unique<AssetManager>();
+        m_assetManager->addDefaultAssets();
 
         Input::init();
         EventManager::listenToEvent<WindowClosed>(onWindowClosed);
-
-        m_currentFrameTime = std::chrono::steady_clock::now();
-        Time::updateDeltaTime(m_currentFrameTime);
 
         KAsset::fetchExistingBakedFiles();
 
@@ -80,6 +84,10 @@ namespace Kita {
 
     Renderer& Engine::getRenderer() {
         return *m_renderer;
+    }
+
+    AssetManager& Engine::getAssetManager() {
+        return *m_assetManager;
     }
 
     void Engine::update() {

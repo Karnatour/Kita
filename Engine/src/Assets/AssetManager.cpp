@@ -3,7 +3,7 @@
 namespace Kita {
     void AssetManager::addDefaultAssets() {
         createAsset<Texture>(DEFAULT_TEXTURE, {.setAsDefault = true}, Texture::TextureType::DIFFUSE, std::nullopt);
-        createAsset<Shader>(std::nullopt, {.setAsDefault = true}, DEFAULT_VERTEX, DEFAULT_FRAGMENT);
+        createAsset<Shader>(std::nullopt, {.setAsDefault = true}, std::array{Shader::vert(DEFAULT_VERTEX), Shader::frag(DEFAULT_FRAGMENT)});
     }
 
     AssetManager::AssetID AssetManager::getNextID() {

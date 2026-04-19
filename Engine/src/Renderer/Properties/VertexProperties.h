@@ -1,6 +1,5 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "../../Core/DllTemplate.h"
 
 namespace Kita {
     struct VertexProperties {

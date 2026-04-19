@@ -1,4 +1,5 @@
 #pragma once
+#include <expected>
 #include <string>
 #include "../Core/DllTemplate.h"
 #include <memory>
@@ -15,16 +16,46 @@ namespace Kita {
             LINKING
         };
 
+        enum class ShaderType {
+            VERTEX,
+            FRAGMENT,
+            GEOMETRY,
+        };
+
         struct ShaderError {
             ShaderErrorCode code;
             std::string file;
         };
 
+        struct ShaderDefine {
+            std::string define;
+            std::string value;
+        };
+
+        struct ShaderInfo {
+            std::filesystem::path path;
+            ShaderType type;
+            std::vector<ShaderDefine> defines;
+        };
+
+        static ShaderInfo vert(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
+            return {std::move(path), ShaderType::VERTEX, std::move(defines)};
+        }
+        static ShaderInfo frag(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
+            return {std::move(path), ShaderType::FRAGMENT, std::move(defines)};
+        }
+        static ShaderInfo geom(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
+            return {std::move(path), ShaderType::GEOMETRY, std::move(defines)};
+        }
+        static ShaderDefine define(std::string name, std::string value) {
+            return {std::move(name), std::move(value)};
+        }
+
         virtual ~Shader() = default;
         virtual void bind() = 0;
         unsigned int getProgram() const;
         static std::unique_ptr<Shader> createPtr();
-        virtual std::expected<void, ShaderError> createShader(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) = 0;
+        virtual std::expected<void, ShaderError> createShader(std::span<const ShaderInfo> shaders) = 0;
 
         virtual void setUniformBool(const std::string& location, bool value) = 0;
         virtual void setUniformFloat(const std::string& location, float value) = 0;
@@ -36,10 +67,12 @@ namespace Kita {
         virtual void setUniformMat3(const std::string& location, const glm::mat3& value) = 0;
         virtual void setUniformMat4(const std::string& location, const glm::mat4& value) = 0;
 
-        const std::pair<std::filesystem::path, std::filesystem::path>& getPath() const;
+        const std::vector<ShaderInfo>& getShadersInfo() const;
 
     protected:
+        void replaceDefines(std::string& shaderSource, const std::vector<ShaderDefine>& defines, const std::string& shaderPath);
+
         unsigned int m_program = 0;
-        std::pair<std::filesystem::path, std::filesystem::path> m_path;
+        std::vector<ShaderInfo> m_shaders;
     };
 } // Kita

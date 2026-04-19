@@ -9,7 +9,7 @@ namespace Kita {
 
 #ifdef KITA_BUILD_DEBUG
     #define KITA_ENGINE_ASSERT(condition, message) \
-        if (!condition) { \
+        if (!(condition)) { \
             KITA_ENGINE_ERROR("Assert error: {}\nStacktrace:\n{}", message, std::to_string(std::stacktrace::current())); \
             std::abort(); \
         }

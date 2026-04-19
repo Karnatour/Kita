@@ -9,10 +9,10 @@ namespace Kita {
         return m_ssbo;
     }
 
-    std::shared_ptr<ShaderStorageBuffer> ShaderStorageBuffer::createPtr() {
+    std::unique_ptr<ShaderStorageBuffer> ShaderStorageBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
-                return std::make_shared<GLShaderStorageBuffer>();
+                return std::make_unique<GLShaderStorageBuffer>();
             case RenderingAPI::NONE:
                 KITA_ENGINE_ASSERT(false, "RenderingAPI::NONE is not a valid selection");
             default:

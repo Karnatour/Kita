@@ -6,6 +6,8 @@
 #include <memory>
 #include <chrono>
 
+#include "../Assets/AssetManager.h"
+
 
 namespace Kita {
     class KITAENGINE_API Engine {
@@ -22,6 +24,7 @@ namespace Kita {
 
         Window& getWindow();
         Renderer& getRenderer();
+        AssetManager& getAssetManager();
     private:
         void render();
         void update();
@@ -30,6 +33,7 @@ namespace Kita {
         bool m_isRunning = false;
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Renderer> m_renderer;
+        std::unique_ptr<AssetManager> m_assetManager;
         std::shared_ptr<IGameInstance> m_game;
         std::chrono::time_point<std::chrono::steady_clock> m_currentFrameTime;
     };

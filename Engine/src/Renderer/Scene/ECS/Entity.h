@@ -1,7 +1,7 @@
 #pragma once
-#include "Scene.h"
+#include "../Scene.h"
 #include "entt/entt.hpp"
-#include "../../Core/DllTemplate.h"
+#include "../../../Core/DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API Entity {
@@ -33,6 +33,11 @@ namespace Kita {
         template <typename T>
         T& getComponent() {
             return m_scene->m_registry.get<T>(m_enttEntity);
+        }
+
+        template <typename T>
+        T* tryGetComponent() {
+            return m_scene->m_registry.try_get<T>(m_enttEntity);
         }
 
     private:

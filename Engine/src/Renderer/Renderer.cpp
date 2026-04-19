@@ -26,4 +26,11 @@ namespace Kita {
         return *m_rendererAPI;
     }
 
+    std::pair<float, float> Renderer::getViewport() const {
+        return m_viewport;
+    }
+
+    void Renderer::renderMesh(const Mesh& mesh, const Shader& shader, const Transformation& transformation, std::span<Texture* const> textures) {
+    }
+
 } // Kita

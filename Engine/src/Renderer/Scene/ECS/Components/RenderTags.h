@@ -7,9 +7,4 @@ namespace Kita {
     struct RenderInShadowPass {
     };
 
-    struct RenderInDepthPass {
-    };
-
-    struct RenderOnce {
-    };
 } //Kita

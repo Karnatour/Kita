@@ -86,8 +86,8 @@ add_library(KitaEngine SHARED
         src/Assets/AssetImporter.cpp
         src/Assets/AssetImporter.h
         src/Renderer/Util/GeometryUtil.cpp
-        src/Renderer/Scene/Entity.cpp
-        src/Renderer/Scene/Entity.h
+        src/Renderer/Scene/ECS/Entity.cpp
+        src/Renderer/Scene/ECS/Entity.h
         src/Renderer/Scene/Entities/LightUtil.cpp
         src/Renderer/Scene/Entities/LightUtil.h
         src/Renderer/Buffers/ShaderStorageBuffer.cpp
@@ -106,23 +106,29 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.h
         src/Renderer/Types/RendererTypes.h
         src/Core/Assert.h
-        src/Renderer/Scene/Components/Components.h
-        src/Renderer/Scene/Components/TransformationComponent.h
-        src/Renderer/Scene/Components/MaterialComponent.h
-        src/Renderer/Scene/Components/ParentComponent.h
-        src/Renderer/Scene/Components/LightComponent.h
-        src/Renderer/Scene/Components/MeshComponent.h
-        src/Renderer/Scene/Components/RenderTags.h
-        src/Renderer/Scene/Components/UpdateTags.h
+        src/Renderer/Scene/ECS/Components/Components.h
+        src/Renderer/Scene/ECS/Components/TransformationComponent.h
+        src/Renderer/Scene/ECS/Components/MaterialComponent.h
+        src/Renderer/Scene/ECS/Components/ParentComponent.h
+        src/Renderer/Scene/ECS/Components/LightComponent.h
+        src/Renderer/Scene/ECS/Components/MeshComponent.h
+        src/Renderer/Scene/ECS/Components/RenderTags.h
+        src/Renderer/Scene/ECS/Components/UpdateTags.h
         src/Renderer/Util/TransformationUtil.cpp
         src/Renderer/Util/TransformationUtil.h
         src/Assets/Asset.h
         src/Assets/AssetManager.cpp
         src/Assets/AssetManager.h
-        src/Renderer/Scene/Components/CameraComponent.h
-        src/Renderer/Systems/CameraSystem.cpp
-        src/Renderer/Systems/CameraSystem.h
+        src/Renderer/Scene/ECS/Components/CameraComponent.h
+        src/Renderer/Scene/ECS/Systems/CameraSystem.cpp
+        src/Renderer/Scene/ECS/Systems/CameraSystem.h
         src/Renderer/Properties/CameraProperties.h
+        src/Renderer/Scene/ECS/Systems/System.h
+        src/Util/StringUtil.cpp
+        src/Util/StringUtil.h
+        src/Renderer/Scene/ECS/Systems/LightShadowSystem.cpp
+        src/Renderer/Scene/ECS/Systems/LightShadowSystem.h
+        src/Renderer/Properties/LightProperties.h
 )
 
 #Multithreaded compilation

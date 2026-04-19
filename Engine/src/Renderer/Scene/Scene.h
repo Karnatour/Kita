@@ -1,22 +1,25 @@
 #pragma once
 #include <entt/entity/registry.hpp>
-
-#include "../Util/CameraUtil.h"
 #include "../../Core/DllTemplate.h"
-#include "../Systems/CameraSystem.h"
+#include "ECS/Systems/System.h"
 
 namespace Kita {
     class Entity;
 
     class KITAENGINE_API Scene {
     public:
-        Scene();
+        void addDefaultSystems();
         void update();
-        void render() const;
+        void render();
         Entity createEntity();
-        std::optional<Entity> getEntityByID(unsigned int id) const;
 
-        template<typename... Components>
+
+        template <std::derived_from<System> T>
+        void addSystem() {
+            m_systems.emplace_back(std::make_unique<T>());
+        }
+
+        template <typename... Components>
         auto view() {
             return m_registry.view<Components...>();
         }
@@ -25,7 +28,12 @@ namespace Kita {
         friend class Entity;
 
         entt::registry m_registry;
-        CameraSystem m_cameraSystem;
-
+        /*
+         *  Binding points: TODO: Store/Manage the binding points somewhere
+         *  CameraUBO = 0
+         *  DirLightUBO = 1
+         *  LightsSSBO = 0
+        */
+        std::vector<std::unique_ptr<System>> m_systems;
     };
 } // Kita
