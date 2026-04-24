@@ -29,7 +29,7 @@
 #include "../../src/Renderer/Scene/ECS/Entity.h"
 #include "../src/Renderer/Scene/Scene.h"
 #include "../src/Renderer/Scene/Transformation.h"
-#include "../src/Renderer/Scene/Entities/LightUtil.h"
+#include "../../src/Renderer/Util/LightUtil.h"
 #include "../src/Renderer/Scene/Primitives/Material.h"
 #include "../src/Renderer/Scene/Primitives/Mesh.h"
 #include "../src/Renderer/Scene/Primitives/Model.h"

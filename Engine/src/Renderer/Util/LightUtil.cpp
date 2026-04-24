@@ -1,46 +1,14 @@
-#include "../../../kitapch.h"
+#include "../../kitapch.h"
 #include "LightUtil.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
-#include "../../RendererAPI.h"
-#include "../../../Core/Engine.h"
-#include "../../Util/GeometryUtil.h"
+#include "CameraUtil.h"
+#include "../RendererAPI.h"
+#include "../../Core/Engine.h"
 
 namespace Kita {
-    LightUtil::LightUtil(LightType lightType) {
-        m_lightProperties.lightType = static_cast<int>(lightType);
-        Engine::getEngine()->getRenderer().getShaderManager().addShader("DefaultShadowMapVertex.glsl", "DefaultEmptyFragment.glsl");
-
-        m_model = std::make_shared<Model>();
-
-        const auto depthMaterial = std::make_shared<Material>();
-        depthMaterial->setShader(Engine::getEngine()->getRenderer().getShaderManager().getShader("DefaultShadowMapVertex.glsl", "DefaultEmptyFragment.glsl"));
-        m_model->addMaterial(depthMaterial);
-
-        const auto material = std::make_shared<Material>();
-        material->setShader(Engine::getEngine()->getRenderer().getShaderManager().getShader("DefaultVertex.glsl", "DefaultFragment.glsl"));
-        material->addTexture(m_shadowProperties.depthMapFBO->getDepthTexture());
-        m_model->addMaterial(material);
-
-        //TODO Create dummy triangle
-        m_model->addMesh(std::make_shared<Mesh>(std::vector<VertexProperties>(), std::vector<unsigned int>()));
-        m_model->getMeshes().front()->setMaterialIndex(1);
-    }
-
-    void LightUtil::beginShadowMapRender(RendererAPI& rendererApi) {
-        prepareLightModel();
-        rendererApi.setViewport(ShadowProperties::resolution.first, ShadowProperties::resolution.second, false);
-        m_shadowProperties.depthMapFBO->bind();
-        rendererApi.clearBit({ClearBit::DEPTH});
-    }
-
-    void LightUtil::endShadowMapRender(RendererAPI& rendererApi) {
-        rendererApi.restoreViewport();
-        m_shadowProperties.depthMapFBO->unbind();
-    }
-
     std::vector<glm::vec4> LightUtil::getFrustrumPoints(const glm::mat4& view, const glm::mat4& projection) {
         const auto inv = glm::inverse(projection * view);
 
@@ -50,7 +18,7 @@ namespace Kita {
                 for (unsigned int z = 0; z < 2; ++z) {
                     const glm::vec4 pt =
                         inv * glm::vec4(2.0f * x - 1.0f, 2.0f * y - 1.0f, 2.0f * z - 1.0f, 1.0f);
-                    frustumCorners.push_back(pt / pt.w);
+                    frustumCorners.emplace_back(pt / pt.w);
                 }
             }
         }

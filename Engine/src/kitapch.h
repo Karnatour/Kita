@@ -21,6 +21,10 @@
 #include <ranges>
 #include <fstream>
 #include <expected>
+#include <span>
+
+#include <glm/glm.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include "Core/Logger.h"
 #include "File/FileReader.h"

@@ -9,6 +9,7 @@ namespace Kita {
 
     class KITAENGINE_API CameraSystem final : public System {
     public:
+        int getOrder() override;
         void update(Scene& scene) override;
         void render(Scene& scene) override;
 
@@ -32,6 +33,7 @@ namespace Kita {
         void updateOrientationVectors(CameraProperties& properties);
         void updateEulerAngles(CameraProperties& properties);
         void updateZoom(CameraProperties& properties);
+
         std::unique_ptr<UniformBuffer> m_cameraUBO;
         CameraUBOLayout m_activeCameraData;
     };

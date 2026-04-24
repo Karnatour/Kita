@@ -14,9 +14,9 @@ namespace Kita {
     public:
         Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);
         explicit Mesh(Geometry::MeshData data);
-        const VertexArray& getVertexArray() const;
-        const VertexBuffer& getVertexBuffer() const;
-        const IndexBuffer* getIndexBuffer() const;
+        VertexArray& getVertexArray() const;
+        VertexBuffer& getVertexBuffer() const;
+        IndexBuffer* getIndexBuffer() const;
 
     private:
         void create(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);

@@ -1,8 +1,6 @@
 #include "../../../kitapch.h"
 #include "GLRendererAPI.h"
 #include "../../Scene/ECS/Entity.h"
-
-#include <complex>
 #include <glad/glad.h>
 #include <magic_enum/magic_enum.hpp>
 
@@ -14,15 +12,8 @@ namespace Kita {
         KITA_ENGINE_DEBUG("OpenGL Debug callback funtion is set");
     }
 
-    void GLRendererAPI::setViewport(const int width, const int height, const bool rewriteStoredPair) {
-        if (rewriteStoredPair) {
-            m_viewport = std::make_pair(width, height);
-        }
-        glViewport(0, 0, width, height);
-    }
-
-    void GLRendererAPI::restoreViewport() {
-        glViewport(0, 0, m_viewport.first, m_viewport.second);
+    void GLRendererAPI::setViewport(const std::pair<int, int> resolution) {
+        glViewport(0, 0, resolution.first, resolution.second);
     }
 
     void GLRendererAPI::clearColor(const float red, const float green, const float blue, const float alpha) {

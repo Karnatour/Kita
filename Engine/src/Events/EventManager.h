@@ -13,7 +13,7 @@ namespace Kita {
         template <std::derived_from<Event> T>
         static void listenToEvent(std::function<void(T&)> listenerFun) {
             auto& callbacks = getCallbacks(typeid(T));
-            callbacks.push_back([listenerFun](Event& event) {
+            callbacks.emplace_back([listenerFun](Event& event) {
                 return listenerFun(static_cast<T&>(event)); // Downcast Event to T
             });
         }

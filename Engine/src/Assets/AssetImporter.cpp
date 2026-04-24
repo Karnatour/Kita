@@ -9,12 +9,12 @@
 
 namespace Kita {
     std::shared_ptr<Model> AssetImporter::importModel(const std::filesystem::path& path, const bool reimport) {
-        std::filesystem::path kassetPath = path;
+        /*std::filesystem::path kassetPath = path;
         kassetPath.replace_extension("kasset");
         if (!reimport && KAsset::alreadyBaked(kassetPath)) {
             KITA_ENGINE_DEBUG("Asset already baked, loading .kasset {}", kassetPath.string());
             return KAsset::loadFromFile(KAsset::BAKED_PREFIX / kassetPath);
-        }
+        }*/
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
 
@@ -43,7 +43,7 @@ namespace Kita {
 
         processNode(aiScene, aiScene->mRootNode, model);
 
-        KAsset::saveToFile(model, KAsset::BAKED_PREFIX / std::filesystem::path(path).replace_extension("kasset"));
+        //KAsset::saveToFile(model, KAsset::BAKED_PREFIX / std::filesystem::path(path).replace_extension("kasset"));
         model->setPath(path);
 
         return model;
@@ -57,19 +57,19 @@ namespace Kita {
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
             const aiMesh* aiMesh = aiScene->mMeshes[aiNode->mMeshes[m]];
 
-            std::vector<Vertex> vertices;
+            std::vector<VertexProperties> vertices;
             std::vector<unsigned int> indices;
 
             vertices.reserve(aiMesh->mNumVertices);
             for (unsigned int v = 0; v < aiMesh->mNumVertices; v++) {
-                vertices.push_back(importVertex(*aiMesh, v));
+                vertices.emplace_back(importVertex(*aiMesh, v));
             }
 
             for (unsigned int f = 0; f < aiMesh->mNumFaces; f++) {
                 const aiFace& aiFace = aiMesh->mFaces[f];
                 indices.insert(indices.end(), aiFace.mIndices, aiFace.mIndices + aiFace.mNumIndices);
             }
-            model->addMesh(std::make_shared<Mesh>(vertices, indices, aiMesh->mMaterialIndex));
+            model->addMesh(std::make_shared<Mesh>(vertices, indices));
         }
 
         for (unsigned int i = 0; i < aiNode->mNumChildren; i++) {
@@ -77,8 +77,8 @@ namespace Kita {
         }
     }
 
-    Vertex AssetImporter::importVertex(const aiMesh& aiMesh, const unsigned int index) {
-        Vertex vertex{};
+    VertexProperties AssetImporter::importVertex(const aiMesh& aiMesh, const unsigned int index) {
+        VertexProperties vertex{};
         vertex.position.x = aiMesh.mVertices[index].x;
         vertex.position.y = aiMesh.mVertices[index].y;
         vertex.position.z = aiMesh.mVertices[index].z;
@@ -109,7 +109,7 @@ namespace Kita {
             case aiTextureType_SPECULAR:
                 return Texture::TextureType::SPECULAR;
             case aiTextureType_NORMALS:
-
+                return Texture::TextureType::NORMAL;
             default:
                 return Texture::TextureType::NONE;
         }

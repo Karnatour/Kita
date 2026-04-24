@@ -1,6 +1,6 @@
 #pragma once
-#include "../../../Core/DllTemplate.h"
-#include "../../Buffers/FrameBuffer.h"
+#include "../../Core/DllTemplate.h"
+#include "../Buffers/FrameBuffer.h"
 #include <glm/glm.hpp>
 
 namespace Kita {
@@ -12,13 +12,7 @@ namespace Kita {
         SPOT = 2
     };
 
-    struct ShadowProperties {
-        static constexpr std::pair<int, int> resolution = std::make_pair(4096, 4096);
-        std::unique_ptr<FrameBuffer> depthMapFBO = FrameBuffer::createPtr();
-    };
-
-    class KITAENGINE_API LightUtil {
-    public:
+    struct KITAENGINE_API LightUtil {
         //16 because of std430 rules;
         static constexpr int MAX_LIGHTS = 512;
 

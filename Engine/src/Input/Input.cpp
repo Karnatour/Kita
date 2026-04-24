@@ -103,22 +103,22 @@ namespace Kita {
     std::vector<InputKeys::Modifiers> Input::getSortedModifiers(const int modifiersField) {
         std::vector<InputKeys::Modifiers> keyboardModifiers;
         if (modifiersField & 0x1) {
-            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_SHIFT);
+            keyboardModifiers.emplace_back(InputKeys::Modifiers::MODIFIER_SHIFT);
         }
         if (modifiersField & 0x2) {
-            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_CTRL);
+            keyboardModifiers.emplace_back(InputKeys::Modifiers::MODIFIER_CTRL);
         }
         if (modifiersField & 0x4) {
-            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_ALT);
+            keyboardModifiers.emplace_back(InputKeys::Modifiers::MODIFIER_ALT);
         }
         if (modifiersField & 0x8) {
-            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_SUPER);
+            keyboardModifiers.emplace_back(InputKeys::Modifiers::MODIFIER_SUPER);
         }
         if (modifiersField & 0x10) {
-            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_CAPS_LOCK);
+            keyboardModifiers.emplace_back(InputKeys::Modifiers::MODIFIER_CAPS_LOCK);
         }
         if (modifiersField & 0x20) {
-            keyboardModifiers.push_back(InputKeys::Modifiers::MODIFIER_NUM_LOCK);
+            keyboardModifiers.emplace_back(InputKeys::Modifiers::MODIFIER_NUM_LOCK);
         }
         std::ranges::sort(keyboardModifiers);
         return keyboardModifiers;

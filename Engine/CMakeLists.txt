@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 4.0)
 project(KitaEngine)
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Create DLL
 add_library(KitaEngine SHARED
@@ -88,8 +88,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/GeometryUtil.cpp
         src/Renderer/Scene/ECS/Entity.cpp
         src/Renderer/Scene/ECS/Entity.h
-        src/Renderer/Scene/Entities/LightUtil.cpp
-        src/Renderer/Scene/Entities/LightUtil.h
+        src/Renderer/Util/LightUtil.cpp
+        src/Renderer/Util/LightUtil.h
         src/Renderer/Buffers/ShaderStorageBuffer.cpp
         src/Renderer/Buffers/ShaderStorageBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.cpp
@@ -110,7 +110,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Components/TransformationComponent.h
         src/Renderer/Scene/ECS/Components/MaterialComponent.h
         src/Renderer/Scene/ECS/Components/ParentComponent.h
-        src/Renderer/Scene/ECS/Components/LightComponent.h
+        src/Renderer/Scene/ECS/Components/LightShadowComponents.h
         src/Renderer/Scene/ECS/Components/MeshComponent.h
         src/Renderer/Scene/ECS/Components/RenderTags.h
         src/Renderer/Scene/ECS/Components/UpdateTags.h
@@ -128,7 +128,14 @@ add_library(KitaEngine SHARED
         src/Util/StringUtil.h
         src/Renderer/Scene/ECS/Systems/LightShadowSystem.cpp
         src/Renderer/Scene/ECS/Systems/LightShadowSystem.h
-        src/Renderer/Properties/LightProperties.h
+        src/Renderer/Properties/LightShadowProperties.h
+        src/Renderer/Scene/ECS/Systems/GeometrySystem.cpp
+        src/Renderer/Scene/ECS/Systems/GeometrySystem.h
+        src/Renderer/Scene/ECS/Systems/SkyboxSystem.cpp
+        src/Renderer/Scene/ECS/Systems/SkyboxSystem.h
+        src/Renderer/Scene/ECS/Components/SkyboxComponent.h
+        src/Renderer/Util/CubemapUtil.cpp
+        src/Renderer/Util/CubemapUtil.h
 )
 
 #Multithreaded compilation

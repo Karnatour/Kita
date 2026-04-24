@@ -1,3 +1,4 @@
+/*
 #include "../kitapch.h"
 
 #include "KAsset.h"
@@ -254,3 +255,4 @@ namespace Kita {
         vec.z = arr[2];
     }
 } // Kita
+*/

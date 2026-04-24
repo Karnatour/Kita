@@ -6,6 +6,39 @@
 #include "CameraSystem.h"
 
 namespace Kita {
+    int CameraSystem::getOrder() {
+        return Order::CAMERA;
+    }
+
+    void CameraSystem::update(Scene& scene) {
+        for (auto [entity,camera] : scene.view<CameraComponent>().each()) {
+            CameraProperties& properties = camera.properties;
+
+            updatePosition(properties);
+            updateEulerAngles(properties);
+            updateZoom(properties);
+        }
+    }
+
+    void CameraSystem::render(Scene& scene) {
+        // lazy creation on render thread
+        if (m_cameraUBO == nullptr) {
+            m_cameraUBO = UniformBuffer::createPtr();
+            m_cameraUBO->createBuffer(sizeof(CameraUBOLayout), &m_activeCameraData);
+        }
+
+        const auto enttEntity = scene.view<CameraComponent, ActiveCamera>().front();
+        if (enttEntity == entt::null) {
+            return;
+        }
+
+        auto activeCamera = Entity(&scene, enttEntity);
+        updateActiveCameraData(activeCamera.getComponent<CameraComponent>().properties);
+
+        m_cameraUBO->bind(0);
+        m_cameraUBO->upload(sizeof(CameraUBOLayout), &m_activeCameraData);
+    }
+
     void CameraSystem::updateOrientationVectors(CameraProperties& properties) {
         glm::vec3 newFront;
         newFront.x = cos(glm::radians(properties.yaw)) * cos(glm::radians(properties.pitch));
@@ -38,30 +71,6 @@ namespace Kita {
             const float velocity = properties.movementSpeed * static_cast<float>(Time::getDeltaTime());
             properties.position += direction * velocity;
         }
-    }
-
-    void CameraSystem::update(Scene& scene) {
-        for (auto [entity,camera] : scene.view<CameraComponent>().each()) {
-            CameraProperties& properties = camera.properties;
-
-            updatePosition(properties);
-            updateEulerAngles(properties);
-            updateZoom(properties);
-        }
-    }
-
-    void CameraSystem::render(Scene& scene) {
-        // lazy creation on render thread
-        if (m_cameraUBO == nullptr) {
-            m_cameraUBO = UniformBuffer::createPtr();
-            m_cameraUBO->createBuffer(sizeof(CameraUBOLayout), &m_activeCameraData);
-        }
-
-        auto activeCamera = Entity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
-        updateActiveCameraData(activeCamera.getComponent<CameraComponent>().properties);
-
-        m_cameraUBO->bind(0);
-        m_cameraUBO->upload(sizeof(CameraUBOLayout), &m_activeCameraData);
     }
 
     void CameraSystem::updateActiveCameraData(const CameraProperties& properties) {

@@ -28,7 +28,7 @@ namespace Kita {
 
         rendererApi.setDepthFunc(DepthFunction::LEQUAL);
         rendererApi.disableBufferWrite(BufferType::DEPTH);
-        rendererApi.setViewport(m_cubemapTexture->getWidth(), m_cubemapTexture->getHeight(), false);
+        rendererApi.setViewport(m_cubemapTexture->getWidth(), false);
         renderToFramebuffer(rendererApi);
         rendererApi.restoreViewport();
 
@@ -37,28 +37,6 @@ namespace Kita {
         rendererApi.enableBufferWrite(BufferType::DEPTH);
         rendererApi.setDepthFunc(DepthFunction::LESS);
         return true;
-    }
-
-    void SkyboxEntity::setupCubemapViews() {
-        m_captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-        m_captureViews.push_back(
-            glm::lookAt(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // +X
-        );
-        m_captureViews.push_back(
-            glm::lookAt(glm::vec3(0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // -X
-        );
-        m_captureViews.push_back(
-            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)) // +Y
-        );
-        m_captureViews.push_back(
-            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)) // -Y
-        );
-        m_captureViews.push_back(
-            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // +Z
-        );
-        m_captureViews.push_back(
-            glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) // -Z
-        );
     }
 
     void SkyboxEntity::prepareSkyboxModel() {

@@ -24,7 +24,7 @@ namespace Kita {
                 releaseCompiledShaders(glShaders);
                 return result;
             }
-            glShaders.push_back(shaderID);
+            glShaders.emplace_back(shaderID);
         }
 
         auto result = linkGLProgram(glShaders);

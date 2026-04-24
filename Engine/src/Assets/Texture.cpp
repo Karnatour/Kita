@@ -7,11 +7,11 @@
 namespace Kita {
     std::unique_ptr<Texture> Texture::createPtr() {
         switch (Renderer::getAPI()) {
-        case RenderingAPI::OPENGL:
-            return std::make_unique<GLTexture>();
-        default:
-            KITA_ENGINE_ERROR("Trying to create Texture while RenderingAPI is not selected, returning nullptr");
-            return nullptr;
+            case RenderingAPI::OPENGL:
+                return std::make_unique<GLTexture>();
+            default:
+                KITA_ENGINE_ERROR("Trying to create Texture while RenderingAPI is not selected, returning nullptr");
+                return nullptr;
         }
     }
 
@@ -37,5 +37,9 @@ namespace Kita {
 
     Texture::TextureType Texture::getType() const {
         return m_textureType;
+    }
+
+    std::pair<int, int> Texture::getResolution() const{
+        return std::make_pair(m_width, m_height);
     }
 } // Kita

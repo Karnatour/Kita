@@ -18,7 +18,8 @@ namespace Kita {
             COLOR = 4,
             DEPTH = 5,
             STENCIL = 6,
-            SKYBOX = 7
+            SKYBOX = 7,
+            NORMAL = 8
         };
 
         enum class TextureError {
@@ -27,7 +28,7 @@ namespace Kita {
         };
 
         virtual ~Texture() = default;
-        virtual std::expected<void,TextureError> createTexture(const std::filesystem::path& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution) = 0;
+        virtual std::expected<void,TextureError> createTexture(const std::optional<std::filesystem::path>& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution) = 0;
         virtual void createBufferTypeTexture(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision) = 0;
         virtual void createBufferTypeTextureArray(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision, int layersCount) = 0;
         virtual void bind(unsigned int position) = 0;
@@ -39,13 +40,14 @@ namespace Kita {
         int getChannels() const;
         const std::filesystem::path& getPath() const;
         TextureType getType() const;
+        std::pair<int,int> getResolution() const;
 
     protected:
         unsigned int m_texture = 0;
         int m_width = 0;
         int m_height = 0;
         int m_channels = 0;
-        std::filesystem::path m_path;
+        std::optional<std::filesystem::path> m_path;
         TextureType m_textureType = TextureType::NONE;
     };
 } // Kita

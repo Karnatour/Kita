@@ -3,7 +3,6 @@
 
 #include <glad/glad.h>
 #include <stb_image.h>
-#include <magic_enum/magic_enum.hpp>
 
 #include "../../../../Assets/AssetImporter.h"
 #include "../../../../Assets/AssetManager.h"
@@ -13,7 +12,7 @@ namespace Kita {
         glDeleteTextures(1, &m_texture);
     }
 
-    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::filesystem::path& texturePath, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
+    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::optional<std::filesystem::path>& texturePath, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
         m_path = texturePath;
         m_textureType = textureType;
 
@@ -31,13 +30,19 @@ namespace Kita {
                 break;
             case TextureType::SKYBOX:
                 return createSkyboxTexture();
+            case TextureType::NORMAL:
+                break;
+        }
+
+        if (!texturePath.has_value()) {
+            KITA_ENGINE_ERROR("Texture type: {}, supports only textures with path", magic_enum::enum_name(textureType));
         }
 
         stbi_set_flip_vertically_on_load(true);
-        unsigned char* image = stbi_load((AssetManager::TEXTURE_PREFIX / texturePath).string().c_str(), &m_width, &m_height, &m_channels, 0);
+        unsigned char* image = stbi_load((AssetManager::TEXTURE_PREFIX / texturePath.value()).string().c_str(), &m_width, &m_height, &m_channels, 0);
 
         if (!image) {
-            KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.string());
+            KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.value().string());
             return std::unexpected(TextureError::FILE);
         }
 
@@ -65,7 +70,7 @@ namespace Kita {
                 glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
                 break;
             default:
-                KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.string());
+                KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.value().string());
                 return std::unexpected(TextureError::USUPPORTED_NUM_OF_CHANNELS);
         }
 
@@ -79,7 +84,7 @@ namespace Kita {
 
     std::expected<void, Texture::TextureError> GLTexture::createSkyboxTexture() {
         stbi_set_flip_vertically_on_load(true);
-        if (float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / m_path).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
+        if (float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / m_path.value()).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
             glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -93,7 +98,7 @@ namespace Kita {
             stbi_image_free(image);
         }
         else {
-            KITA_ENGINE_ERROR("Unable to load texture, {}", m_path.string());
+            KITA_ENGINE_ERROR("Unable to load texture, {}", m_path.value().string());
             return std::unexpected(TextureError::FILE);
         }
         return {};

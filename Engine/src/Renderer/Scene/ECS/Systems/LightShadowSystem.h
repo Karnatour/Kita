@@ -11,6 +11,7 @@
 namespace Kita {
     class KITAENGINE_API LightShadowSystem final : public System {
     public:
+        int getOrder() override;
         void update(Scene& scene) override;
         void render(Scene& scene) override;
 
@@ -50,7 +51,7 @@ namespace Kita {
         };
 
         static constexpr std::pair<int, int> m_lightFBOresolution = std::make_pair(4096, 4096);
-
+        void createBuffersIfMissing(Scene& scene);
         void renderShadowPass(Scene& scene);
         void uploadLightData(Scene& scene);
         void uploadDirectionalLightData(Scene& scene) const;

@@ -15,13 +15,17 @@ namespace Kita {
     }
 
     void Scene::update() {
-        for (auto& system : m_systems) {
+        for (const auto& system : m_systems) {
             system->update(*this);
         }
     }
 
     void Scene::render() {
-        for (auto& system : m_systems) {
+        std::ranges::sort(m_systems, [](auto& a, auto& b) {
+            return a->getOrder() < b->getOrder();
+        });
+
+        for (const auto& system : m_systems) {
             system->render(*this);
         }
     }
@@ -29,5 +33,4 @@ namespace Kita {
     Entity Scene::createEntity() {
         return Entity(this);
     }
-
 } // Kita

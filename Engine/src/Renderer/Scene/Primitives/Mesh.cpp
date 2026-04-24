@@ -19,15 +19,15 @@ namespace Kita {
         m_vao->createBuffer(m_vbo, m_ibo);
     }
 
-    const VertexArray& Mesh::getVertexArray() const {
+    VertexArray& Mesh::getVertexArray() const {
         return *m_vao;
     }
 
-    const VertexBuffer& Mesh::getVertexBuffer() const {
+    VertexBuffer& Mesh::getVertexBuffer() const {
         return *m_vbo;
     }
 
-    const IndexBuffer* Mesh::getIndexBuffer() const {
+    IndexBuffer* Mesh::getIndexBuffer() const {
         return m_ibo.get();
     }
 } // Kita

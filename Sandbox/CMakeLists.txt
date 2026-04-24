@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(Sandbox)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Create Sandbox executable
 add_executable(Sandbox src/Sandbox.cpp

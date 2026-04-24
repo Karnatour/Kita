@@ -3,6 +3,6 @@
 
 namespace Kita {
     struct MeshComponent {
-        AssetManager::AssetID mesh;
+        AssetManager::AssetID meshID;
     };
 } //Kita
