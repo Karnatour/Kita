@@ -20,7 +20,6 @@ namespace Kita {
         const auto& assetManager = Engine::getEngine()->getAssetManager();
         auto& renderer = Engine::getEngine()->getRenderer();
         renderer.getMainFramebuffer().bind();
-        renderer.clearBit({{ClearBit::COLOR, ClearBit::DEPTH, ClearBit::STENCIL}});
 
         for (const auto& [entityID, meshComp,shaderComp,transformationComp] : scene.view<MeshComponent, ShaderComponent, TransformationComponent, RenderInMainPass>().each()) {
             const auto entity = Entity(&scene, entityID);

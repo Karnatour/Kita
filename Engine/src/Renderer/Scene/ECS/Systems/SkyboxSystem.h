@@ -13,7 +13,7 @@ namespace Kita {
         void render(Scene& scene) override;
 
     private:
-        static constexpr std::pair<int,int> CUBEMAP_FACE_RES = std::make_pair(1024,1024);
+        static constexpr std::pair<int,int> CUBEMAP_FACE_RES = std::make_pair(2048,2048);
         void convertSkyboxTextureToCubemap(SkyboxComponent& skyboxComponent);
 
         std::unique_ptr<FrameBuffer> m_skyboxToCubemapFBO;

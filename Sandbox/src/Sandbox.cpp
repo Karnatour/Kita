@@ -1,8 +1,8 @@
 #include "Sandbox.h"
 
-#include <glm/ext/matrix_transform.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "../../Engine/src/Assets/KAsset.h"
+#include "../../Engine/src/Renderer/Util/TransformationUtil.h"
 
 std::shared_ptr<Kita::LightUtil> lightEntity;
 std::shared_ptr<Kita::LightUtil> lightEntity2;
@@ -15,9 +15,7 @@ void Sandbox::onInit() {
     m_scene = std::make_unique<Kita::Scene>();
     m_scene->addDefaultSystems();
 
-    //Kita::Entity entity = Kita::AssetImporter::importModel("Sponza-master/sponza.obj", *m_scene, true);
-    //m_scene.addEntity(entity);
-    ///entity->getTransformation().scale({0.005f, 0.005f, 0.005f});
+    Kita::Entity entity = Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene, true).value();
     //lightEntity2 = std::make_shared<Kita::LightUtil>(Kita::LightUtil::LightType::DIRECTIONAL);
     //lightEntity2->setDirection({-0.1f, -0.7f, -0.2f, 0.0f});
     //m_scene.addEntity(lightEntity);

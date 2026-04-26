@@ -8,6 +8,8 @@
 #include "../Renderer/Scene/ECS/Components/MeshComponent.h"
 #include "../Renderer/Scene/ECS/Components/PathComponent.h"
 #include "../Renderer/Scene/ECS/Components/RelationshipComponents.h"
+#include "../Renderer/Scene/ECS/Components/RenderTags.h"
+#include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
 
 namespace Kita {
     std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene, const bool reimport) {
@@ -44,7 +46,7 @@ namespace Kita {
 
     std::vector<AssetImporter::Material> AssetImporter::importMaterials(const aiScene* aiScene, const std::filesystem::path& path) {
         std::vector<Material> materials;
-        materials.reserve(aiScene->mNumMaterials);
+        materials.resize(aiScene->mNumMaterials);
 
         for (int materialIndex = 0; materialIndex < aiScene->mNumMaterials; ++materialIndex) {
             const aiMaterial* aiMaterial = aiScene->mMaterials[materialIndex];
@@ -70,7 +72,7 @@ namespace Kita {
         // we must fetch the component before every addition since entt can reallocate and invalidate the reference
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
             const aiMesh* aiMesh = aiScene->mMeshes[aiNode->mMeshes[m]];
-            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials).getEnttEntityID());
+            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials, aiNode->mTransformation).getEnttEntityID());
         }
 
         for (unsigned int i = 0; i < aiNode->mNumChildren; i++) {
@@ -80,7 +82,7 @@ namespace Kita {
         }
     }
 
-    Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials) {
+    Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const aiMatrix4x4& aiTransformMatrix) {
         Entity newEntity = scene.createEntity();
 
         std::vector<VertexProperties> vertices;
@@ -98,6 +100,9 @@ namespace Kita {
 
         addMaterialComponents(newEntity, aiMesh, materials);
         newEntity.addComponent<MeshComponent>(Engine::getEngine()->getAssetManager().createAsset<Mesh>(vertices, indices));
+        newEntity.addComponent<RenderInMainPass>();
+        newEntity.addComponent<ShaderComponent>();
+        newEntity.addComponent<TransformationComponent>(TransformationComponent{.model = convertAiModelMatrixToGLM(aiTransformMatrix)});
         return newEntity;
     }
 
@@ -120,6 +125,15 @@ namespace Kita {
         }
 
         entity.addComponent<PhongProperties>(phongProperties);
+    }
+
+    glm::mat4 AssetImporter::convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix) {
+        return {
+            aiMatrix.a1, aiMatrix.a2, aiMatrix.a3, aiMatrix.a4,
+            aiMatrix.b1, aiMatrix.b2, aiMatrix.b3, aiMatrix.b4,
+            aiMatrix.c1, aiMatrix.c2, aiMatrix.c3, aiMatrix.c4,
+            aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4
+        };
     }
 
     VertexProperties AssetImporter::importVertex(const aiMesh& aiMesh, const unsigned int index) {
@@ -149,14 +163,14 @@ namespace Kita {
 
     Texture::TextureType AssetImporter::assimpToKitaTextureType(const aiTextureType& ai_texture) {
         switch (ai_texture) {
-        case aiTextureType_DIFFUSE:
-            return Texture::TextureType::DIFFUSE;
-        case aiTextureType_SPECULAR:
-            return Texture::TextureType::SPECULAR;
-        case aiTextureType_NORMALS:
-            return Texture::TextureType::NORMAL;
-        default:
-            return Texture::TextureType::NONE;
+            case aiTextureType_DIFFUSE:
+                return Texture::TextureType::DIFFUSE;
+            case aiTextureType_SPECULAR:
+                return Texture::TextureType::SPECULAR;
+            case aiTextureType_NORMALS:
+                return Texture::TextureType::NORMAL;
+            default:
+                return Texture::TextureType::NONE;
         }
     }
 

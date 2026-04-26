@@ -24,7 +24,7 @@ namespace Kita {
         return m_resolution;
     }
 
-    const Texture* FrameBuffer::getColorTexture() const {
+    Texture* FrameBuffer::getColorTexture() const {
         return m_colorTexture.get();
     }
 

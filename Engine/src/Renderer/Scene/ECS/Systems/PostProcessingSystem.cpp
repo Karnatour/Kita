@@ -27,8 +27,7 @@ namespace Kita {
         renderer.getMainFramebuffer().unbind();
         renderer.disableCapability(Capability::DEPTH_TEST);
         renderer.clearBit({{ClearBit::COLOR}});
-
-        renderer.renderMesh(assetManager.getAsset<Mesh>(m_quadMeshAssetID), assetManager.getAsset<Shader>(m_shaderAssetID), glm::mat4(1.0f), {});
+        renderer.renderMesh(assetManager.getAsset<Mesh>(m_quadMeshAssetID), assetManager.getAsset<Shader>(m_shaderAssetID), glm::mat4(1.0f), {{renderer.getMainFramebuffer().getColorTexture()}});
         renderer.enableCapability(Capability::DEPTH_TEST);
     }
 } // Kita

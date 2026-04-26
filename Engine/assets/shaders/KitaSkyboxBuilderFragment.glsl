@@ -2,7 +2,7 @@
 out vec4 FragColor;
 in vec3 fragPos;
 
-uniform sampler2D equirectangularMap;
+uniform sampler2D skyboxTex;
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
 
@@ -15,6 +15,6 @@ vec2 sampleSphericalMap(vec3 v) {
 
 void main() {
     vec2 uv = sampleSphericalMap(normalize(fragPos));
-    vec3 color = texture(equirectangularMap, uv).rgb;
+    vec3 color = texture(skyboxTex, uv).rgb;
     FragColor = vec4(color, 1.0);
 }

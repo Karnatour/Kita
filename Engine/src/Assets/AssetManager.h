@@ -20,7 +20,7 @@ namespace Kita {
     template <>
     struct AssetBuilder<Shader> {
         template <typename... Args>
-        static std::unique_ptr<Shader> build(Args&&... arg) {
+        static std::unique_ptr<Shader> build(const std::optional<std::filesystem::path>& ignored, Args&&... arg) {
             auto shader = Shader::createPtr();
             if (std::expected<void, Shader::ShaderError> result = shader->createShader(std::forward<Args>(arg)...); result.has_value()) {
                 return std::move(shader);
@@ -38,19 +38,22 @@ namespace Kita {
         }
     };
 
+    template <typename T>
+    concept NotAPath = !std::convertible_to<T, std::filesystem::path>;
+
     template <>
     struct AssetBuilder<Texture> {
         template <typename... Args>
-        static std::unique_ptr<Texture> build(const std::filesystem::path& path, Args&&... args) {
+        static std::unique_ptr<Texture> build(const std::optional<std::filesystem::path>& path, Args&&... args) {
             auto texture = Texture::createPtr();
             if (std::expected<void, Texture::TextureError> result = texture->createTexture(path, std::forward<Args>(args)...); result.has_value()) {
                 return std::move(texture);
             }
             else if (result.error() == Texture::TextureError::FILE) {
-                KITA_ENGINE_ERROR("[AssetBuilder] File error while building texture {}", path.string());
+                KITA_ENGINE_ERROR("[AssetBuilder] File error while building texture {}", path.has_value() ? path.value().string() : "<no path>");
             }
             else if (result.error() == Texture::TextureError::USUPPORTED_NUM_OF_CHANNELS) {
-                KITA_ENGINE_ERROR("[AssetBuilder] Unsupported number of channels while building texture {}", path.string());
+                KITA_ENGINE_ERROR("[AssetBuilder] Unsupported number of channels while building texture {}", path.has_value() ? path.value().string() : "<no path>");
             }
             return nullptr;
         }
@@ -59,7 +62,7 @@ namespace Kita {
     template <>
     struct AssetBuilder<Mesh> {
         template <typename... Args>
-        static std::unique_ptr<Mesh> build(Args&&... args) {
+        static std::unique_ptr<Mesh> build(const std::optional<std::filesystem::path>& ignored, Args&&... args) {
             return std::make_unique<Mesh>(args...);
         }
     };
@@ -230,19 +233,8 @@ namespace Kita {
         friend class Engine;
 
         template <std::derived_from<Asset> T, typename... Args>
-        static std::unique_ptr<T> buildAsset(const std::optional<std::filesystem::path>& path, Args&&... args) {
-            if constexpr (requires {
-                AssetBuilder<T>::build(std::forward<Args>(args)...);
-            }) {
-                return AssetBuilder<T>::build(std::forward<Args>(args)...);
-            }
-            else {
-                if (!path) {
-                    KITA_ENGINE_ERROR("[AssetBuilder] This asset type {} needs path for creation. Default asset will be used", typeid(T).name());
-                    return nullptr;
-                }
-                return AssetBuilder<T>::build(path.value(), std::forward<Args>(args)...);
-            }
+        static std::unique_ptr<T> buildAsset(std::optional<std::filesystem::path> path, Args&&... args) {
+            return AssetBuilder<T>::build(std::move(path), std::forward<Args>(args)...);
         }
 
         void addDefaultAssets();

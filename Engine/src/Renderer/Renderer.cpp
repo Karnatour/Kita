@@ -15,7 +15,7 @@ namespace Kita {
         EventManager::listenToEvent<FrameBufferResized>(onFrameBufferResize);
         m_mainFramebuffer = FrameBuffer::createPtr();
         m_mainFramebuffer->createBuffer(
-            m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachType::RENDERBUFFER}}},
+            m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachType::TEXTURE}}},
             true, 1);
     }
 
@@ -101,45 +101,60 @@ namespace Kita {
         shader.setUniformBool("hasColorTex", false);
         shader.setUniformBool("hasDepthTex", false);
         shader.setUniformBool("hasStencilTex", false);
+        shader.setUniformBool("hasSkyboxTex", false);
+        shader.setUniformBool("hasNormalTex", false);
     }
 
     void Renderer::setTexturesInShader(Shader& shader, const std::span<Texture* const> textures) {
         for (const auto texture : textures) {
+            if (texture == nullptr) {
+                return;
+            }
             switch (texture->getType()) {
-            case Texture::TextureType::DIFFUSE:
-                texture->bind(0);
-                shader.setUniformInt("diffuseTex", 0);
-                shader.setUniformBool("hasDiffuseTex", true);
-                break;
-            case Texture::TextureType::SPECULAR:
-                texture->bind(1);
-                shader.setUniformInt("specularTex", 1);
-                shader.setUniformBool("hasSpecularTex", true);
-                break;
-            case Texture::TextureType::CUBEMAP:
-                texture->bind(2);
-                shader.setUniformInt("cubemapTex", 2);
-                shader.setUniformBool("hasCubemapTex", true);
-                break;
-            case Texture::TextureType::COLOR:
-                texture->bind(3);
-                shader.setUniformInt("colorTex", 3);
-                shader.setUniformBool("hasColorTex", true);
-                break;
-            case Texture::TextureType::DEPTH:
-                texture->bind(4);
-                shader.setUniformInt("depthTex", 4);
-                shader.setUniformBool("hasDepthTex", true);
-                break;
-            case Texture::TextureType::STENCIL:
-                texture->bind(5);
-                shader.setUniformInt("stencilTex", 5);
-                shader.setUniformBool("hasStencilTex", true);
-                break;
-            default:
-                std::string str = texture->getPath().has_value() ? texture->getPath().value().string() : std::string("missing path");
-                KITA_ENGINE_WARN("Texture: {}, type is NONE or Unknown, unable to bind into shader", str);
-                break;
+                case Texture::TextureType::DIFFUSE:
+                    texture->bind(0);
+                    shader.setUniformInt("diffuseTex", 0);
+                    shader.setUniformBool("hasDiffuseTex", true);
+                    break;
+                case Texture::TextureType::SPECULAR:
+                    texture->bind(1);
+                    shader.setUniformInt("specularTex", 1);
+                    shader.setUniformBool("hasSpecularTex", true);
+                    break;
+                case Texture::TextureType::CUBEMAP:
+                    texture->bind(2);
+                    shader.setUniformInt("cubemapTex", 2);
+                    shader.setUniformBool("hasCubemapTex", true);
+                    break;
+                case Texture::TextureType::COLOR:
+                    texture->bind(3);
+                    shader.setUniformInt("colorTex", 3);
+                    shader.setUniformBool("hasColorTex", true);
+                    break;
+                case Texture::TextureType::DEPTH:
+                    texture->bind(4);
+                    shader.setUniformInt("depthTex", 4);
+                    shader.setUniformBool("hasDepthTex", true);
+                    break;
+                case Texture::TextureType::STENCIL:
+                    texture->bind(5);
+                    shader.setUniformInt("stencilTex", 5);
+                    shader.setUniformBool("hasStencilTex", true);
+                    break;
+                case Texture::TextureType::SKYBOX:
+                    texture->bind(6);
+                    shader.setUniformInt("skyboxTex", 6);
+                    shader.setUniformBool("hasSkyboxTex", true);
+                    break;
+                case Texture::TextureType::NORMAL:
+                    texture->bind(7);
+                    shader.setUniformInt("normalTex", 7);
+                    shader.setUniformBool("hasNormalTex", true);
+                    break;
+                default:
+                    std::string str = texture->getPath().has_value() ? texture->getPath().value().string() : std::string("missing path");
+                    KITA_ENGINE_WARN("Texture: {}, type is NONE or Unknown, unable to bind into shader", str);
+                    break;
             }
         }
     }

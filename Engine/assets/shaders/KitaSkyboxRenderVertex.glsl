@@ -5,6 +5,7 @@ layout(std140, binding = 0) uniform Camera {
     mat4 projection;
     vec4 position;
     vec4 front;
+    vec4 params;
 } camera;
 
 layout (location = 0) in vec3 aPos;

@@ -8,12 +8,14 @@
 #include "ECS/Systems/GeometrySystem.h"
 #include "ECS/Systems/LightShadowSystem.h"
 #include "ECS/Systems/PostProcessingSystem.h"
+#include "ECS/Systems/SkyboxSystem.h"
 
 namespace Kita {
     void Scene::addDefaultSystems() {
         m_systems.emplace_back(std::make_unique<CameraSystem>());
         m_systems.emplace_back(std::make_unique<LightShadowSystem>());
         m_systems.emplace_back(std::make_unique<GeometrySystem>());
+        m_systems.emplace_back(std::make_unique<SkyboxSystem>());
         m_systems.emplace_back(std::make_unique<PostProcessingSystem>());
 
         Entity camera = createEntity();
@@ -36,6 +38,10 @@ namespace Kita {
         std::ranges::sort(m_systems, [](auto& a, auto& b) {
             return a->getOrder() < b->getOrder();
         });
+
+        Engine::getEngine()->getRenderer().getMainFramebuffer().bind();
+        Engine::getEngine()->getRenderer().clearBit({{ClearBit::COLOR, ClearBit::DEPTH}});
+        Engine::getEngine()->getRenderer().getMainFramebuffer().unbind();
 
         for (const auto& system : m_systems) {
             system->render(*this);

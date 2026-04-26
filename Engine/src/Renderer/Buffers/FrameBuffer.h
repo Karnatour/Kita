@@ -26,7 +26,7 @@ namespace Kita {
         static std::unique_ptr<FrameBuffer> createPtr();
         std::pair<int, int> getResolution() const;
 
-        const Texture* getColorTexture() const;
+        Texture* getColorTexture() const;
         const Texture* getDepthTexture() const;
 
         const RenderBuffer* getColorRenderBuffer() const;

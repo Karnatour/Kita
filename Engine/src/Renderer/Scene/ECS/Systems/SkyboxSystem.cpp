@@ -21,23 +21,27 @@ namespace Kita {
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
 
-        m_skyboxMeshID = assetManager.createAsset<Mesh>(Geometry::getCubeData());
-        m_skyboxBuilderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
-            Shader::vert("KitaSkyboxBuilderVertex.glsl"), Shader::frag("KitaSkyboxBuilderFragment.glsl")
-        });
-        m_skyboxRenderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
-            Shader::vert("KitaSkyboxRenderVertex.glsl"), Shader::frag("KitaSkyboxRenderFragment.glsl")
-        });
+        if (m_skyboxMeshID == AssetManager::INVALID_ASSET_ID) {
+            m_skyboxMeshID = assetManager.createAsset<Mesh>(Geometry::getCubeData());
+        }
+        if (m_skyboxBuilderShaderID == AssetManager::INVALID_ASSET_ID) {
+            m_skyboxBuilderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
+                Shader::vert("KitaSkyboxBuilderVertex.glsl"), Shader::frag("KitaSkyboxBuilderFragment.glsl")
+            });
+        }
+        if (m_skyboxRenderShaderID == AssetManager::INVALID_ASSET_ID) {
+            m_skyboxRenderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
+                Shader::vert("KitaSkyboxRenderVertex.glsl"), Shader::frag("KitaSkyboxRenderFragment.glsl")
+            });
+        }
 
         auto entity = Entity(&scene, enttEntity);
         auto& skyboxComponent = entity.getComponent<SkyboxComponent>();
 
         if (m_skyboxToCubemapFBO == nullptr) {
             m_skyboxToCubemapFBO = FrameBuffer::createPtr();
-            m_skyboxToCubemapFBO->createBuffer(CUBEMAP_FACE_RES, {
-                                                   {{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}
-                                               }, true, 1);
-            convertSkyboxTextureToCubemap(skyboxComponent);
+            m_skyboxToCubemapFBO->createBuffer(CUBEMAP_FACE_RES, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}}}, true, 1);
+            convertSkyboxTextureToCubemap(skyboxComponent); //TODO Release skybox texture
         }
 
         if (m_skyboxTextureID != skyboxComponent.skyboxID) {
@@ -45,6 +49,7 @@ namespace Kita {
             convertSkyboxTextureToCubemap(skyboxComponent);
         }
 
+        renderer.getMainFramebuffer().bind();
         renderer.setDepthFunc(DepthFunction::LEQUAL);
         renderer.disableBufferWrite(BufferType::DEPTH);
 
@@ -53,6 +58,7 @@ namespace Kita {
 
         renderer.enableBufferWrite(BufferType::DEPTH);
         renderer.setDepthFunc(DepthFunction::LESS);
+        renderer.getMainFramebuffer().unbind();
     }
 
     void SkyboxSystem::convertSkyboxTextureToCubemap(SkyboxComponent& skyboxComponent) {
@@ -61,8 +67,6 @@ namespace Kita {
 
         m_skyboxTextureID = skyboxComponent.skyboxID;
 
-        renderer.setDepthFunc(DepthFunction::LEQUAL);
-        renderer.disableBufferWrite(BufferType::DEPTH);
         renderer.setViewport(CUBEMAP_FACE_RES, false);
         m_skyboxToCubemapFBO->bind();
 
@@ -88,7 +92,5 @@ namespace Kita {
         }
         m_skyboxToCubemapFBO->unbind();
         renderer.restoreViewport();
-        renderer.enableBufferWrite(BufferType::DEPTH);
-        renderer.setDepthFunc(DepthFunction::LESS);
     }
 } // Kita
