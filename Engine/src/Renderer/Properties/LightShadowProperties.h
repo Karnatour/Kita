@@ -18,7 +18,6 @@ namespace Kita {
         static constexpr int MAX_CASCADES = 16;
         static constexpr std::pair<int, int> RESOLUTION = std::make_pair(4096, 4096);
 
-        int cascadeCount;
         std::array<float, MAX_CASCADES> cascadeSplitDistances;
         std::array<glm::mat4, MAX_CASCADES> lightSpaceMatrices;
     };

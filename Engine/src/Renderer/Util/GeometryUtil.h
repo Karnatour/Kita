@@ -10,4 +10,5 @@ namespace Kita::Geometry {
 
     MeshData getCubeData();
     MeshData getQuadData();
+    MeshData getTriangleData();
 }

@@ -10,6 +10,8 @@ namespace Kita {
         explicit Entity(Scene* scene);
         Entity(Scene* scene, entt::entity entityID);
 
+        entt::entity getEnttEntityID() const;
+
         template <typename... Ts>
         bool hasAllComponents() const {
             return m_scene->m_registry.all_of<Ts...>(m_enttEntity);
@@ -23,6 +25,13 @@ namespace Kita {
         template <typename T, typename... Args>
         void addComponent(Args&&... arg) {
             m_scene->m_registry.emplace<T>(m_enttEntity, std::forward<Args>(arg)...);
+        }
+
+        template <typename T, typename... Args>
+        void addComponentIfNotExists(Args&&... arg) {
+            if (!hasAllComponents<T>()) {
+                m_scene->m_registry.emplace<T>(m_enttEntity, std::forward<Args>(arg)...);
+            }
         }
 
         template <typename T>

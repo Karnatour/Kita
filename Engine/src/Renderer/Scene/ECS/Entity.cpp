@@ -7,4 +7,8 @@ namespace Kita {
 
     Entity::Entity(Scene* scene, const entt::entity entityID) : m_scene(scene), m_enttEntity(entityID) {
     }
+
+    entt::entity Entity::getEnttEntityID() const {
+        return m_enttEntity;
+    }
 } // Kita

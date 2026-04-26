@@ -78,4 +78,17 @@ namespace Kita::Geometry {
             }
         };
     }
+
+    MeshData getTriangleData() {
+        return MeshData{
+            .vertices = {
+                {glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.5f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f)},
+                {glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)},
+                {glm::vec3(1.0f, -1.0f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)}
+            },
+            .indices = {
+                0, 1, 2
+            }
+        };
+    }
 }

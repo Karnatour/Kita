@@ -4,6 +4,6 @@
 #include "LightShadowComponents.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
-#include "ParentComponent.h"
+#include "RelationshipComponents.h"
 #include "RenderTags.h"
 #include "TransformationComponent.h"

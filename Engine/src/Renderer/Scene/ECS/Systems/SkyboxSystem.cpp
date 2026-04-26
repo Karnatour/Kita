@@ -1,9 +1,7 @@
 #include "../../../../kitapch.h"
 #include "SkyboxSystem.h"
-#include <glm/ext/matrix_clip_space.hpp>
-
 #include "../../../../Core/Engine.h"
-#include "../Components/MeshComponent.h"
+#include "../../../Util/CubemapUtil.h"
 #include "../Components/SkyboxComponent.h"
 
 namespace Kita {
@@ -23,58 +21,73 @@ namespace Kita {
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
 
+        m_skyboxMeshID = assetManager.createAsset<Mesh>(Geometry::getCubeData());
+        m_skyboxBuilderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
+            Shader::vert("KitaSkyboxBuilderVertex.glsl"), Shader::frag("KitaSkyboxBuilderFragment.glsl")
+        });
+        m_skyboxRenderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
+            Shader::vert("KitaSkyboxRenderVertex.glsl"), Shader::frag("KitaSkyboxRenderFragment.glsl")
+        });
+
         auto entity = Entity(&scene, enttEntity);
-        auto& [skyboxID, cubemapID] = entity.getComponent<SkyboxComponent>();
-        auto& skyboxTexture = assetManager.getAsset<Texture>(skyboxID);
+        auto& skyboxComponent = entity.getComponent<SkyboxComponent>();
 
         if (m_skyboxToCubemapFBO == nullptr) {
             m_skyboxToCubemapFBO = FrameBuffer::createPtr();
-            m_skyboxToCubemapFBO->createBuffer(CUBEMAP_FACE_RES,
-                                               {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}},
-                                               true, 1);
-            m_skyboxID = skyboxID;
-
-            renderer.setDepthFunc(DepthFunction::LEQUAL);
-            renderer.disableBufferWrite(BufferType::DEPTH);
-            renderer.setViewport(CUBEMAP_FACE_RES, false);
-            m_skyboxToCubemapFBO->bind();
-
-            auto& shader = assetManager.getOrCreateAsset<Shader>(std::nullopt, false,
-                                                                 std::initializer_list{Shader::vert("KitaSkyboxBuilderVertex.glsl"), Shader::frag("KitaSkyboxBuilderFragment.glsl")});
-
-            cubemapID = assetManager.createAsset<Texture>(std::nullopt, {}, Texture::TextureType::CUBEMAP, CUBEMAP_FACE_RES);
-            auto& cubemapTexture = assetManager.getAsset<Texture>(cubemapID);
-            auto cubeMeshID = assetManager.createAsset<Mesh>(std::nullopt, {}, Geometry::getCubeData());
-            auto& cubeMesh = assetManager.getAsset<Mesh>(cubeMeshID);
-            entity.addComponent<MeshComponent>(cubeMeshID);
-            shader.bind();
-            shader.setUniformMat4("projection", CubemapUtil::getCubemapCaptureProjection());
-            const auto captureViews = CubemapUtil::getCubemapCaptureViews();
-            for (int i = 0; i < 6; ++i) {
-                m_skyboxToCubemapFBO->attachCubemapFace(cubemapTexture.getTexture(), i);
-
-                shader.setUniformMat4("view", captureViews[i]);
-
-                renderer.renderMesh(cubeMesh, shader, glm::mat4(1.0f), std::initializer_list{&skyboxTexture});
-            }
-            m_skyboxToCubemapFBO->unbind();
-            renderer.restoreViewport();
-            renderer.enableBufferWrite(BufferType::DEPTH);
-            renderer.setDepthFunc(DepthFunction::LESS);
+            m_skyboxToCubemapFBO->createBuffer(CUBEMAP_FACE_RES, {
+                                                   {{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}
+                                               }, true, 1);
+            convertSkyboxTextureToCubemap(skyboxComponent);
         }
 
-        if (m_skyboxID != skyboxID) {
-            m_skyboxID = skyboxID;
-            m_skyboxToCubemapFBO->resize(skyboxTexture.getResolution());
+        if (m_skyboxTextureID != skyboxComponent.skyboxID) {
+            m_skyboxToCubemapFBO->resize(assetManager.getAsset<Texture>(skyboxComponent.skyboxID).getResolution());
+            convertSkyboxTextureToCubemap(skyboxComponent);
         }
 
         renderer.setDepthFunc(DepthFunction::LEQUAL);
         renderer.disableBufferWrite(BufferType::DEPTH);
 
-        auto& shader = assetManager.getOrCreateAsset<Shader>(std::nullopt, false,
-                                                             std::initializer_list{Shader::vert("KitaSkyboxRenderVertex.glsl"), Shader::frag("KitaSkyboxRenderFragment.glsl")});
-        renderer.renderMesh(assetManager.getAsset<Mesh>(entity.getComponent<MeshComponent>().meshID), shader, glm::mat4(1.0f), std::initializer_list{&skyboxTexture});
+        renderer.renderMesh(assetManager.getAsset<Mesh>(m_skyboxMeshID), assetManager.getAsset<Shader>(m_skyboxRenderShaderID), glm::mat4(1.0f),
+                            {{&assetManager.getAsset<Texture>(skyboxComponent.cubemapID)}});
 
+        renderer.enableBufferWrite(BufferType::DEPTH);
+        renderer.setDepthFunc(DepthFunction::LESS);
+    }
+
+    void SkyboxSystem::convertSkyboxTextureToCubemap(SkyboxComponent& skyboxComponent) {
+        auto& renderer = Engine::getEngine()->getRenderer();
+        auto& assetManager = Engine::getEngine()->getAssetManager();
+
+        m_skyboxTextureID = skyboxComponent.skyboxID;
+
+        renderer.setDepthFunc(DepthFunction::LEQUAL);
+        renderer.disableBufferWrite(BufferType::DEPTH);
+        renderer.setViewport(CUBEMAP_FACE_RES, false);
+        m_skyboxToCubemapFBO->bind();
+
+        if (skyboxComponent.cubemapID == AssetManager::INVALID_ASSET_ID) {
+            skyboxComponent.cubemapID = assetManager.createAsset<Texture>(Texture::TextureType::CUBEMAP, CUBEMAP_FACE_RES);
+        }
+
+        const auto& cubemapTexture = assetManager.getAsset<Texture>(skyboxComponent.cubemapID);
+        auto& skyboxTexture = assetManager.getAsset<Texture>(skyboxComponent.skyboxID);
+        auto& builderShader = assetManager.getAsset<Shader>(m_skyboxBuilderShaderID);
+        const auto& skyboxMesh = assetManager.getAsset<Mesh>(m_skyboxMeshID);
+
+        builderShader.bind();
+        builderShader.setUniformMat4("projection", CubemapUtil::getCubemapCaptureProjection());
+
+        const std::vector<glm::mat4> captureViews = CubemapUtil::getCubemapCaptureViews();
+        for (int i = 0; i < 6; ++i) {
+            m_skyboxToCubemapFBO->attachCubemapFace(cubemapTexture.getTexture(), i);
+
+            builderShader.setUniformMat4("view", captureViews[i]);
+
+            renderer.renderMesh(skyboxMesh, builderShader, glm::mat4(1.0f), {{&skyboxTexture}});
+        }
+        m_skyboxToCubemapFBO->unbind();
+        renderer.restoreViewport();
         renderer.enableBufferWrite(BufferType::DEPTH);
         renderer.setDepthFunc(DepthFunction::LESS);
     }

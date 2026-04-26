@@ -12,24 +12,25 @@ void onSomething(Kita::KeyPressed& event) {
 }
 
 void Sandbox::onInit() {
-    m_scene.addDefaultSystems();
+    m_scene = std::make_unique<Kita::Scene>();
+    m_scene->addDefaultSystems();
 
-    auto entity = std::make_shared<Kita::Entity>(Kita::AssetImporter::importModel("Sponza-master/sponza.obj", true));
-    m_scene.addEntity(entity);
-    entity->getTransformation().scale({0.005f, 0.005f, 0.005f});
-    lightEntity2 = std::make_shared<Kita::LightUtil>(Kita::LightUtil::LightType::DIRECTIONAL);
-    lightEntity2->setDirection({-0.1f, -0.7f, -0.2f, 0.0f});
+    //Kita::Entity entity = Kita::AssetImporter::importModel("Sponza-master/sponza.obj", *m_scene, true);
+    //m_scene.addEntity(entity);
+    ///entity->getTransformation().scale({0.005f, 0.005f, 0.005f});
+    //lightEntity2 = std::make_shared<Kita::LightUtil>(Kita::LightUtil::LightType::DIRECTIONAL);
+    //lightEntity2->setDirection({-0.1f, -0.7f, -0.2f, 0.0f});
     //m_scene.addEntity(lightEntity);
-    m_scene.addEntity(lightEntity2);
+    //m_scene.addEntity(lightEntity2);
     Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
 }
 
 void Sandbox::onUpdate() {
-    m_scene.update();
+    m_scene->update();
 }
 
 void Sandbox::onRender() {
-    m_scene.render();
+    m_scene->render();
 }
 
 void Sandbox::onExit() {

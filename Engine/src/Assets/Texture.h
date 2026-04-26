@@ -38,7 +38,7 @@ namespace Kita {
         int getWidth() const;
         int getHeight() const;
         int getChannels() const;
-        const std::filesystem::path& getPath() const;
+        const std::optional<std::filesystem::path>& getPath() const;
         TextureType getType() const;
         std::pair<int,int> getResolution() const;
 

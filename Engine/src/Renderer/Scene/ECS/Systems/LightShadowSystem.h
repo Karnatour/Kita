@@ -6,6 +6,7 @@
 #include "../../../Buffers/UniformBuffer.h"
 #include "../../../Properties/LightShadowProperties.h"
 #include "../Entity.h"
+#include "../../../../Assets/AssetManager.h"
 #include "../../../Buffers/FrameBuffer.h"
 
 namespace Kita {
@@ -61,5 +62,8 @@ namespace Kita {
         std::unique_ptr<UniformBuffer> m_directionalShadowUBO;
         std::unique_ptr<FrameBuffer> m_lightFBO;
         int m_castsShadowsCount = 0;
+        AssetManager::AssetID m_CSMShaderAssetID = AssetManager::INVALID_ASSET_ID;
+        //TODO configurable
+        static constexpr int CASCADE_COUNT = 4;
     };
 } // Kita

@@ -31,7 +31,7 @@ namespace Kita {
         return m_channels;
     }
 
-    const std::filesystem::path& Texture::getPath() const {
+    const std::optional<std::filesystem::path>& Texture::getPath() const {
         return m_path;
     }
 

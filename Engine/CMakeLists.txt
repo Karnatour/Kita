@@ -94,8 +94,6 @@ add_library(KitaEngine SHARED
         src/Renderer/Buffers/ShaderStorageBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.h
-        src/Renderer/Scene/Entities/SkyboxEntity.cpp
-        src/Renderer/Scene/Entities/SkyboxEntity.h
         src/Renderer/Buffers/FrameBuffer.cpp
         src/Renderer/Buffers/FrameBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLFrameBuffer.cpp
@@ -109,7 +107,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Components/Components.h
         src/Renderer/Scene/ECS/Components/TransformationComponent.h
         src/Renderer/Scene/ECS/Components/MaterialComponent.h
-        src/Renderer/Scene/ECS/Components/ParentComponent.h
+        src/Renderer/Scene/ECS/Components/RelationshipComponents.h
         src/Renderer/Scene/ECS/Components/LightShadowComponents.h
         src/Renderer/Scene/ECS/Components/MeshComponent.h
         src/Renderer/Scene/ECS/Components/RenderTags.h
@@ -136,6 +134,9 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Components/SkyboxComponent.h
         src/Renderer/Util/CubemapUtil.cpp
         src/Renderer/Util/CubemapUtil.h
+        src/Renderer/Scene/ECS/Components/PathComponent.h
+        src/Renderer/Scene/ECS/Systems/PostProcessingSystem.cpp
+        src/Renderer/Scene/ECS/Systems/PostProcessingSystem.h
 )
 
 #Multithreaded compilation

@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "Scene/ECS/Entity.h"
-#include "Scene/Entities/SkyboxEntity.h"
+#include "Types/RendererTypes.h"
 
 namespace Kita {
     class KITAENGINE_API RendererAPI {
@@ -15,7 +15,7 @@ namespace Kita {
     private:
         friend class Renderer;
 
-        void init(const Renderer& renderer);
+        void init();
         virtual void setupDebug() = 0;
 
         virtual void clearColor(float red, float green, float blue, float alpha) = 0;
@@ -30,6 +30,5 @@ namespace Kita {
         virtual void drawElements(size_t indicesCount) = 0;
 
         virtual void setViewport(std::pair<int, int> resolution) = 0;
-        void prepareScreenQuadModel(const Renderer& renderer);
     };
 } // Kita

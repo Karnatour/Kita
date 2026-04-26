@@ -26,7 +26,7 @@ namespace Kita {
         return frustumCorners;
     }
 
-    glm::mat4 LightUtil::getLightSpaceMatrix(const CameraProperties& properties, const float zNear, const float zFar, const std::pair<float, float> resolution) {
+    glm::mat4 LightUtil::getLightSpaceMatrix(const CameraProperties& properties, const float zNear, const float zFar, const glm::vec3& lightDir, const std::pair<float, float> resolution) {
         const glm::mat4 projection = glm::perspective(glm::radians(properties.zoom), resolution.first / resolution.second, zNear, zFar);
         const std::vector<glm::vec4> corners = getFrustrumPoints(CameraUtil::getViewMatrix(properties), projection);
 

@@ -2,22 +2,40 @@
 
 #include <assimp/scene.h>
 
+#include "AssetManager.h"
 #include "Texture.h"
 #include "../Core/DllTemplate.h"
+#include "../Renderer/Properties/PhongProperties.h"
 #include "../Renderer/Properties/VertexProperties.h"
+#include "../Renderer/Scene/ECS/Entity.h"
+#include "../Renderer/Scene/ECS/Components/MaterialComponent.h"
 
 namespace Kita {
     class KITAENGINE_API AssetImporter {
     public:
+        enum class ImportError {
+            FILE
+        };
+
         static inline const std::filesystem::path MODELS_PREFIX = "../assets/models";
-        static std::shared_ptr<Model> importModel(const std::filesystem::path& path, bool reimport = false);
+        static std::expected<Entity, ImportError> importModel(const std::filesystem::path& path, Scene& scene, bool reimport = false);
 
     private:
-        static void processNode(const aiScene* aiScene, const aiNode* aiNode, const std::shared_ptr<Model>& model);
+        struct Material {
+            std::optional<AssetManager::AssetID> diffuseComponent;
+            std::optional<AssetManager::AssetID> specularComponent;
+            std::optional<AssetManager::AssetID> normalComponent;
+            PhongProperties phongProperties;
+        };
+
+        static std::vector<Material> importMaterials(const aiScene* aiScene, const std::filesystem::path& path);
+        static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials);
+        static void addMaterialComponents(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials);
+        static Entity processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials);
         static VertexProperties importVertex(const aiMesh& aiMesh, unsigned int index);
         static Texture::TextureType assimpToKitaTextureType(const aiTextureType& ai_texture);
-        static void importTextures(aiTextureType textureType, const aiMaterial& aiMaterial, const std::shared_ptr<Material>& material, const std::filesystem::path& path);
+        static std::optional<AssetManager::AssetID> importTexture(aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path);
         static void moveTexture(const std::filesystem::path& texturePath);
-        static void importPhongProperies(const aiMaterial& aiMaterial, const std::shared_ptr<Material>& material);
+        static PhongProperties importPhongProperies(const aiMaterial& aiMaterial);
     };
 } // Kita

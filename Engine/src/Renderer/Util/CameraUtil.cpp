@@ -13,11 +13,11 @@ namespace Kita {
         return getViewMatrix(properties.position, properties.front, properties.up);
     }
 
-    glm::mat4 CameraUtil::getProjectionMatrix(const CameraProperties& properties, const std::pair<float, float> viewport) {
+    glm::mat4 CameraUtil::getProjectionMatrix(const CameraProperties& properties, const std::pair<int, int> viewport) {
         return getProjectionMatrix(properties.fov, viewport, properties.zNear, properties.zFar);
     }
 
-    glm::mat4 CameraUtil::getProjectionMatrix(const float fov, const std::pair<float, float> viewport, const float zNear, const float zFar) {
-        return glm::perspective(glm::radians(fov), viewport.first / viewport.second, zNear, zFar);
+    glm::mat4 CameraUtil::getProjectionMatrix(const float fov, const std::pair<int, int> viewport, const float zNear, const float zFar) {
+        return glm::perspective(glm::radians(fov), static_cast<float>(viewport.first) / static_cast<float>(viewport.second), zNear, zFar);
     }
 } // Kita

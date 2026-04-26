@@ -17,6 +17,6 @@ namespace Kita {
         static constexpr int MAX_LIGHTS = 512;
 
         static std::vector<glm::vec4> getFrustrumPoints(const glm::mat4& view, const glm::mat4& projection);
-        static glm::mat4 getLightSpaceMatrix(const CameraProperties& properties, float zNear, float zFar, std::pair<float, float> resolution);
+        static glm::mat4 getLightSpaceMatrix(const CameraProperties& properties, float zNear, float zFar, const glm::vec3& lightDir, std::pair<float, float> resolution);
     };
 } // Kita

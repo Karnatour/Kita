@@ -31,7 +31,7 @@ namespace Kita {
         Input::init();
         EventManager::listenToEvent<WindowClosed>(onWindowClosed);
 
-        KAsset::fetchExistingBakedFiles();
+        //KAsset::fetchExistingBakedFiles();
 
         KITA_ENGINE_INFO("Engine initialized");
     }
@@ -59,8 +59,8 @@ namespace Kita {
 
     void Engine::run() {
         initGame();
-        m_renderer->getRendererAPI().enableCapability(Capability::DEPTH_TEST);
-        m_renderer->getRendererAPI().clearColor(0.07f, 0.09f, 0.15f, 1.0f);
+        m_renderer->enableCapability(Capability::DEPTH_TEST);
+        m_renderer->clearColor(0.07f, 0.09f, 0.15f, 1.0f);
         while (m_isRunning) {
             update();
             m_game->onUpdate();

@@ -18,4 +18,10 @@ target_link_libraries(Sandbox PUBLIC KitaEngine)
 target_include_directories(Sandbox PRIVATE ${CMAKE_SOURCE_DIR}/include)
 add_dependencies(Sandbox KitaEngine)
 
+add_custom_command(TARGET Sandbox POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/Engine/assets
+        ${CMAKE_BINARY_DIR}/$<CONFIG>/assets
+)
+
 

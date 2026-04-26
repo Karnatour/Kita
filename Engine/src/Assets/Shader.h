@@ -4,7 +4,7 @@
 #include "../Core/DllTemplate.h"
 #include <memory>
 #include <glm/glm.hpp>
-
+#include <span>
 #include "Asset.h"
 
 namespace Kita {

@@ -19,11 +19,12 @@ namespace Kita {
     void LightShadowSystem::render(Scene& scene) {
         m_castsShadowsCount = 0;
         createBuffersIfMissing(scene);
+        if (m_lightFBO != nullptr) {
+            renderShadowPass(scene);
 
-        renderShadowPass(scene);
-
-        uploadLightData(scene);
-        uploadDirectionalLightData(scene);
+            uploadLightData(scene);
+            uploadDirectionalLightData(scene);
+        }
     }
 
     void LightShadowSystem::createBuffersIfMissing(Scene& scene) {
@@ -39,22 +40,22 @@ namespace Kita {
 
         if (const auto enttEntity = scene.view<DirectionalShadowComponent>().front(); m_lightFBO == nullptr && enttEntity != entt::null) {
             m_lightFBO = FrameBuffer::createPtr();
-            const int cascadeCount = Entity(&scene, enttEntity).getComponent<DirectionalShadowComponent>().properties.cascadeCount;
-            m_lightFBO->createBuffer(m_lightFBOresolution, {{{BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}}, true, cascadeCount);
+            m_lightFBO->createBuffer(m_lightFBOresolution, {{{BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}}, true, CASCADE_COUNT);
         }
     }
 
     void LightShadowSystem::renderShadowPass(Scene& scene) {
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
-        const int cascadeCount = Entity(&scene, scene.view<DirectionalShadowComponent>().front()).getComponent<DirectionalShadowComponent>().properties.cascadeCount;
 
         const std::initializer_list shaderInfos = {
             Shader::vert("KitaCSMVertex.glsl"),
-            Shader::geom("KitaCSMGeometry.glsl", {Shader::define("NUM_CASCADES", std::to_string(cascadeCount))}),
+            Shader::geom("KitaCSMGeometry.glsl", {Shader::define("NUM_CASCADES", std::to_string(CASCADE_COUNT))}),
             Shader::frag("KitaEmptyFragment.glsl")
         };
-        auto& shader = assetManager.getOrCreateAsset<Shader>(std::nullopt, false, shaderInfos);
+        m_CSMShaderAssetID = assetManager.createAsset<Shader>(shaderInfos);
+
+        auto& shader = assetManager.getAsset<Shader>(m_CSMShaderAssetID);
 
         m_lightFBO->bind();
         renderer.setViewport(DirectionalShadowProperties::RESOLUTION, false);
@@ -83,14 +84,14 @@ namespace Kita {
 
     void LightShadowSystem::uploadDirectionalLightData(Scene& scene) const {
         Entity dirLightEntity(&scene, scene.view<LightComponent, DirectionalShadowComponent>().front());
-        const auto [cascadeCount, cascadeSplitDistances, lightSpaceMatrices] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
+        const auto [cascadeSplitDistances, lightSpaceMatrices] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
         DirectionalShadowUBOLayout dirLightUBOData{};
 
-        for (int i = 0; i < cascadeCount; i++) {
+        for (int i = 0; i < CASCADE_COUNT; i++) {
             dirLightUBOData.cascadeSplitDistances[i].x = cascadeSplitDistances[i];
             dirLightUBOData.lightSpaceMatrices[i] = lightSpaceMatrices[i];
         }
-        dirLightUBOData.params = glm::ivec4(cascadeCount, -1, -1, -1);
+        dirLightUBOData.params = glm::ivec4(CASCADE_COUNT, -1, -1, -1);
 
         m_directionalShadowUBO->bind(1);
         m_directionalShadowUBO->upload(sizeof(DirectionalShadowUBOLayout), &dirLightUBOData);
