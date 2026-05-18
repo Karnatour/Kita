@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <expected>
 #include <filesystem>
+#include <magic_enum/magic_enum.hpp>
 #include "Shader.h"
 #include "Texture.h"
 #include "../Core/Assert.h"
@@ -23,6 +24,7 @@ namespace Kita {
         static std::unique_ptr<Shader> build(const std::optional<std::filesystem::path>& ignored, Args&&... arg) {
             auto shader = Shader::createPtr();
             if (std::expected<void, Shader::ShaderError> result = shader->createShader(std::forward<Args>(arg)...); result.has_value()) {
+                KITA_ENGINE_DEBUG("[AssetBuilder] Created shader asset");
                 return std::move(shader);
             }
             else if (result.error().code == Shader::ShaderErrorCode::FILE) {
@@ -47,6 +49,7 @@ namespace Kita {
         static std::unique_ptr<Texture> build(const std::optional<std::filesystem::path>& path, Args&&... args) {
             auto texture = Texture::createPtr();
             if (std::expected<void, Texture::TextureError> result = texture->createTexture(path, std::forward<Args>(args)...); result.has_value()) {
+                KITA_ENGINE_DEBUG("[AssetBuilder] Created texture asset with type: {}", magic_enum::enum_name(texture->getType()));
                 return std::move(texture);
             }
             else if (result.error() == Texture::TextureError::FILE) {
@@ -63,6 +66,7 @@ namespace Kita {
     struct AssetBuilder<Mesh> {
         template <typename... Args>
         static std::unique_ptr<Mesh> build(const std::optional<std::filesystem::path>& ignored, Args&&... args) {
+            KITA_ENGINE_DEBUG("[AssetBuilder] Created mesh asset");
             return std::make_unique<Mesh>(args...);
         }
     };
@@ -118,7 +122,12 @@ namespace Kita {
             }
 
             // return default if asset for key isn't found
-            KITA_ENGINE_ERROR("[AssetBuilder] Asset for ID not found, returning default, ID: {}", ID);
+            if (ID == INVALID_ASSET_ID) {
+                KITA_ENGINE_ERROR("[AssetBuilder] Asset tried to fetch INVALID_ID, returning default");
+            }
+            else {
+                KITA_ENGINE_ERROR("[AssetBuilder] Asset for ID not found, returning default, ID: {}", ID);
+            }
             auto it = bucket.find(DEFAULT_ASSET_ID);
             KITA_ENGINE_ASSERT(it != bucket.end(), "[AssetBuilder] Default asset not found");
             return *it->second;

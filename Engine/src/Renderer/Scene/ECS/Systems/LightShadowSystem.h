@@ -51,7 +51,6 @@ namespace Kita {
             );
         };
 
-        static constexpr std::pair<int, int> m_lightFBOresolution = std::make_pair(4096, 4096);
         void createBuffersIfMissing(Scene& scene);
         void renderShadowPass(Scene& scene);
         void uploadLightData(Scene& scene);
@@ -62,8 +61,7 @@ namespace Kita {
         std::unique_ptr<UniformBuffer> m_directionalShadowUBO;
         std::unique_ptr<FrameBuffer> m_lightFBO;
         int m_castsShadowsCount = 0;
+        int m_cascadeCount = 0;
         AssetManager::AssetID m_CSMShaderAssetID = AssetManager::INVALID_ASSET_ID;
-        //TODO configurable
-        static constexpr int CASCADE_COUNT = 4;
     };
 } // Kita

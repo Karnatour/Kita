@@ -32,6 +32,7 @@ namespace Kita {
          *  Binding points: TODO: Store/Manage the binding points somewhere
          *  CameraUBO = 0
          *  DirLightUBO = 1
+         *  PhongPropertiesUBO = 2
          *  LightsSSBO = 0
         */
         std::vector<std::unique_ptr<System>> m_systems;

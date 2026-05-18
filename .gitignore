@@ -3,5 +3,6 @@ cmake-build-release
 .idea
 .vs
 out
-Engine/assets/textures/
-Engine/assets/models/
+Engine/assets/textures/*
+!Engine/assets/textures/DefaultTexture.png
+Engine/assets/models/*

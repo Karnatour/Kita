@@ -29,6 +29,7 @@ namespace Kita {
         void enableBufferWrite(BufferType bufferType);
         void disableBufferWrite(BufferType bufferType);
         void setDepthFunc(DepthFunction function);
+        void setCullMode(CullMode mode);
 
         FrameBuffer& getMainFramebuffer() const;
     private:

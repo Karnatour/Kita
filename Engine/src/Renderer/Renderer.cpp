@@ -84,6 +84,10 @@ namespace Kita {
         m_rendererAPI->setDepthFunc(function);
     }
 
+    void Renderer::setCullMode(CullMode mode) {
+        m_rendererAPI->setCullMode(mode);
+    }
+
     FrameBuffer& Renderer::getMainFramebuffer() const {
         return *m_mainFramebuffer;
     }
@@ -103,12 +107,13 @@ namespace Kita {
         shader.setUniformBool("hasStencilTex", false);
         shader.setUniformBool("hasSkyboxTex", false);
         shader.setUniformBool("hasNormalTex", false);
+        shader.setUniformBool("hasDepthTexArray", false);
     }
 
     void Renderer::setTexturesInShader(Shader& shader, const std::span<Texture* const> textures) {
         for (const auto texture : textures) {
             if (texture == nullptr) {
-                return;
+                continue;
             }
             switch (texture->getType()) {
                 case Texture::TextureType::DIFFUSE:
@@ -150,6 +155,11 @@ namespace Kita {
                     texture->bind(7);
                     shader.setUniformInt("normalTex", 7);
                     shader.setUniformBool("hasNormalTex", true);
+                    break;
+                case Texture::TextureType::DEPTH_ARRAY:
+                    texture->bind(8);
+                    shader.setUniformInt("depthTexArray", 8);
+                    shader.setUniformBool("hasDepthTexArray", true);
                     break;
                 default:
                     std::string str = texture->getPath().has_value() ? texture->getPath().value().string() : std::string("missing path");

@@ -22,9 +22,9 @@ namespace Kita {
 
     private:
         struct Material {
-            std::optional<AssetManager::AssetID> diffuseComponent;
-            std::optional<AssetManager::AssetID> specularComponent;
-            std::optional<AssetManager::AssetID> normalComponent;
+            AssetManager::AssetID diffuseTextureID = AssetManager::INVALID_ASSET_ID;
+            AssetManager::AssetID specularTextureID = AssetManager::INVALID_ASSET_ID;;
+            AssetManager::AssetID normalTextureID = AssetManager::INVALID_ASSET_ID;;
             PhongProperties phongProperties;
         };
 

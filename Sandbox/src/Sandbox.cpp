@@ -4,9 +4,6 @@
 #include "../../Engine/src/Assets/KAsset.h"
 #include "../../Engine/src/Renderer/Util/TransformationUtil.h"
 
-std::shared_ptr<Kita::LightUtil> lightEntity;
-std::shared_ptr<Kita::LightUtil> lightEntity2;
-
 void onSomething(Kita::KeyPressed& event) {
     KITA_DEBUG("[Test] Key pressed {}", magic_enum::enum_name(event.getKey()));
 }
@@ -16,10 +13,10 @@ void Sandbox::onInit() {
     m_scene->addDefaultSystems();
 
     Kita::Entity entity = Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene, true).value();
-    //lightEntity2 = std::make_shared<Kita::LightUtil>(Kita::LightUtil::LightType::DIRECTIONAL);
-    //lightEntity2->setDirection({-0.1f, -0.7f, -0.2f, 0.0f});
-    //m_scene.addEntity(lightEntity);
-    //m_scene.addEntity(lightEntity2);
+    auto lightEntity = m_scene->createEntity();
+    lightEntity.addComponent<Kita::LightComponent>(Kita::LightComponent{.properties = Kita::LightProperties{.direction = glm::vec3(-0.3f, -1.0f, 0.3f), .lightType = Kita::LightType::DIRECTIONAL}});
+    lightEntity.addComponent<Kita::DirectionalShadowComponent>(Kita::DirectionalShadowComponent{.properties = Kita::DirectionalShadowProperties{.cascadeCount = 4}});
+    lightEntity.addComponent<Kita::CastsShadows>();
     Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);
 }
 

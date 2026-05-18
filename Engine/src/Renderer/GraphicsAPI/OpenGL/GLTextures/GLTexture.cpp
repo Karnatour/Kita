@@ -74,7 +74,7 @@ namespace Kita {
                 return std::unexpected(TextureError::USUPPORTED_NUM_OF_CHANNELS);
         }
 
-        if (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR || textureType == TextureType::SPECULAR) {
+        if (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR || textureType == TextureType::SPECULAR || textureType == TextureType::NORMAL) {
             glGenerateTextureMipmap(m_texture);
         }
 
@@ -167,13 +167,13 @@ namespace Kita {
                 glTextureStorage3D(m_texture, 1, highPrecision ? GL_RGBA32F : GL_RGBA8, resolution.first, resolution.second, layersCount);
                 break;
             case BufferType::DEPTH:
-                m_textureType = TextureType::DEPTH;
+                m_textureType = TextureType::DEPTH_ARRAY;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 glTextureStorage3D(m_texture, 1, highPrecision ? GL_DEPTH_COMPONENT32F : GL_DEPTH_COMPONENT24, resolution.first, resolution.second, layersCount);
                 break;
             case BufferType::DEPTH_STENCIL:
-                m_textureType = TextureType::DEPTH;
+                m_textureType = TextureType::DEPTH_ARRAY;
                 glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 glTextureStorage3D(m_texture, 1, highPrecision ? GL_DEPTH32F_STENCIL8 : GL_DEPTH24_STENCIL8, resolution.first, resolution.second, layersCount);

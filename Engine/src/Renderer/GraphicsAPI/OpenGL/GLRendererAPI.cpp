@@ -103,6 +103,21 @@ namespace Kita {
         }
     }
 
+    void GLRendererAPI::setCullMode(const CullMode mode) {
+        switch (mode) {
+            case CullMode::FRONT:
+                glCullFace(GL_FRONT);
+                break;
+            case CullMode::BACK:
+                glCullFace(GL_BACK);
+                break;
+            case CullMode::FRONT_BACK:
+                glCullFace(GL_FRONT_AND_BACK);
+                break;
+        }
+
+    }
+
     void GLRendererAPI::drawArrays(const size_t verticesCount) {
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCount));
     }

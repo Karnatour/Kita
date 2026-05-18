@@ -19,7 +19,8 @@ namespace Kita {
             DEPTH = 5,
             STENCIL = 6,
             SKYBOX = 7,
-            NORMAL = 8
+            NORMAL = 8,
+            DEPTH_ARRAY = 9
         };
 
         enum class TextureError {

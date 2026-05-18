@@ -28,15 +28,15 @@ namespace Kita {
         return m_colorTexture.get();
     }
 
-    const Texture* FrameBuffer::getDepthTexture() const {
+    Texture* FrameBuffer::getDepthTexture() const {
         return m_depthTexture.get();
     }
 
-    const RenderBuffer* FrameBuffer::getColorRenderBuffer() const {
+    RenderBuffer* FrameBuffer::getColorRenderBuffer() const {
         return m_colorRenderBuffer.get();
     }
 
-    const RenderBuffer* FrameBuffer::getDepthRenderBuffer() const {
+    RenderBuffer* FrameBuffer::getDepthRenderBuffer() const {
         return m_depthRenderBuffer.get();
     }
 

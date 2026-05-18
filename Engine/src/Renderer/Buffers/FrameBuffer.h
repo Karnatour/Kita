@@ -27,10 +27,10 @@ namespace Kita {
         std::pair<int, int> getResolution() const;
 
         Texture* getColorTexture() const;
-        const Texture* getDepthTexture() const;
+        Texture* getDepthTexture() const;
 
-        const RenderBuffer* getColorRenderBuffer() const;
-        const RenderBuffer* getDepthRenderBuffer() const;
+        RenderBuffer* getColorRenderBuffer() const;
+        RenderBuffer* getDepthRenderBuffer() const;
     protected:
         unsigned int m_fbo = 0;
 

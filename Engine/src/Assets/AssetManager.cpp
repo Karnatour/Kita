@@ -1,9 +1,15 @@
 #include "AssetManager.h"
 
+#include "../Renderer/Properties/LightShadowProperties.h"
+#include "../Renderer/Util/LightUtil.h"
+
 namespace Kita {
     void AssetManager::addDefaultAssets() {
         createAsset<Texture>(DEFAULT_TEXTURE, {.setAsDefault = true}, Texture::TextureType::DIFFUSE, std::nullopt);
-        createAsset<Shader>(std::nullopt, {.setAsDefault = true}, std::initializer_list{Shader::vert(DEFAULT_VERTEX), Shader::frag(DEFAULT_FRAGMENT)});
+        createAsset<Shader>(std::nullopt, {.setAsDefault = true}, std::initializer_list{
+                                Shader::vert(DEFAULT_VERTEX),
+                                Shader::frag(DEFAULT_FRAGMENT, {Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowProperties::MAX_CASCADES))})
+                            });
         createAsset<Mesh>(std::nullopt, {.setAsDefault = true}, Geometry::getTriangleData());
     }
 

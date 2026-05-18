@@ -21,6 +21,7 @@ namespace Kita {
         }*/
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
+        KITA_ENGINE_DEBUG("Starting process of model: {}", filePath.string());
 
         Assimp::Importer importer;
         const aiScene* aiScene = importer.ReadFile(
@@ -50,11 +51,18 @@ namespace Kita {
 
         for (int materialIndex = 0; materialIndex < aiScene->mNumMaterials; ++materialIndex) {
             const aiMaterial* aiMaterial = aiScene->mMaterials[materialIndex];
+            KITA_ENGINE_DEBUG("Starting import of material: {}", aiMaterial->GetName().C_Str());
 
             auto& [diffuseComponent, specularComponent, normalComponent, phongProperties] = materials[materialIndex];
-            diffuseComponent = importTexture(aiTextureType_DIFFUSE, *aiMaterial, path);
-            specularComponent = importTexture(aiTextureType_SPECULAR, *aiMaterial, path);
-            normalComponent = importTexture(aiTextureType_NORMALS, *aiMaterial, path);
+            if (auto assetID = importTexture(aiTextureType_DIFFUSE, *aiMaterial, path)) {
+                diffuseComponent = assetID.value();
+            }
+            if (auto assetID = importTexture(aiTextureType_SPECULAR, *aiMaterial, path)) {
+                specularComponent = assetID.value();
+            }
+            if (auto assetID = importTexture(aiTextureType_NORMALS, *aiMaterial, path)) {
+                normalComponent = assetID.value();
+            }
 
             phongProperties = importPhongProperies(*aiMaterial);
         }
@@ -66,6 +74,8 @@ namespace Kita {
         if (aiNode == nullptr || (aiNode->mNumMeshes == 0 && aiNode->mChildren == nullptr)) {
             return;
         }
+
+        KITA_ENGINE_DEBUG("Starting process of node: {}", aiNode->mName.C_Str());
 
         parentEntity.addComponent<ChildrenComponent>();
 
@@ -83,6 +93,8 @@ namespace Kita {
     }
 
     Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const aiMatrix4x4& aiTransformMatrix) {
+        KITA_ENGINE_DEBUG("Starting process of mesh: {}", aiMesh->mName.C_Str());
+
         Entity newEntity = scene.createEntity();
 
         std::vector<VertexProperties> vertices;
@@ -100,8 +112,8 @@ namespace Kita {
 
         addMaterialComponents(newEntity, aiMesh, materials);
         newEntity.addComponent<MeshComponent>(Engine::getEngine()->getAssetManager().createAsset<Mesh>(vertices, indices));
+        newEntity.addComponent<RenderInShadowPass>();
         newEntity.addComponent<RenderInMainPass>();
-        newEntity.addComponent<ShaderComponent>();
         newEntity.addComponent<TransformationComponent>(TransformationComponent{.model = convertAiModelMatrixToGLM(aiTransformMatrix)});
         return newEntity;
     }
@@ -109,22 +121,14 @@ namespace Kita {
     void AssetImporter::addMaterialComponents(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials) {
         if (aiMesh->mMaterialIndex > materials.size()) {
             KITA_ENGINE_ERROR("Invalid material index for mesh: {}", aiMesh->mName.C_Str());
+            entity.addComponent<MaterialComponent>();
             return;
         }
 
-        const auto& [diffuseComponent, specularComponent, normalComponent, phongProperties] = materials[aiMesh->mMaterialIndex];
-
-        if (diffuseComponent.has_value()) {
-            entity.addComponent<DiffuseMapComponent>(diffuseComponent.value());
-        }
-        if (specularComponent.has_value()) {
-            entity.addComponent<SpecularMapComponent>(specularComponent.value());
-        }
-        if (normalComponent.has_value()) {
-            entity.addComponent<NormalMapComponent>(normalComponent.value());
-        }
-
-        entity.addComponent<PhongProperties>(phongProperties);
+        const auto& [diffuseTextureID, specularTextureID, normalTextureID, phongProperties] = materials[aiMesh->mMaterialIndex];
+        entity.addComponent<MaterialComponent>(MaterialComponent{
+            .diffuseTextureID = diffuseTextureID, .specularTextureID = specularTextureID, .normalTtextureID = normalTextureID, .properties = phongProperties
+        });
     }
 
     glm::mat4 AssetImporter::convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix) {
@@ -153,11 +157,23 @@ namespace Kita {
             vertex.color.b = aiMesh.mColors[0][index].b;
             vertex.color.a = aiMesh.mColors[0][index].a;
         }
+
         if (aiMesh.HasNormals()) {
             vertex.normal.x = aiMesh.mNormals[index].x;
             vertex.normal.y = aiMesh.mNormals[index].y;
             vertex.normal.z = aiMesh.mNormals[index].z;
         }
+
+        if (aiMesh.HasTangentsAndBitangents()) {
+            vertex.tangent.x = aiMesh.mTangents[index].x;
+            vertex.tangent.y = aiMesh.mTangents[index].y;
+            vertex.tangent.z = aiMesh.mTangents[index].z;
+
+            vertex.bitangent.x = aiMesh.mBitangents[index].x;
+            vertex.bitangent.y = aiMesh.mBitangents[index].y;
+            vertex.bitangent.z = aiMesh.mBitangents[index].z;
+        }
+
         return vertex;
     }
 
@@ -223,6 +239,18 @@ namespace Kita {
 
         if (phongProperties.ambient == glm::vec3(0.0f)) {
             phongProperties.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
+        }
+
+        if (phongProperties.diffuse == glm::vec3(0.0f)) {
+            phongProperties.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+        }
+
+        if (phongProperties.specular == glm::vec3(0.0f)) {
+            phongProperties.specular = glm::vec3(0.5f, 0.5f, 0.5f);
+        }
+
+        if (phongProperties.shininess == 0.0f) {
+            phongProperties.shininess = 32.0f;
         }
 
         return phongProperties;

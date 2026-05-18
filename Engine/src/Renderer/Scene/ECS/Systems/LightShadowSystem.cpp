@@ -3,7 +3,9 @@
 
 #include "../../Scene.h"
 #include "../../../../Core/Engine.h"
+#include "../../../Util/LightUtil.h"
 #include "../Components/LightShadowComponents.h"
+#include "../Components/CameraComponent.h"
 #include "../Components/MeshComponent.h"
 #include "../Components/RenderTags.h"
 #include "../Components/TransformationComponent.h"
@@ -20,17 +22,16 @@ namespace Kita {
         m_castsShadowsCount = 0;
         createBuffersIfMissing(scene);
         if (m_lightFBO != nullptr) {
-            renderShadowPass(scene);
-
             uploadLightData(scene);
             uploadDirectionalLightData(scene);
+            renderShadowPass(scene);
         }
     }
 
     void LightShadowSystem::createBuffersIfMissing(Scene& scene) {
         if (m_lightSSBO == nullptr) {
             m_lightSSBO = ShaderStorageBuffer::createPtr();
-            m_lightSSBO->createBuffer(sizeof(LightSSBOLayout) * LightSSBOLayout::INITIAL_LIGHT_CAPACITY_COUNT, nullptr);
+            m_lightSSBO->createBuffer(sizeof(glm::ivec4) + sizeof(LightSSBOLayout) * LightSSBOLayout::INITIAL_LIGHT_CAPACITY_COUNT, nullptr);
         }
 
         if (m_directionalShadowUBO == nullptr) {
@@ -38,9 +39,24 @@ namespace Kita {
             m_directionalShadowUBO->createBuffer(sizeof(DirectionalShadowUBOLayout), nullptr);
         }
 
-        if (const auto enttEntity = scene.view<DirectionalShadowComponent>().front(); m_lightFBO == nullptr && enttEntity != entt::null) {
+        Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front());
+        const DirectionalShadowProperties& properties = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties;
+        int cascadeCount = properties.cascadeCount;
+
+        if (m_lightFBO == nullptr || m_cascadeCount != cascadeCount) {
+            m_cascadeCount = cascadeCount;
+
             m_lightFBO = FrameBuffer::createPtr();
-            m_lightFBO->createBuffer(m_lightFBOresolution, {{{BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}}, true, CASCADE_COUNT);
+            m_lightFBO->createBuffer(properties.resolution, {{{BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}}, true, m_cascadeCount);
+            const std::initializer_list shaderInfos = {
+                Shader::vert("KitaCSMVertex.glsl"),
+                Shader::geom("KitaCSMGeometry.glsl", {
+                                 Shader::define("NUM_CASCADES", std::to_string(m_cascadeCount)),
+                                 Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowUBOLayout::MAX_CASCADES))
+                             }),
+                Shader::frag("KitaEmptyFragment.glsl")
+            };
+            m_CSMShaderAssetID = Engine::getEngine()->getAssetManager().createAsset<Shader>(shaderInfos);
         }
     }
 
@@ -48,29 +64,30 @@ namespace Kita {
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
 
-        const std::initializer_list shaderInfos = {
-            Shader::vert("KitaCSMVertex.glsl"),
-            Shader::geom("KitaCSMGeometry.glsl", {Shader::define("NUM_CASCADES", std::to_string(CASCADE_COUNT))}),
-            Shader::frag("KitaEmptyFragment.glsl")
-        };
-        m_CSMShaderAssetID = assetManager.createAsset<Shader>(shaderInfos);
-
         auto& shader = assetManager.getAsset<Shader>(m_CSMShaderAssetID);
 
+        Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front());
+        DirectionalShadowProperties& properties = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties;
+
         m_lightFBO->bind();
-        renderer.setViewport(DirectionalShadowProperties::RESOLUTION, false);
+        renderer.setViewport(properties.resolution, false);
         renderer.clearBit({{ClearBit::DEPTH}});
+        renderer.setCullMode(CullMode::FRONT);
         for (const auto [entity,meshComponent, transformationComponent] : scene.view<MeshComponent, TransformationComponent, RenderInShadowPass>().each()) {
             renderer.renderMesh(assetManager.getAsset<Mesh>(meshComponent.meshID), shader, transformationComponent.model);
         }
+        renderer.setCullMode(CullMode::BACK);
 
         renderer.restoreViewport();
         m_lightFBO->unbind();
+
+        properties.texture = m_lightFBO->getDepthTexture();
     }
 
     void LightShadowSystem::uploadLightData(Scene& scene) {
         const auto lightsView = scene.view<LightComponent>();
         const size_t count = lightsView.size<>();
+
         std::vector<LightSSBOLayout> lightSSBOData;
         lightSSBOData.reserve(count);
 
@@ -78,20 +95,49 @@ namespace Kita {
             lightSSBOData.emplace_back(convertLightToSSBOLayout(Entity(&scene, entity), lightComponent.properties));
         }
 
+        std::vector<std::byte> buffer;
+        buffer.resize(sizeof(glm::ivec4) + lightSSBOData.size() * sizeof(LightSSBOLayout));
+        const auto header = glm::ivec4(lightSSBOData.size(), 0, 0, 0);
+        std::memcpy(buffer.data(), &header, sizeof(glm::ivec4));
+        std::memcpy(buffer.data() + sizeof(glm::ivec4), lightSSBOData.data(), lightSSBOData.size() * sizeof(LightSSBOLayout));
+
         m_lightSSBO->bind(0);
-        m_lightSSBO->upload(lightSSBOData.size(), lightSSBOData.data());
+        m_lightSSBO->upload(buffer.size(), buffer.data());
     }
 
     void LightShadowSystem::uploadDirectionalLightData(Scene& scene) const {
         Entity dirLightEntity(&scene, scene.view<LightComponent, DirectionalShadowComponent>().front());
-        const auto [cascadeSplitDistances, lightSpaceMatrices] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
+        Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
+
+        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
         DirectionalShadowUBOLayout dirLightUBOData{};
 
-        for (int i = 0; i < CASCADE_COUNT; i++) {
+        const CameraProperties& cameraProperties = cameraEntity.getComponent<CameraComponent>().properties;
+        glm::vec3 lightDir = dirLightEntity.getComponent<LightComponent>().properties.direction;
+
+        //extract
+        for (int i = 0; i < m_cascadeCount; i++) {
+            const float p = static_cast<float>((i + 1)) / static_cast<float>(m_cascadeCount);
+
+            const float logSplit = cameraProperties.zNear * std::pow(cameraProperties.zFar / cameraProperties.zNear, p);
+            const float linSplit = cameraProperties.zNear + (cameraProperties.zFar - cameraProperties.zNear) * p;
+
+            float t = 0.5f;
+            cascadeSplitDistances[i] = glm::mix(linSplit, logSplit, t);
+        }
+
+        //extract
+        for (int i = 0; i < m_cascadeCount; i++) {
+            const float nearPlane = (i == 0) ? cameraProperties.zNear : cascadeSplitDistances[i - 1];
+            const float farPlane = cascadeSplitDistances[i];
+
+            lightSpaceMatrices[i] = LightUtil::getLightSpaceMatrix(cameraProperties, nearPlane, farPlane, lightDir, Engine::getEngine()->getRenderer().getViewport(), shadowMapResolution);
+
             dirLightUBOData.cascadeSplitDistances[i].x = cascadeSplitDistances[i];
             dirLightUBOData.lightSpaceMatrices[i] = lightSpaceMatrices[i];
         }
-        dirLightUBOData.params = glm::ivec4(CASCADE_COUNT, -1, -1, -1);
+
+        dirLightUBOData.params = glm::ivec4(m_cascadeCount, -1, -1, -1);
 
         m_directionalShadowUBO->bind(1);
         m_directionalShadowUBO->upload(sizeof(DirectionalShadowUBOLayout), &dirLightUBOData);

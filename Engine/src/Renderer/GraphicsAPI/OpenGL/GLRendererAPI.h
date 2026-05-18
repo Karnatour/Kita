@@ -22,6 +22,7 @@ namespace Kita {
         void enableBufferWrite(BufferType bufferType) override;
         void disableBufferWrite(BufferType bufferType) override;
         void setDepthFunc(DepthFunction function) override;
+        void setCullMode(CullMode mode) override;
 
         void drawArrays(size_t verticesCount) override;
         void drawElements(size_t indicesCount) override;

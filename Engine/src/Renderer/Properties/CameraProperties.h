@@ -14,10 +14,9 @@ namespace Kita {
 
         float movementSpeed = 10.0f;
         float sensitivity = 0.1f;
-        float zoom = 45.0f;
 
-        float fov = 55.0f;
+        float fov = 45.0f;
         float zNear = 0.1f;
-        float zFar = 1000.0f;
+        float zFar = 150.0f;
     };
 }

@@ -6,17 +6,14 @@
 namespace Kita {
     struct CameraProperties;
 
-    enum class LightType {
+    enum class LightType : int32_t {
         DIRECTIONAL = 0,
         POINT = 1,
         SPOT = 2
     };
 
     struct KITAENGINE_API LightUtil {
-        //16 because of std430 rules;
-        static constexpr int MAX_LIGHTS = 512;
-
         static std::vector<glm::vec4> getFrustrumPoints(const glm::mat4& view, const glm::mat4& projection);
-        static glm::mat4 getLightSpaceMatrix(const CameraProperties& properties, float zNear, float zFar, const glm::vec3& lightDir, std::pair<float, float> resolution);
+        static glm::mat4 getLightSpaceMatrix(const CameraProperties& properties, float zNear, float zFar, const glm::vec3& lightDir, std::pair<int, int> viewportResolution, std::pair<int, int> shadowMapResolution);
     };
 } // Kita
