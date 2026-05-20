@@ -3,6 +3,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/GltfMaterial.h>
 #include "KAsset.h"
 #include "../Core/Engine.h"
 #include "../Renderer/Scene/ECS/Components/MeshComponent.h"
@@ -10,6 +11,7 @@
 #include "../Renderer/Scene/ECS/Components/RelationshipComponents.h"
 #include "../Renderer/Scene/ECS/Components/RenderTags.h"
 #include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
+#include "../Renderer/Scene/ECS/Components/MaterialComponent.h"
 
 namespace Kita {
     std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene, const bool reimport) {
@@ -21,11 +23,11 @@ namespace Kita {
         }*/
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
-        KITA_ENGINE_DEBUG("Starting process of model: {}", filePath.string());
+        KITA_ENGINE_DEBUG("[AssetImporter] Starting process of model: {}", filePath.string());
 
         Assimp::Importer importer;
         const aiScene* aiScene = importer.ReadFile(
-            filePath.string(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices |
+            filePath.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices |
             aiProcess_ImproveCacheLocality | aiProcess_SortByPType | aiProcess_OptimizeMeshes | aiProcess_ValidateDataStructure | aiProcess_PreTransformVertices |
             aiProcess_GlobalScale);
 
@@ -51,20 +53,25 @@ namespace Kita {
 
         for (int materialIndex = 0; materialIndex < aiScene->mNumMaterials; ++materialIndex) {
             const aiMaterial* aiMaterial = aiScene->mMaterials[materialIndex];
-            KITA_ENGINE_DEBUG("Starting import of material: {}", aiMaterial->GetName().C_Str());
+            KITA_ENGINE_DEBUG("[AssetImporter] Starting import of material: {}", aiMaterial->GetName().C_Str());
 
-            auto& [diffuseComponent, specularComponent, normalComponent, phongProperties] = materials[materialIndex];
-            if (auto assetID = importTexture(aiTextureType_DIFFUSE, *aiMaterial, path)) {
-                diffuseComponent = assetID.value();
-            }
-            if (auto assetID = importTexture(aiTextureType_SPECULAR, *aiMaterial, path)) {
-                specularComponent = assetID.value();
-            }
-            if (auto assetID = importTexture(aiTextureType_NORMALS, *aiMaterial, path)) {
-                normalComponent = assetID.value();
+            auto& [albedoTextureID, metallicRoughnessTextureID, normalTextureID, ignore] = materials[materialIndex];
+
+            aiString alphaMode;
+            aiMaterial->Get(AI_MATKEY_GLTF_ALPHAMODE,alphaMode);
+            if (std::string(alphaMode.C_Str()) == "BLEND" || std::string(alphaMode.C_Str()) == "MASK") {
+                ignore = true;
             }
 
-            phongProperties = importPhongProperies(*aiMaterial);
+            if (auto assetID = importTexture(aiTextureType_BASE_COLOR, *aiMaterial, path)) {
+                albedoTextureID = assetID.value();
+            }
+            if (auto assetID = importTexture(aiTextureType_GLTF_METALLIC_ROUGHNESS, *aiMaterial, path)) {
+                metallicRoughnessTextureID = assetID.value();
+            }
+            if (auto normalTexture = importTexture(aiTextureType_NORMAL_CAMERA, *aiMaterial, path).or_else([&]() { return importTexture(aiTextureType_NORMALS, *aiMaterial, path); })) {
+                normalTextureID = normalTexture.value();
+            }
         }
 
         return materials;
@@ -75,7 +82,7 @@ namespace Kita {
             return;
         }
 
-        KITA_ENGINE_DEBUG("Starting process of node: {}", aiNode->mName.C_Str());
+        KITA_ENGINE_DEBUG("[AssetImporter] Starting process of node: {}", aiNode->mName.C_Str());
 
         parentEntity.addComponent<ChildrenComponent>();
 
@@ -93,7 +100,7 @@ namespace Kita {
     }
 
     Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const aiMatrix4x4& aiTransformMatrix) {
-        KITA_ENGINE_DEBUG("Starting process of mesh: {}", aiMesh->mName.C_Str());
+        KITA_ENGINE_DEBUG("[AssetImporter] Starting process of mesh: {}", aiMesh->mName.C_Str());
 
         Entity newEntity = scene.createEntity();
 
@@ -120,14 +127,17 @@ namespace Kita {
 
     void AssetImporter::addMaterialComponents(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials) {
         if (aiMesh->mMaterialIndex > materials.size()) {
-            KITA_ENGINE_ERROR("Invalid material index for mesh: {}", aiMesh->mName.C_Str());
+            KITA_ENGINE_ERROR("[AssetImporter] Invalid material index for mesh: {}", aiMesh->mName.C_Str());
             entity.addComponent<MaterialComponent>();
             return;
         }
 
-        const auto& [diffuseTextureID, specularTextureID, normalTextureID, phongProperties] = materials[aiMesh->mMaterialIndex];
+        const auto& [albedoTextureID, metallicRoughnessTextureID, normalTextureID, ignore] = materials[aiMesh->mMaterialIndex];
+        if (ignore) {
+            return;
+        }
         entity.addComponent<MaterialComponent>(MaterialComponent{
-            .diffuseTextureID = diffuseTextureID, .specularTextureID = specularTextureID, .normalTtextureID = normalTextureID, .properties = phongProperties
+            .albedoTextureID = albedoTextureID, .metallicRoughnessTextureID = metallicRoughnessTextureID, .normalTextureID = normalTextureID
         });
     }
 
@@ -179,10 +189,11 @@ namespace Kita {
 
     Texture::TextureType AssetImporter::assimpToKitaTextureType(const aiTextureType& ai_texture) {
         switch (ai_texture) {
-            case aiTextureType_DIFFUSE:
-                return Texture::TextureType::DIFFUSE;
-            case aiTextureType_SPECULAR:
-                return Texture::TextureType::SPECULAR;
+            case aiTextureType_BASE_COLOR:
+                return Texture::TextureType::ALBEDO;
+            case aiTextureType_GLTF_METALLIC_ROUGHNESS:
+                return Texture::TextureType::METALLIC_ROUGHNESS;
+            case aiTextureType_NORMAL_CAMERA:
             case aiTextureType_NORMALS:
                 return Texture::TextureType::NORMAL;
             default:
@@ -196,7 +207,7 @@ namespace Kita {
         }
 
         if (aiMaterial.GetTextureCount(textureType) > 1) {
-            KITA_ENGINE_WARN("Material {} has more than one texture for texture type {}", path.string(), magic_enum::enum_name(assimpToKitaTextureType(textureType)));
+            KITA_ENGINE_WARN("[AssetImporter] Material {} has more than one texture for texture type {}", path.string(), magic_enum::enum_name(assimpToKitaTextureType(textureType)));
         }
 
         aiString aiStr;
@@ -216,43 +227,5 @@ namespace Kita {
             std::filesystem::create_directories(AssetManager::TEXTURE_PREFIX / texturePath.parent_path());
             std::filesystem::rename(MODELS_PREFIX / texturePath, AssetManager::TEXTURE_PREFIX / texturePath);
         }
-    }
-
-    PhongProperties AssetImporter::importPhongProperies(const aiMaterial& aiMaterial) {
-        aiColor3D aiColor;
-        PhongProperties phongProperties;
-        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_AMBIENT, aiColor)) {
-            phongProperties.ambient = glm::vec3(aiColor.r, aiColor.g, aiColor.b);
-        }
-
-        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_DIFFUSE, aiColor)) {
-            phongProperties.diffuse = glm::vec3(aiColor.r, aiColor.g, aiColor.b);
-        }
-
-        if (AI_SUCCESS == aiMaterial.Get(AI_MATKEY_COLOR_SPECULAR, aiColor)) {
-            phongProperties.specular = glm::vec3(aiColor.r, aiColor.g, aiColor.b);
-        }
-
-        if (float shininnes; AI_SUCCESS == aiMaterial.Get(AI_MATKEY_SHININESS, shininnes)) {
-            phongProperties.shininess = shininnes;
-        }
-
-        if (phongProperties.ambient == glm::vec3(0.0f)) {
-            phongProperties.ambient = glm::vec3(0.3f, 0.3f, 0.3f);
-        }
-
-        if (phongProperties.diffuse == glm::vec3(0.0f)) {
-            phongProperties.diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-        }
-
-        if (phongProperties.specular == glm::vec3(0.0f)) {
-            phongProperties.specular = glm::vec3(0.5f, 0.5f, 0.5f);
-        }
-
-        if (phongProperties.shininess == 0.0f) {
-            phongProperties.shininess = 32.0f;
-        }
-
-        return phongProperties;
     }
 } // Kita

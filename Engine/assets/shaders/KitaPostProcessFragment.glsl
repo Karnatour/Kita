@@ -17,7 +17,7 @@ void main()
 
     if (hasColorTex){
         vec4 fragmentFromTexture = texture(colorTex, texCoord);
-        vec3 hdrColor = fragmentFromTexture.rgb;
+        vec3 hdrColor = fragmentFromTexture.rgb * 0.4;
 
         vec3 mapped = ACESFilm(hdrColor);
 

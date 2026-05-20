@@ -82,7 +82,6 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/GeometryUtil.h
         src/Assets/KAsset.cpp
         src/Assets/KAsset.h
-        src/Renderer/Properties/PhongProperties.h
         src/Assets/AssetImporter.cpp
         src/Assets/AssetImporter.h
         src/Renderer/Util/GeometryUtil.cpp

@@ -12,15 +12,15 @@ namespace Kita {
     public:
         enum class TextureType {
             NONE = 0,
-            DIFFUSE = 1,
-            SPECULAR = 2,
+            ALBEDO = 1,
+            METALLIC_ROUGHNESS = 2,
             CUBEMAP = 3,
             COLOR = 4,
             DEPTH = 5,
             STENCIL = 6,
             SKYBOX = 7,
             NORMAL = 8,
-            DEPTH_ARRAY = 9
+            DEPTH_ARRAY = 9,
         };
 
         enum class TextureError {

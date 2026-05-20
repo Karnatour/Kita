@@ -23,10 +23,7 @@ namespace Kita {
 
             glm::vec4 position = glm::vec4(0.0f, 0.0f, 3.0f, 0.0f);
             glm::vec4 direction = glm::vec4(0.0f, 0.0f, 3.0f, 0.0f);
-            glm::vec4 attenuation = glm::vec4(1.0f, 0.09f, 0.032f, 0.0f);
-            glm::vec4 ambient = glm::vec4(0.3f, 0.3f, 0.35f, 0.0f);
             glm::vec4 diffuse = glm::vec4(0.8f, 0.75f, 0.7f, 0.0f);
-            glm::vec4 specular = glm::vec4(0.4f, 0.35f, 0.3f, 0.0f);
             glm::vec4 cutOff = glm::vec4(glm::cos(glm::radians(12.5f)), glm::cos(glm::radians(15.0f)), 0.0f, 0.0f);
             glm::ivec4 params = glm::ivec4(
                 -1, // lightType

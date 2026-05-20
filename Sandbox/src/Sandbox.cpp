@@ -14,7 +14,7 @@ void Sandbox::onInit() {
 
     Kita::Entity entity = Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene, true).value();
     auto lightEntity = m_scene->createEntity();
-    lightEntity.addComponent<Kita::LightComponent>(Kita::LightComponent{.properties = Kita::LightProperties{.direction = glm::vec3(-0.3f, -1.0f, 0.3f), .lightType = Kita::LightType::DIRECTIONAL}});
+    lightEntity.addComponent<Kita::LightComponent>(Kita::LightComponent{.properties = Kita::LightProperties{.direction = glm::vec3(-0.1f, -1.0f, 0.1f), .lightType = Kita::LightType::DIRECTIONAL}});
     lightEntity.addComponent<Kita::DirectionalShadowComponent>(Kita::DirectionalShadowComponent{.properties = Kita::DirectionalShadowProperties{.cascadeCount = 4}});
     lightEntity.addComponent<Kita::CastsShadows>();
     Kita::EventManager::listenToEvent<Kita::KeyPressed>(onSomething);

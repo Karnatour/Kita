@@ -47,7 +47,9 @@ foreach(ASSET ${ASSET_FILES})
 endforeach()
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-        ${CMAKE_SOURCE_DIR}/Engine/assets)
+        ${CMAKE_SOURCE_DIR}/Engine/assets/shaders
+        ${CMAKE_SOURCE_DIR}/Engine/assets/textures
+        ${CMAKE_SOURCE_DIR}/Engine/assets/models)
 
 add_custom_target(CopyAssets ALL DEPENDS ${ASSET_OUTPUT_FILES})
 add_dependencies(Sandbox CopyAssets)

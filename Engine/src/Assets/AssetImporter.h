@@ -5,10 +5,8 @@
 #include "AssetManager.h"
 #include "Texture.h"
 #include "../Core/DllTemplate.h"
-#include "../Renderer/Properties/PhongProperties.h"
 #include "../Renderer/Properties/VertexProperties.h"
 #include "../Renderer/Scene/ECS/Entity.h"
-#include "../Renderer/Scene/ECS/Components/MaterialComponent.h"
 
 namespace Kita {
     class KITAENGINE_API AssetImporter {
@@ -22,10 +20,12 @@ namespace Kita {
 
     private:
         struct Material {
-            AssetManager::AssetID diffuseTextureID = AssetManager::INVALID_ASSET_ID;
-            AssetManager::AssetID specularTextureID = AssetManager::INVALID_ASSET_ID;;
-            AssetManager::AssetID normalTextureID = AssetManager::INVALID_ASSET_ID;;
-            PhongProperties phongProperties;
+            AssetManager::AssetID albedoTextureID = AssetManager::INVALID_ASSET_ID;
+            AssetManager::AssetID metallicRoughnessTextureID = AssetManager::INVALID_ASSET_ID;
+            AssetManager::AssetID normalTextureID = AssetManager::INVALID_ASSET_ID;
+
+            //TODO Proper blending
+            bool ignoreBecauseOfAlpha = false;
         };
 
         static std::vector<Material> importMaterials(const aiScene* aiScene, const std::filesystem::path& path);
@@ -37,6 +37,5 @@ namespace Kita {
         static Texture::TextureType assimpToKitaTextureType(const aiTextureType& ai_texture);
         static std::optional<AssetManager::AssetID> importTexture(aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path);
         static void moveTexture(const std::filesystem::path& texturePath);
-        static PhongProperties importPhongProperies(const aiMaterial& aiMaterial);
     };
 } // Kita

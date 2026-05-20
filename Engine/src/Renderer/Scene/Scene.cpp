@@ -23,7 +23,7 @@ namespace Kita {
         camera.addComponent<ActiveCamera>();
         Entity skybox = createEntity();
         skybox.addComponent<SkyboxComponent>(SkyboxComponent{
-            .skyboxID = Engine::getEngine()->getAssetManager().createAsset<Texture>("defaultSkybox.hdr", {}, Texture::TextureType::SKYBOX, std::nullopt)
+            .skyboxID = Engine::getEngine()->getAssetManager().createAsset<Texture>("DefaultSkybox.hdr", {}, Texture::TextureType::SKYBOX, std::nullopt)
         });
     }
 

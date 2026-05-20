@@ -31,7 +31,6 @@
 #include "../src/Renderer/Scene/Primitives/Mesh.h"
 #include "../src/Assets/Shader.h"
 #include "../src/Renderer/Util/GeometryUtil.h"
-#include "../src/Renderer/Properties/PhongProperties.h"
 #include "../src/Renderer/Properties/VertexProperties.h"
 #include "../src/Assets/Texture.h"
 #include "../src/Window/Window.h"

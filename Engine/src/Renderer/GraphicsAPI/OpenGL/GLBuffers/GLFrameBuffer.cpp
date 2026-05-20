@@ -27,7 +27,6 @@ namespace Kita {
         }
 
         verifyBuild();
-        unbind();
     }
 
     void GLFrameBuffer::bind() {
@@ -48,7 +47,6 @@ namespace Kita {
         createAndAttachAttachments();
 
         verifyBuild();
-        unbind();
     }
 
     void GLFrameBuffer::createAndAttachAttachments() {
@@ -65,6 +63,7 @@ namespace Kita {
     }
 
     void GLFrameBuffer::createAndAttachRenderBuffer(const BufferType bufferType) {
+        KITA_ENGINE_INFO("Creating RBO at {}x{}", m_resolution.first, m_resolution.second);
         switch (bufferType) {
             case BufferType::COLOR:
                 m_colorRenderBuffer = RenderBuffer::createPtr();

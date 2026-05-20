@@ -49,6 +49,18 @@ namespace Kita {
             return m_scene->m_registry.try_get<T>(m_enttEntity);
         }
 
+        bool operator==(entt::null_t) const {
+            return m_enttEntity == entt::null;
+        }
+
+        bool operator!=(entt::null_t) const {
+            return m_enttEntity != entt::null;
+        }
+
+        explicit operator bool() const{
+            return m_enttEntity != entt::null;
+        }
+
     private:
         Scene* m_scene = nullptr;
         entt::entity m_enttEntity = entt::null;

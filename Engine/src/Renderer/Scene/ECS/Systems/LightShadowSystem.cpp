@@ -148,10 +148,7 @@ namespace Kita {
         return {
             .position = glm::vec4(properties.position.x, properties.position.y, properties.position.z, 0.0f),
             .direction = glm::vec4(properties.direction.x, properties.direction.y, properties.direction.z, 0.0f),
-            .attenuation = glm::vec4(properties.attenuation.x, properties.attenuation.y, properties.attenuation.z, 0.0f),
-            .ambient = glm::vec4(properties.ambient.x, properties.ambient.y, properties.ambient.z, 0.0f),
             .diffuse = glm::vec4(properties.diffuse.x, properties.diffuse.y, properties.diffuse.z, 0.0f),
-            .specular = glm::vec4(properties.specular.x, properties.specular.y, properties.specular.z, 0.0f),
             .cutOff = glm::vec4(properties.cutOff.x, properties.cutOff.y, 0.0f, 0.0f),
             .params = glm::ivec4(properties.lightType, castsShadows ? 1 : 0, castsShadows ? m_castsShadowsCount++ : -1, -1)
         };

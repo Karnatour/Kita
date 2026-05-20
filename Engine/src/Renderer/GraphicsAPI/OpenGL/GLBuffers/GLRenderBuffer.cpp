@@ -4,7 +4,9 @@
 
 namespace Kita {
     GLRenderBuffer::~GLRenderBuffer() {
-        glDeleteRenderbuffers(1, &m_rbo);
+        if (m_rbo != 0) {
+            glDeleteRenderbuffers(1, &m_rbo);
+        }
     }
 
     void GLRenderBuffer::createBuffer(const std::pair<int, int>& resolution, const BufferType bufferType) {
@@ -19,6 +21,6 @@ namespace Kita {
 
     void GLRenderBuffer::destroy() {
         glDeleteRenderbuffers(1, &m_rbo);
+        m_rbo = 0;
     }
-
 } // Kita

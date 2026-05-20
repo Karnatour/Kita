@@ -27,13 +27,12 @@ namespace Kita {
             m_cameraUBO->createBuffer(sizeof(CameraUBOLayout), &m_activeCameraData);
         }
 
-        const auto enttEntity = scene.view<CameraComponent, ActiveCamera>().front();
-        if (enttEntity == entt::null) {
+        auto entity = Entity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
+        if (!entity) {
             return;
         }
 
-        auto activeCamera = Entity(&scene, enttEntity);
-        updateActiveCameraData(activeCamera.getComponent<CameraComponent>().properties);
+        updateActiveCameraData(entity.getComponent<CameraComponent>().properties);
 
         m_cameraUBO->bind(0);
         m_cameraUBO->upload(sizeof(CameraUBOLayout), &m_activeCameraData);

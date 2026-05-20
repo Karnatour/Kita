@@ -9,18 +9,21 @@
 
 namespace Kita {
     GLTexture::~GLTexture() {
-        glDeleteTextures(1, &m_texture);
+        if (m_texture != 0) {
+            glDeleteTextures(1, &m_texture);
+        }
     }
 
-    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::optional<std::filesystem::path>& texturePath, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
+    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::optional<std::filesystem::path>& texturePath, const TextureType textureType,
+                                                                        const std::optional<std::pair<int, int>> resolution) {
         m_path = texturePath;
         m_textureType = textureType;
 
         switch (textureType) {
             case TextureType::NONE:
                 KITA_ENGINE_ASSERT(false, "TextureType::NONE is not a valid selection");
-            case TextureType::DIFFUSE:
-            case TextureType::SPECULAR:
+            case TextureType::ALBEDO:
+            case TextureType::METALLIC_ROUGHNESS:
                 break;
             case TextureType::CUBEMAP:
                 return createCubemapTexture(resolution.value());
@@ -32,6 +35,8 @@ namespace Kita {
                 return createSkyboxTexture();
             case TextureType::NORMAL:
                 break;
+            case TextureType::DEPTH_ARRAY:
+                KITA_ENGINE_ASSERT(false, "Trying to create DEPTH_ARRAY texture with createTexture() func, use createTextureBufferTypeTextureArray() instead");
         }
 
         if (!texturePath.has_value()) {
@@ -50,12 +55,16 @@ namespace Kita {
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
+#ifdef KITA_BUILD_DEBUG
+        glObjectLabel(GL_TEXTURE, m_texture, -1, m_path->string().c_str());
+#endif
+
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        const bool useSRGB = (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR);
+        const bool useSRGB = (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR);
         switch (m_channels) {
             case 2:
                 glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
@@ -74,7 +83,8 @@ namespace Kita {
                 return std::unexpected(TextureError::USUPPORTED_NUM_OF_CHANNELS);
         }
 
-        if (textureType == TextureType::DIFFUSE || textureType == TextureType::COLOR || textureType == TextureType::SPECULAR || textureType == TextureType::NORMAL) {
+        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL) {
+            glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glGenerateTextureMipmap(m_texture);
         }
 
@@ -190,5 +200,6 @@ namespace Kita {
 
     void GLTexture::destroy() {
         glDeleteTextures(1, &m_texture);
+        m_texture = 0;
     }
 } // Kita

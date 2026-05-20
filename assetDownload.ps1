@@ -5,7 +5,7 @@ $modelsDir   = "Engine/assets/models"
 # For archives (zip/rar), use the archive name as key — it will be
 # extracted into the folder and the archive deleted afterwards.
 $textures = @{
-  "defaultSkybox.hdr" = "https://www.spacespheremaps.com/wp-content/uploads/HDR_white_dwarf_star.hdr"
+  "DefaultSkybox.hdr" = "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/kloofendal_48d_partly_cloudy_puresky_4k.hdr"
   # "my_name.png"        = "https://example.com/some_texture.png"
 }
 

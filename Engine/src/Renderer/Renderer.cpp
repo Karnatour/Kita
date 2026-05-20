@@ -99,8 +99,8 @@ namespace Kita {
     }
 
     void Renderer::resetTextureState(Shader& shader) {
-        shader.setUniformBool("hasDiffuseTex", false);
-        shader.setUniformBool("hasSpecularTex", false);
+        shader.setUniformBool("hasAlbedoTex", false);
+        shader.setUniformBool("hasMetallicRoughnessTex", false);
         shader.setUniformBool("hasCubemapTex", false);
         shader.setUniformBool("hasColorTex", false);
         shader.setUniformBool("hasDepthTex", false);
@@ -116,15 +116,15 @@ namespace Kita {
                 continue;
             }
             switch (texture->getType()) {
-                case Texture::TextureType::DIFFUSE:
+                case Texture::TextureType::ALBEDO:
                     texture->bind(0);
-                    shader.setUniformInt("diffuseTex", 0);
-                    shader.setUniformBool("hasDiffuseTex", true);
+                    shader.setUniformInt("albedoTex", 0);
+                    shader.setUniformBool("hasAlbedoTex", true);
                     break;
-                case Texture::TextureType::SPECULAR:
+                case Texture::TextureType::METALLIC_ROUGHNESS:
                     texture->bind(1);
-                    shader.setUniformInt("specularTex", 1);
-                    shader.setUniformBool("hasSpecularTex", true);
+                    shader.setUniformInt("metallicRoughnessTex", 1);
+                    shader.setUniformBool("hasMetallicRoughnessTex", true);
                     break;
                 case Texture::TextureType::CUBEMAP:
                     texture->bind(2);
