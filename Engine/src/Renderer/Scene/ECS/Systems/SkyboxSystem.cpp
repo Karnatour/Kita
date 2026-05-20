@@ -46,7 +46,7 @@ namespace Kita {
         renderer.disableBufferWrite(BufferType::DEPTH);
 
         renderer.renderMesh(assetManager.getAsset<Mesh>(m_skyboxMeshID), assetManager.getAsset<Shader>(m_skyboxRenderShaderID), glm::mat4(1.0f),
-                            {{&assetManager.getAsset<Texture>(skyboxComponent.irradianceCubemapID)}});
+                            {{&assetManager.getAsset<Texture>(skyboxComponent.cubemapID)}});
 
         renderer.enableBufferWrite(BufferType::DEPTH);
         renderer.setDepthFunc(DepthFunction::LESS);

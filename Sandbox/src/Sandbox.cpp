@@ -30,3 +30,7 @@ void Sandbox::onRender() {
 
 void Sandbox::onExit() {
 }
+
+extern "C" SANDBOX_API Kita::IGameInstance* createGameInstance() {
+    return new Sandbox();
+}

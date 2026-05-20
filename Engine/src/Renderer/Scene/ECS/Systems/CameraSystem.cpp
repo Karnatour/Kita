@@ -107,8 +107,8 @@ namespace Kita {
 
     void CameraSystem::updateZoom(CameraProperties& properties) {
         if (Input::wasMouseScrolled()) {
-            properties.fov = properties.fov + static_cast<float>(Input::getMouseScroll().mouseScrollOffset.second);
-            properties.fov = std::clamp(properties.fov, 1.0f, 45.0f);
+            properties.fov = properties.fov - static_cast<float>(Input::getMouseScroll().mouseScrollOffset.second);
+            properties.fov = std::clamp(properties.fov, 1.0f, 95.0f);
         }
     }
 } // Kita
