@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 4.2)
 project(KitaEngine)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -14,7 +14,6 @@ add_library(KitaEngine SHARED
         include/KitaEngine/Kita.h
         src/Core/DllMain.cpp
         src/Instances/IGameInstance.h
-        src/Instances/IGameInstance.cpp
         src/Window/Window.cpp
         src/Window/Window.h
         src/Events/EventManager.h
@@ -136,6 +135,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Components/PathComponent.h
         src/Renderer/Scene/ECS/Systems/PostProcessingSystem.cpp
         src/Renderer/Scene/ECS/Systems/PostProcessingSystem.h
+        src/Renderer/Scene/ECS/Components/PostProcessingComponent.h
+        src/Renderer/Properties/PostProcessingProperties.h
+        src/Renderer/Scene/ECS/Components/SceneComponent.h
+        src/Renderer/Properties/SceneProperties.h
 )
 
 #Multithreaded compilation
@@ -163,6 +166,8 @@ target_link_libraries(KitaEngine PRIVATE magic_enum::magic_enum)
 
 find_package(EnTT CONFIG REQUIRED)
 target_link_libraries(KitaEngine PRIVATE EnTT::EnTT)
+
+target_link_libraries(KitaEngine PRIVATE dwmapi)
 
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")

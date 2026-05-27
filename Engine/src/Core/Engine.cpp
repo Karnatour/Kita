@@ -48,6 +48,7 @@ namespace Kita {
             m_game->onInit();
             KITA_ENGINE_INFO("Game initialized");
             m_game->m_initialized = true;
+            m_isEditor = m_game->m_isEditor;
         }
     }
 
@@ -78,6 +79,10 @@ namespace Kita {
         m_isRunning = false;
     }
 
+    bool Engine::isEditor() {
+        return m_isEditor;
+    }
+
     Window& Engine::getWindow() {
         return *m_window;
     }
@@ -98,6 +103,13 @@ namespace Kita {
     }
 
     void Engine::render() {
+        m_renderer->getMainFramebuffer().bind();
+        m_renderer->clearBit({{ClearBit::COLOR, ClearBit::DEPTH}});
+        m_renderer->getMainFramebuffer().unbind();
+
+        m_renderer->getOutputFramebuffer().bind();
+        m_renderer->clearBit({{ClearBit::COLOR}});
+        m_renderer->getOutputFramebuffer().unbind();
     }
 
     void Engine::exit() {

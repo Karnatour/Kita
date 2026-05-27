@@ -3,6 +3,8 @@
 
 #include "../../Core/Engine.h"
 #include "ECS/Components/CameraComponent.h"
+#include "ECS/Components/PostProcessingComponent.h"
+#include "ECS/Components/SceneComponent.h"
 #include "ECS/Components/SkyboxComponent.h"
 #include "ECS/Systems/CameraSystem.h"
 #include "ECS/Systems/GeometrySystem.h"
@@ -25,6 +27,10 @@ namespace Kita {
         skybox.addComponent<SkyboxComponent>(SkyboxComponent{
             .skyboxID = Engine::getEngine()->getAssetManager().createAsset<Texture>("DefaultSkybox.hdr", {}, Texture::TextureType::SKYBOX, std::nullopt)
         });
+        Entity postProcessing = createEntity();
+        postProcessing.addComponent<PostProcessingComponent>();
+        Entity scene = createEntity();
+        scene.addComponent<SceneComponent>();
     }
 
     void Scene::update() {
@@ -38,10 +44,6 @@ namespace Kita {
         std::ranges::sort(m_systems, [](auto& a, auto& b) {
             return a->getOrder() < b->getOrder();
         });
-
-        Engine::getEngine()->getRenderer().getMainFramebuffer().bind();
-        Engine::getEngine()->getRenderer().clearBit({{ClearBit::COLOR, ClearBit::DEPTH}});
-        Engine::getEngine()->getRenderer().getMainFramebuffer().unbind();
 
         for (const auto& system : m_systems) {
             system->render(*this);

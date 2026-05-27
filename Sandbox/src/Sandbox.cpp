@@ -1,8 +1,5 @@
 #include "Sandbox.h"
-
 #include <magic_enum/magic_enum.hpp>
-#include "../../Engine/src/Assets/KAsset.h"
-#include "../../Engine/src/Renderer/Util/TransformationUtil.h"
 
 void onSomething(Kita::KeyPressed& event) {
     KITA_DEBUG("[Test] Key pressed {}", magic_enum::enum_name(event.getKey()));
@@ -11,8 +8,8 @@ void onSomething(Kita::KeyPressed& event) {
 void Sandbox::onInit() {
     m_scene = std::make_unique<Kita::Scene>();
     m_scene->addDefaultSystems();
-
-    Kita::Entity entity = Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene, true).value();
+    Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene, true).value();
+    Kita::AssetImporter::importModel("pkg_a_curtains/NewSponza_Curtains_glTF.gltf", *m_scene, true).value();
     auto lightEntity = m_scene->createEntity();
     lightEntity.addComponent<Kita::LightComponent>(Kita::LightComponent{.properties = Kita::LightProperties{.direction = glm::vec3(-0.1f, -1.0f, 0.1f), .lightType = Kita::LightType::DIRECTIONAL}});
     lightEntity.addComponent<Kita::DirectionalShadowComponent>(Kita::DirectionalShadowComponent{.properties = Kita::DirectionalShadowProperties{.cascadeCount = 4}});
@@ -29,6 +26,10 @@ void Sandbox::onRender() {
 }
 
 void Sandbox::onExit() {
+}
+
+Kita::Scene& Sandbox::getScene() {
+    return *m_scene;
 }
 
 extern "C" SANDBOX_API Kita::IGameInstance* createGameInstance() {

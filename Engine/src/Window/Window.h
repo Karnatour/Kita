@@ -17,6 +17,8 @@ enum class CursorMode {
 namespace Kita {
     class KITAENGINE_API Window {
     public:
+        static constexpr std::string_view GLSL_VERSION = "#version 460";
+
         void init();
         void createWindow(int width, int height, const char* title);
         void exit();
@@ -25,6 +27,9 @@ namespace Kita {
         void swapBuffers();
         void makeContextCurrent();
 
+        GLFWwindow* getGLFWwindow() const;
+
+        std::pair<float, float> getMonitorScale() const;
         std::pair<int, int> getWindowResolution() const;
         std::pair<int, int> getFrameBufferResolution() const;
 
@@ -39,6 +44,7 @@ namespace Kita {
         static void setErrorCallbackFun();
         void setWindowCallbacks();
         static void errorCallbackFun(int error_code, const char* description);
+        void setDarkMode();
 
         std::string m_title;
         GLFWwindow* m_window = nullptr;

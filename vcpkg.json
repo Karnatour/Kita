@@ -1,0 +1,55 @@
+{
+  "dependencies": [
+    {
+      "name": "assimp",
+      "version>=": "6.0.4"
+    },
+    {
+      "name": "entt",
+      "version>=": "3.16.0"
+    },
+    {
+      "name": "glad",
+      "version>=": "0.1.36"
+    },
+    {
+      "name": "glm",
+      "version>=": "1.0.3"
+    },
+    {
+      "name": "imgui",
+      "version>=": "1.92.8",
+      "features": [
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-binding",
+        "freetype"
+      ]
+    },
+    {
+      "name": "glfw3",
+      "version>=": "3.4"
+    },
+    {
+      "name": "magic-enum",
+      "version>=": "0.9.8"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.17.0"
+    },
+    {
+      "name": "stb",
+      "version>=": "2024-07-29#1"
+    },
+    {
+      "name": "imguizmo",
+      "version>=": "1.10"
+    },
+    {
+      "name": "freetype",
+      "version>=": "2.14.3"
+    }
+  ],
+  "builtin-baseline": "74f5fda46bfe10d8dcbbbb6770a7a294a300fbbb"
+}

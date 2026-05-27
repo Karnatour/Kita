@@ -17,6 +17,9 @@ namespace Kita {
         m_mainFramebuffer->createBuffer(
             m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachType::TEXTURE}}},
             true, 1);
+
+        m_outputFramebuffer = FrameBuffer::createPtr();
+        m_outputFramebuffer->createBuffer(m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}}},true, 1);
     }
 
     RenderingAPI Renderer::getAPI() {
@@ -43,6 +46,7 @@ namespace Kita {
     void Renderer::onFrameBufferResize(const FrameBufferResized& event) {
         Engine::getEngine()->getRenderer().setViewport(event.getSize(), true);
         Engine::getEngine()->getRenderer().m_mainFramebuffer->resize(event.getSize());
+        Engine::getEngine()->getRenderer().m_outputFramebuffer->resize(event.getSize());
     }
 
     void Renderer::setViewport(const std::pair<int, int> resolution, const bool rewriteStoredPair) {
@@ -86,6 +90,10 @@ namespace Kita {
 
     void Renderer::setCullMode(CullMode mode) {
         m_rendererAPI->setCullMode(mode);
+    }
+
+    FrameBuffer& Renderer::getOutputFramebuffer() const {
+        return *m_outputFramebuffer;
     }
 
     FrameBuffer& Renderer::getMainFramebuffer() const {

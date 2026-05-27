@@ -1,4 +1,8 @@
+#include "../kitapch.h"
 #include "Window.h"
+
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
 
 #include "../Core/Engine.h"
 #include "Callbacks/KeyboardCallbacks.h"
@@ -49,7 +53,9 @@ namespace Kita {
 
         glfwSwapInterval(1);
 
-        glfwGetFramebufferSize(m_window,&m_frameBufferResolution.first,&m_frameBufferResolution.second);
+        glfwGetFramebufferSize(m_window, &m_frameBufferResolution.first, &m_frameBufferResolution.second);
+
+        setDarkMode();
 
         KITA_ENGINE_INFO("Window {} created", title);
     }
@@ -61,6 +67,11 @@ namespace Kita {
 
     void Window::errorCallbackFun(int error_code, const char* description) {
         KITA_ENGINE_ERROR("GLFW error: {}", description);
+    }
+
+    void Window::setDarkMode() {
+        BOOL dark = TRUE;
+        DwmSetWindowAttribute(glfwGetWin32Window(m_window), DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
     }
 
     void Window::updateWindowResolution(const WindowResized& event) {
@@ -89,6 +100,16 @@ namespace Kita {
 
     void Window::makeContextCurrent() {
         glfwMakeContextCurrent(m_window);
+    }
+
+    GLFWwindow* Window::getGLFWwindow() const {
+        return m_window;
+    }
+
+    std::pair<float, float> Window::getMonitorScale() const {
+        float xscale, yscale;
+        glfwGetMonitorContentScale(glfwGetPrimaryMonitor(), &xscale, &yscale);
+        return std::make_pair(xscale, yscale);
     }
 
     std::pair<int, int> Window::getWindowResolution() const {

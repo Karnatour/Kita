@@ -8,6 +8,7 @@
 #include "../Components/RenderTags.h"
 #include "../Components/TransformationComponent.h"
 #include "../Components/LightShadowComponents.h"
+#include "../Components/SceneComponent.h"
 #include "../Components/SkyboxComponent.h"
 
 namespace Kita {
@@ -26,7 +27,11 @@ namespace Kita {
         renderer.getMainFramebuffer().bind();
 
         for (const auto& [entityID, meshComp,materialCmp,transformationComp] : scene.view<MeshComponent, MaterialComponent, TransformationComponent, RenderInMainPass>().each()) {
-            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComp.meshID), assetManager.getAsset<Shader>(materialCmp.shaderID), transformationComp.model,
+            auto& shader = assetManager.getAsset<Shader>(materialCmp.shaderID);
+            shader.bind();
+            shader.setUniformFloat("iblIntensity", Entity(&scene, scene.view<SceneComponent>().front()).getComponent<SceneComponent>().properties.iblIntensity); //TODO Move to UBO ?
+
+            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComp.meshID), shader, transformationComp.model,
                                 fetchTextures(assetManager, materialCmp, scene));
         }
 

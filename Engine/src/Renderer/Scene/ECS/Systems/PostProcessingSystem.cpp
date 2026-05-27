@@ -2,6 +2,7 @@
 
 #include "PostProcessingSystem.h"
 #include "../../../../Core/Engine.h"
+#include "../Components/PostProcessingComponent.h"
 
 namespace Kita {
     int PostProcessingSystem::getOrder() {
@@ -24,10 +25,19 @@ namespace Kita {
             });
         }
 
-        renderer.getMainFramebuffer().unbind();
+        Engine::getEngine()->isEditor() ? renderer.getOutputFramebuffer().bind() : renderer.getMainFramebuffer().unbind();
+
         renderer.disableCapability(Capability::DEPTH_TEST);
         renderer.clearBit({{ClearBit::COLOR}});
-        renderer.renderMesh(assetManager.getAsset<Mesh>(m_quadMeshAssetID), assetManager.getAsset<Shader>(m_shaderAssetID), glm::mat4(1.0f), {{renderer.getMainFramebuffer().getColorTexture()}});
+        auto& shader = assetManager.getAsset<Shader>(m_shaderAssetID);
+        shader.bind();
+        shader.setUniformFloat("exposure", Entity(&scene, scene.view<PostProcessingComponent>().front()).getComponent<PostProcessingComponent>().properties.exposure); //TOOD Move to UBO ?
+        renderer.renderMesh(assetManager.getAsset<Mesh>(m_quadMeshAssetID), shader, glm::mat4(1.0f), {{renderer.getMainFramebuffer().getColorTexture()}});
         renderer.enableCapability(Capability::DEPTH_TEST);
+
+        if (Engine::getEngine()->isEditor()) {
+            renderer.getOutputFramebuffer().unbind();
+            renderer.clearBit({{ClearBit::COLOR}});
+        }
     }
 } // Kita

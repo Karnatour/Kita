@@ -14,7 +14,7 @@ public:
     void onUpdate() override;
     void onRender() override;
     void onExit() override;
-
+    Kita::Scene& getScene();
 private:
     std::unique_ptr<Kita::Scene> m_scene;
 };

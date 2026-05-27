@@ -6,6 +6,7 @@
 #endif
 
 #include <Windows.h>
+#include <dwmapi.h>
 #include <iostream>
 #include <memory>
 #include <utility>

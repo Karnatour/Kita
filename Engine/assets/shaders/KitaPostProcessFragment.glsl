@@ -5,6 +5,7 @@ in vec2 texCoord;
 
 uniform sampler2D colorTex;
 uniform bool hasColorTex;
+uniform float exposure;
 
 vec3 ACESFilm(vec3 x) {
     float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14;
@@ -18,6 +19,8 @@ void main()
     if (hasColorTex){
         vec4 fragmentFromTexture = texture(colorTex, texCoord);
         vec3 hdrColor = fragmentFromTexture.rgb;
+
+        hdrColor *= exposure;
 
         vec3 mapped = ACESFilm(hdrColor);
 

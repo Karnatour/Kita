@@ -50,6 +50,8 @@ uniform bool hasCubemapTex;
 uniform sampler2DArray depthTexArray;//directionalShadowMap textureArray
 uniform bool hasDepthTexArray;
 
+uniform float iblIntensity;
+
 in vec4 vertexColor;
 in vec2 texCoord;
 in vec3 normalVec;
@@ -99,7 +101,7 @@ void main()
     vec3 kD = 1.0 - kS;
     vec3 irradiance = texture(cubemapTex, normal).rgb;
     vec3 diffuse = irradiance * PBRData.albedo;
-    vec3 ambient = (kD * diffuse);// * ao
+    vec3 ambient = kD * diffuse * iblIntensity;// * ao
 
     vec3 finalColor = ambient + combined;
 

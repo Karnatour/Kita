@@ -10,7 +10,6 @@ namespace Kita {
         virtual void onExit() = 0;
         virtual ~IGameInstance() = default;
         bool m_initialized = false;
+        bool m_isEditor = false;
     };
-
-    extern "C" KITAENGINE_API void registerGameInstance(IGameInstance* instance);
 }
