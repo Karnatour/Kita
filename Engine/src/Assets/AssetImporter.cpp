@@ -6,30 +6,25 @@
 #include <assimp/GltfMaterial.h>
 #include "KAsset.h"
 #include "../Core/Engine.h"
-#include "../Renderer/Scene/ECS/Components/MeshComponent.h"
-#include "../Renderer/Scene/ECS/Components/PathComponent.h"
-#include "../Renderer/Scene/ECS/Components/RelationshipComponents.h"
+#include "../Renderer/Scene/ECS/Components/Components.h"
 #include "../Renderer/Scene/ECS/Components/RenderTags.h"
-#include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
-#include "../Renderer/Scene/ECS/Components/MaterialComponent.h"
 
 namespace Kita {
-    std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene, const bool reimport) {
-        /*std::filesystem::path kassetPath = path;
-        kassetPath.replace_extension("kasset");
-        if (!reimport && KAsset::alreadyBaked(kassetPath)) {
-            KITA_ENGINE_DEBUG("Asset already baked, loading .kasset {}", kassetPath.string());
-            return KAsset::loadFromFile(KAsset::BAKED_PREFIX / kassetPath);
-        }*/
+    std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene) {
+        std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene);
+        if (result) {
+            return result;
+        }
+
+        if (result.error() == ImportError::HASH_MISMATCH) {
+            KITA_ENGINE_INFO("[AssetImporter] Hash mismatch for asset: {}", path.string());
+        }
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
         KITA_ENGINE_DEBUG("[AssetImporter] Starting process of model: {}", filePath.string());
 
         Assimp::Importer importer;
-        const aiScene* aiScene = importer.ReadFile(
-            filePath.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices |
-            aiProcess_ImproveCacheLocality | aiProcess_SortByPType | aiProcess_OptimizeMeshes | aiProcess_ValidateDataStructure | aiProcess_PreTransformVertices |
-            aiProcess_GlobalScale);
+        const aiScene* aiScene = importer.ReadFile(filePath.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_SortByPType);
 
         if (!aiScene || aiScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !aiScene->mRootNode) {
             return std::unexpected(ImportError::FILE);
@@ -37,11 +32,11 @@ namespace Kita {
 
         auto rootEntity = scene.createEntity();
 
-        auto materials = importMaterials(aiScene, path);
+        const auto materials = importMaterials(aiScene, path);
 
-        processNode(aiScene, aiScene->mRootNode, scene, rootEntity, materials);
+        processNode(aiScene, aiScene->mRootNode, scene, rootEntity, materials, aiMatrix4x4());
 
-        //KAsset::saveToFile(model, KAsset::BAKED_PREFIX / std::filesystem::path(path).replace_extension("kasset"));
+        KAsset::saveToFile(rootEntity, path);
         rootEntity.addComponent<PathComponent>(path);
 
         return rootEntity;
@@ -58,7 +53,7 @@ namespace Kita {
             auto& [albedoTextureID, metallicRoughnessTextureID, normalTextureID, ignore] = materials[materialIndex];
 
             aiString alphaMode;
-            aiMaterial->Get(AI_MATKEY_GLTF_ALPHAMODE,alphaMode);
+            aiMaterial->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode);
             if (std::string(alphaMode.C_Str()) == "BLEND" || std::string(alphaMode.C_Str()) == "MASK") {
                 ignore = true;
             }
@@ -77,25 +72,28 @@ namespace Kita {
         return materials;
     }
 
-    void AssetImporter::processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials) {
+    void AssetImporter::processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform) {
         if (aiNode == nullptr || (aiNode->mNumMeshes == 0 && aiNode->mChildren == nullptr)) {
             return;
         }
 
+        const aiMatrix4x4 worldTransform = parentTransform * aiNode->mTransformation;
+
         KITA_ENGINE_DEBUG("[AssetImporter] Starting process of node: {}", aiNode->mName.C_Str());
 
         parentEntity.addComponent<ChildrenComponent>();
+        parentEntity.addComponent<NameComponent>(NameComponent{.name = aiNode->mName.C_Str()});
 
         // we must fetch the component before every addition since entt can reallocate and invalidate the reference
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
             const aiMesh* aiMesh = aiScene->mMeshes[aiNode->mMeshes[m]];
-            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials, aiNode->mTransformation).getEnttEntityID());
+            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials, worldTransform));
         }
 
         for (unsigned int i = 0; i < aiNode->mNumChildren; i++) {
             const Entity newNodeEntity = scene.createEntity();
-            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(newNodeEntity.getEnttEntityID());
-            processNode(aiScene, aiNode->mChildren[i], scene, newNodeEntity, materials);
+            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(newNodeEntity);
+            processNode(aiScene, aiNode->mChildren[i], scene, newNodeEntity, materials, worldTransform);
         }
     }
 
@@ -117,15 +115,16 @@ namespace Kita {
             indices.insert(indices.end(), aiFace.mIndices, aiFace.mIndices + aiFace.mNumIndices);
         }
 
-        addMaterialComponents(newEntity, aiMesh, materials);
-        newEntity.addComponent<MeshComponent>(Engine::getEngine()->getAssetManager().createAsset<Mesh>(vertices, indices));
+        addMaterialComponent(newEntity, aiMesh, materials);
+        newEntity.addComponent<MeshComponent>(Engine::getEngine()->getAssetManager().createAsset<Mesh>(std::move(vertices), std::move(indices)));
+        newEntity.addComponent<NameComponent>(NameComponent{.name = aiMesh->mName.C_Str()});
         newEntity.addComponent<RenderInShadowPass>();
         newEntity.addComponent<RenderInMainPass>();
         newEntity.addComponent<TransformationComponent>(TransformationComponent{.model = convertAiModelMatrixToGLM(aiTransformMatrix)});
         return newEntity;
     }
 
-    void AssetImporter::addMaterialComponents(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials) {
+    void AssetImporter::addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials) {
         if (aiMesh->mMaterialIndex > materials.size()) {
             KITA_ENGINE_ERROR("[AssetImporter] Invalid material index for mesh: {}", aiMesh->mName.C_Str());
             entity.addComponent<MaterialComponent>();
@@ -143,10 +142,10 @@ namespace Kita {
 
     glm::mat4 AssetImporter::convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix) {
         return {
-            aiMatrix.a1, aiMatrix.a2, aiMatrix.a3, aiMatrix.a4,
-            aiMatrix.b1, aiMatrix.b2, aiMatrix.b3, aiMatrix.b4,
-            aiMatrix.c1, aiMatrix.c2, aiMatrix.c3, aiMatrix.c4,
-            aiMatrix.d1, aiMatrix.d2, aiMatrix.d3, aiMatrix.d4
+            aiMatrix.a1, aiMatrix.b1, aiMatrix.c1, aiMatrix.d1,
+            aiMatrix.a2, aiMatrix.b2, aiMatrix.c2, aiMatrix.d2,
+            aiMatrix.a3, aiMatrix.b3, aiMatrix.c3, aiMatrix.d3,
+            aiMatrix.a4, aiMatrix.b4, aiMatrix.c4, aiMatrix.d4
         };
     }
 

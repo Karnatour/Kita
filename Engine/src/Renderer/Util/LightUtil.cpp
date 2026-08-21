@@ -9,7 +9,7 @@
 #include "../../Core/Engine.h"
 
 namespace Kita {
-    std::vector<glm::vec4> LightUtil::getFrustrumPoints(const glm::mat4& view, const glm::mat4& projection) {
+    std::vector<glm::vec4> LightUtil::getFrustumPoints(const glm::mat4& view, const glm::mat4& projection) {
         const auto inv = glm::inverse(projection * view);
 
         std::vector<glm::vec4> frustumCorners;
@@ -28,7 +28,7 @@ namespace Kita {
     glm::mat4 LightUtil::getLightSpaceMatrix(const CameraProperties& properties, const float zNear, const float zFar, const glm::vec3& lightDir, const std::pair<int, int> viewportResolution,
                                              const std::pair<int, int> shadowMapResolution) {
         const glm::mat4 projection = glm::perspective(glm::radians(properties.fov), static_cast<float>(viewportResolution.first) / static_cast<float>(viewportResolution.second), zNear, zFar);
-        const std::vector<glm::vec4> corners = getFrustrumPoints(CameraUtil::getViewMatrix(properties), projection);
+        const std::vector<glm::vec4> corners = getFrustumPoints(CameraUtil::getViewMatrix(properties), projection);
 
         auto center = glm::vec3(0.0f);
         for (const auto& corner : corners) {
@@ -36,40 +36,28 @@ namespace Kita {
         }
         center /= static_cast<float>(corners.size());
 
-        const glm::mat4 lightView = glm::lookAt(center + glm::normalize(-lightDir), center, glm::vec3(0.0f, 1.0f, 0.0f));
+        const float radius = glm::length(corners.front() - corners.back()) / 2.0f;
+        const float unitsPerTexel = static_cast<float>(shadowMapResolution.first) / (radius * 2.0f);
 
-        float minX = std::numeric_limits<float>::max();
-        float maxX = std::numeric_limits<float>::lowest();
-        float minY = std::numeric_limits<float>::max();
-        float maxY = std::numeric_limits<float>::lowest();
-        float minZ = std::numeric_limits<float>::max();
-        float maxZ = std::numeric_limits<float>::lowest();
+        auto scalar = glm::mat4(1.0f);
+        scalar = glm::scale(scalar, glm::vec3(unitsPerTexel));
 
-        for (const auto& corner : corners) {
-            const glm::vec4 lightSpace = lightView * corner;
-            minX = std::min(minX, lightSpace.x);
-            maxX = std::max(maxX, lightSpace.x);
-            minY = std::min(minY, lightSpace.y);
-            maxY = std::max(maxY, lightSpace.y);
-            minZ = std::min(minZ, lightSpace.z);
-            maxZ = std::max(maxZ, lightSpace.z);
-        }
+        glm::mat4 baseView = glm::lookAtLH(glm::vec3(0.0f, 0.0f, 0.0f), -lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
+        baseView = baseView * scalar;
+        const glm::mat4 baseViewInv = glm::inverse(baseView);
 
-        const float worldSizeX = maxX - minX;
-        const float worldSizeY = maxY - minY;
-        const float unitsPerTexelX = worldSizeX / static_cast<float>(shadowMapResolution.first);
-        const float unitsPerTexelY = worldSizeY / static_cast<float>(shadowMapResolution.second);
+        center = glm::vec3(baseView * glm::vec4(center, 1.0f));
+        center.x = std::floor(center.x);
+        center.y = std::floor(center.y);
+        center = glm::vec3(baseViewInv * glm::vec4(center, 1.0f));
 
-        minX = std::floor(minX / unitsPerTexelX) * unitsPerTexelX;
-        maxX = std::floor(maxX / unitsPerTexelX) * unitsPerTexelX;
-        minY = std::floor(minY / unitsPerTexelY) * unitsPerTexelY;
-        maxY = std::floor(maxY / unitsPerTexelY) * unitsPerTexelY;
+        const glm::vec3 eye = center - (lightDir * radius * 2.0f);
 
-        constexpr float zMult = 3.0f;
-        minZ < 0 ? minZ *= zMult : minZ /= zMult;
-        maxZ < 0 ? maxZ /= zMult : maxZ *= zMult;
+        const glm::mat4 lightView = glm::lookAtLH(eye, center, glm::vec3(0.0f, 1.0f, 0.0f));
 
-        const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+        constexpr float zMult = 6.0f; //TODO Config
+        const glm::mat4 lightProjection = glm::orthoLH(-radius, radius, -radius, radius, -radius * zMult, radius * zMult);
+
         return lightProjection * lightView;
     }
 } // Kita

@@ -5,6 +5,7 @@
 #include "LightShadowComponents.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"
+#include "NameComponent.h"
 #include "PathComponent.h"
 #include "PostProcessingComponent.h"
 #include "RelationshipComponents.h"

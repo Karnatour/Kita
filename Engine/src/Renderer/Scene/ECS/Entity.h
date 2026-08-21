@@ -61,6 +61,14 @@ namespace Kita {
             return m_enttEntity != entt::null;
         }
 
+        explicit operator entt::entity() const {
+            return m_enttEntity;
+        }
+
+        Scene* getScene() const {
+            return m_scene;
+        }
+
     private:
         Scene* m_scene = nullptr;
         entt::entity m_enttEntity = entt::null;

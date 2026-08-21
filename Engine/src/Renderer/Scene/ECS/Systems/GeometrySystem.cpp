@@ -31,8 +31,7 @@ namespace Kita {
             shader.bind();
             shader.setUniformFloat("iblIntensity", Entity(&scene, scene.view<SceneComponent>().front()).getComponent<SceneComponent>().properties.iblIntensity); //TODO Move to UBO ?
 
-            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComp.meshID), shader, transformationComp.model,
-                                fetchTextures(assetManager, materialCmp, scene));
+            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComp.meshID), shader, transformationComp.model, fetchTextures(assetManager, materialCmp, scene));
         }
 
         renderer.getMainFramebuffer().unbind();

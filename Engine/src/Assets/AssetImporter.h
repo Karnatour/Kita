@@ -12,11 +12,13 @@ namespace Kita {
     class KITAENGINE_API AssetImporter {
     public:
         enum class ImportError {
-            FILE
+            FILE,
+            KASSET,
+            HASH_MISMATCH
         };
 
         static inline const std::filesystem::path MODELS_PREFIX = "../assets/models";
-        static std::expected<Entity, ImportError> importModel(const std::filesystem::path& path, Scene& scene, bool reimport = false);
+        static std::expected<Entity, ImportError> importModel(const std::filesystem::path& path, Scene& scene);
 
     private:
         struct Material {
@@ -29,8 +31,8 @@ namespace Kita {
         };
 
         static std::vector<Material> importMaterials(const aiScene* aiScene, const std::filesystem::path& path);
-        static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials);
-        static void addMaterialComponents(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials);
+        static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform);
+        static void addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials);
         static glm::mat4 convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix);
         static Entity processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const aiMatrix4x4& aiTransformMatrix);
         static VertexProperties importVertex(const aiMesh& aiMesh, unsigned int index);

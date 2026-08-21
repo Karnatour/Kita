@@ -26,6 +26,7 @@
 
 #include <glm/glm.hpp>
 #include <magic_enum/magic_enum.hpp>
+#include <xxhash.h>
 
 #include "Core/Logger.h"
 #include "File/FileReader.h"

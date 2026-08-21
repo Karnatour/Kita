@@ -1,10 +1,12 @@
-/*
 #pragma once
 
-#include <cstdint>
 #include <unordered_set>
 
+#include "AssetImporter.h"
 #include "../Core/DllTemplate.h"
+#include "../Renderer/Scene/ECS/Components/MaterialComponent.h"
+#include "../Renderer/Scene/ECS/Components/MeshComponent.h"
+#include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
 
 namespace Kita {
     class KITAENGINE_API KAsset {
@@ -13,70 +15,77 @@ namespace Kita {
         static constexpr uint32_t MAGIC_NUMBER = 0x4b495441; // KITA
         static constexpr uint32_t VERSION_FORMAT = 100;
 
+        static constexpr int MAX_MATERIAL_TEXTURE_PATH_COUNT = 3;
+        static constexpr int MAX_MATERIAL_SHADER_PATH_COUNT = 2;
+        static constexpr int MAX_NAME_LENGTH = 64;
+        static constexpr int MAX_PATH_LENGTH = 512;
+
         enum class ChunkType : uint32_t {
             MESH = 0x4D455348, // MESH
             MATERIAL = 0x4D415445, // MATE
-            NONE = 0x4E4F4E45 // NONE
+            TRANSFORMATION = 0x5452414E // TRAN
         };
 
         struct FileHeader {
             uint32_t magicNumber = MAGIC_NUMBER;
             uint32_t versionFormat = VERSION_FORMAT;
+            uint64_t sourceFileHash;
+            uint32_t nodeCount = 0;
+        };
+
+        struct NodeHeader {
+            char name[MAX_NAME_LENGTH] = "Unnamed node";
+            uint32_t parentIndex = std::numeric_limits<unsigned int>().max();
+            uint32_t nodeIndex = std::numeric_limits<unsigned int>().max();
+            uint32_t subNodesCount = 0;
+        };
+
+        struct SubNodeHeader {
+            char name[MAX_NAME_LENGTH] = "Unnamed mesh";
             uint32_t chunkCount = 0;
-            uint64_t totalSize = 0;
         };
 
         struct ChunkHeader {
-            uint32_t chunkType = static_cast<uint32_t>(ChunkType::NONE);
+            uint32_t chunkType;
             uint64_t chunkSize = 0;
-        };
-
-        struct Node {
-            char name[64];
-            int32_t parentIndex; // -1 = root
-            float translation[3];
-            float rotation[4];
-            float scale[3];
-            int32_t meshIndex; // -1 = no mesh
         };
 
         struct MeshHeader {
             uint32_t vertexCount = 0;
             uint32_t indexCount = 0;
-            uint32_t materialIndex = -1; // -1 = no material
         };
 
-        struct MaterialHeader {
-            uint32_t textureCount;
-            float ambient[3];
-            float diffuse[3];
-            float specular[3];
-            float shininess;
-            char texturePaths[8][128];
-            unsigned char textureTypes[64];
-            char shaderPaths[2][64]; //vertex, fragment
+        struct MaterialData {
+            int32_t textureCount;
+            unsigned char textureTypes[MAX_MATERIAL_TEXTURE_PATH_COUNT];
+            char texturePaths[MAX_MATERIAL_TEXTURE_PATH_COUNT][MAX_PATH_LENGTH];
+            char shaderPaths[MAX_MATERIAL_SHADER_PATH_COUNT][MAX_PATH_LENGTH]; //vertex, fragment
         };
 
-        static std::shared_ptr<Model> loadFromFile(const std::filesystem::path& path);
-        static bool saveToFile(const std::shared_ptr<Model>& model, const std::filesystem::path& path);
-        static void fetchExistingBakedFiles();
-        static bool alreadyBaked(const std::filesystem::path& path);
-        static inline std::unordered_set<std::filesystem::path> m_bakedFiles;
+        struct TransformationData {
+            float translation[3] = {0.0f, 0.0f, 0.0f};
+            float rotation[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+            float scale[3] = {1.0f, 1.0f, 1.0f};
+        };
+
+        static std::expected<Entity, AssetImporter::ImportError> loadFromFile(const std::filesystem::path& path, Scene& scene);
+        static bool saveToFile(Entity rootEntity, const std::filesystem::path& path);
 
     private:
-        static void loadChunk(std::ifstream& file, ChunkHeader& chunk, const std::shared_ptr<Model>& model);
-        static void cheackHeaderFormat(const FileHeader& header, const std::filesystem::path& path);
-        static std::shared_ptr<Mesh> readMesh(std::ifstream& file);
-        static std::shared_ptr<Material> readMaterial(std::ifstream& file);
-        static void writeHeaderStart(std::ofstream& file, FileHeader& header, uint32_t chunkCount);
-        static void writeHeaderEnd(std::ofstream& file, const FileHeader& header);
-        static void writeMeshes(std::ofstream& file, const std::vector<std::shared_ptr<Mesh>>& meshes);
-        static void writeMaterials(std::ofstream& file, const std::vector<std::shared_ptr<Material>>& materials);
-        static void writeTextures(MaterialHeader& materialHeader, const std::vector<std::shared_ptr<Texture>>& textures);
-        static void writeShader(MaterialHeader& materialHeader, const std::shared_ptr<Shader>& shader);
+        static uint32_t calculateNodeCount(Entity entity);
+        static void loadChunk(std::ifstream& file, ChunkHeader chunk, Entity chunkEntity);
+        static void checkHeaderFormat(const FileHeader& fileHeader, const std::filesystem::path& path);
+        static MeshComponent readMesh(std::ifstream& file);
+        static MaterialComponent readMaterial(std::ifstream& file);
+        static TransformationComponent readTransformation(std::ifstream& file);
+        static void writeNodes(std::ofstream& file, Entity entity, uint32_t& nodeIndex, uint32_t parentIndex);
+        static void writeFileHeader(std::ofstream& file, uint32_t nodeCount, const std::filesystem::path& filePath);
+        static void writeMesh(std::ofstream& file, Entity entity);
+        static void writeMaterial(std::ofstream& file, Entity entity);
+        static void writeTextures(MaterialData& materialHeader, std::span<Texture* const> textures);
+        static void writeShader(MaterialData& materialHeader, const Shader& shader);
+        static void writeTransformation(std::ofstream& file, Entity entity);
 
-        static void vec3ToFloat(const glm::vec3& vec, float (&arr)[3]);
-        static void FloatToVec3(glm::vec4& vec, const float (&arr)[3]);
+
     };
 } // Kita
-*/

@@ -44,7 +44,7 @@ namespace Kita {
     }
 
     std::expected<void, Shader::ShaderError> GLShader::compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath, const std::vector<ShaderDefine>& defines) {
-        const std::optional<std::string> shaderSource = FileReader::readFile(shaderPath);
+        const std::optional<std::string> shaderSource = FileReader::readFileString(shaderPath);
         std::string shaderPathStr = shaderPath.string();
 
         if (!shaderSource.has_value()) {

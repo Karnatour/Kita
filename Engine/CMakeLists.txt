@@ -139,6 +139,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Properties/PostProcessingProperties.h
         src/Renderer/Scene/ECS/Components/SceneComponent.h
         src/Renderer/Properties/SceneProperties.h
+        src/Renderer/Scene/ECS/Components/NameComponent.h
 )
 
 #Multithreaded compilation
@@ -162,12 +163,15 @@ find_package(assimp CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC assimp::assimp)
 
 find_package(magic_enum CONFIG REQUIRED)
-target_link_libraries(KitaEngine PRIVATE magic_enum::magic_enum)
+target_link_libraries(KitaEngine PUBLIC magic_enum::magic_enum)
 
 find_package(EnTT CONFIG REQUIRED)
-target_link_libraries(KitaEngine PRIVATE EnTT::EnTT)
+target_link_libraries(KitaEngine PUBLIC EnTT::EnTT)
 
-target_link_libraries(KitaEngine PRIVATE dwmapi)
+target_link_libraries(KitaEngine PUBLIC dwmapi)
+
+find_package(xxHash CONFIG REQUIRED)
+target_link_libraries(KitaEngine PUBLIC xxHash::xxhash)
 
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")

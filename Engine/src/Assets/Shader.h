@@ -39,16 +39,16 @@ namespace Kita {
         };
 
         static ShaderInfo vert(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
-            return {std::move(path), ShaderType::VERTEX, std::move(defines)};
+            return {.path = std::move(path), .type = ShaderType::VERTEX, .defines = std::move(defines)};
         }
         static ShaderInfo frag(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
-            return {std::move(path), ShaderType::FRAGMENT, std::move(defines)};
+            return {.path = std::move(path), .type = ShaderType::FRAGMENT, .defines = std::move(defines)};
         }
         static ShaderInfo geom(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
-            return {std::move(path), ShaderType::GEOMETRY, std::move(defines)};
+            return {.path = std::move(path), .type = ShaderType::GEOMETRY, .defines = std::move(defines)};
         }
         static ShaderDefine define(std::string name, std::string value) {
-            return {std::move(name), std::move(value)};
+            return {.define = std::move(name), .value = std::move(value)};
         }
 
         virtual ~Shader() = default;
