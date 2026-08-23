@@ -34,12 +34,14 @@ namespace Kita {
     }
 
     void Scene::update() {
+        KITA_ENGINE_PROFILE("Scene update");
         for (const auto& system : m_systems) {
             system->update(*this);
         }
     }
 
     void Scene::render() {
+        KITA_ENGINE_PROFILE("Scene render");
         //TODO dirty flag ?
         std::ranges::sort(m_systems, [](auto& a, auto& b) {
             return a->getOrder() < b->getOrder();

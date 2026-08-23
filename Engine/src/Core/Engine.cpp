@@ -63,6 +63,7 @@ namespace Kita {
         m_renderer->enableCapability(Capability::DEPTH_TEST);
         m_renderer->clearColor(0.07f, 0.09f, 0.15f, 1.0f);
         while (m_isRunning) {
+            KITA_ENGINE_PROFILE("Frame loop");
             update();
             m_game->onUpdate();
 
@@ -70,6 +71,7 @@ namespace Kita {
             m_game->onRender();
 
             m_window->swapBuffers();
+            KITA_ENGINE_PROFILE_FRAME_MARK;
         }
         m_game->onExit();
         exit();
@@ -96,13 +98,15 @@ namespace Kita {
     }
 
     void Engine::update() {
+        KITA_ENGINE_PROFILE("Update");
         m_currentFrameTime = std::chrono::steady_clock::now();
         Time::updateDeltaTime(m_currentFrameTime);
-        Input::update();
+        Input::beginFrame();
         m_window->poolEvents();
     }
 
     void Engine::render() {
+        KITA_ENGINE_PROFILE("Render");
         m_renderer->getMainFramebuffer().bind();
         m_renderer->clearBit({{ClearBit::COLOR, ClearBit::DEPTH}});
         m_renderer->getMainFramebuffer().unbind();

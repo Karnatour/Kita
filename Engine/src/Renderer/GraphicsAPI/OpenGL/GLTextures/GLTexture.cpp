@@ -80,7 +80,7 @@ namespace Kita {
                 break;
             default:
                 KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.value().string());
-                return std::unexpected(TextureError::USUPPORTED_NUM_OF_CHANNELS);
+                return std::unexpected(TextureError::UNSUPPORTED_NUM_OF_CHANNELS);
         }
 
         if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL) {

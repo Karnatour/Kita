@@ -4,6 +4,7 @@
 #include "../src/Assets/KAsset.h"
 #include "../src/Core/Engine.h"
 #include "../src/Core/Logger.h"
+#include "../src/Core/Profiler.h"
 #include "../src/Core/Time.h"
 #include "../src/Events/Event.h"
 #include "../src/Events/EventManager.h"

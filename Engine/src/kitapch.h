@@ -28,7 +28,9 @@
 #include <magic_enum/magic_enum.hpp>
 #include <xxhash.h>
 
+
 #include "Core/Logger.h"
 #include "File/FileReader.h"
 #include "Core/Assert.h"
+#include "Core/Profiler.h"
 #include "Util/StringUtil.h"

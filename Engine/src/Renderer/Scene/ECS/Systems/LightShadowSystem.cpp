@@ -19,6 +19,8 @@ namespace Kita {
     }
 
     void LightShadowSystem::render(Scene& scene) {
+        KITA_ENGINE_PROFILE("LightShadow system render");
+
         m_castsShadowsCount = 0;
         createBuffersIfMissing(scene);
         if (m_lightFBO != nullptr) {
@@ -61,6 +63,8 @@ namespace Kita {
     }
 
     void LightShadowSystem::renderShadowPass(Scene& scene) {
+        KITA_ENGINE_PROFILE("Render shadow pass");
+
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
 
@@ -74,7 +78,7 @@ namespace Kita {
         renderer.clearBit({{ClearBit::DEPTH}});
         renderer.setCullMode(CullMode::FRONT);
         for (const auto [entity,meshComponent, transformationComponent] : scene.view<MeshComponent, TransformationComponent, RenderInShadowPass>().each()) {
-            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComponent.meshID), shader, transformationComponent.model);
+            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComponent.meshID), shader, transformationComponent.model, {}, true);
         }
         renderer.setCullMode(CullMode::BACK);
 
@@ -85,6 +89,8 @@ namespace Kita {
     }
 
     void LightShadowSystem::uploadLightData(Scene& scene) {
+        KITA_ENGINE_PROFILE("Upload light data");
+
         const auto lightsView = scene.view<LightComponent>();
         const size_t count = lightsView.size<>();
 
@@ -106,6 +112,8 @@ namespace Kita {
     }
 
     void LightShadowSystem::uploadDirectionalLightData(Scene& scene) const {
+        KITA_ENGINE_PROFILE("Upload directional light data");
+
         Entity dirLightEntity(&scene, scene.view<LightComponent, DirectionalShadowComponent>().front());
         Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
 

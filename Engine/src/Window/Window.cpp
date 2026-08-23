@@ -51,7 +51,7 @@ namespace Kita {
             return;
         }
 
-        glfwSwapInterval(1);
+        //glfwSwapInterval(1);
 
         glfwGetFramebufferSize(m_window, &m_frameBufferResolution.first, &m_frameBufferResolution.second);
 
@@ -91,10 +91,13 @@ namespace Kita {
     }
 
     void Window::poolEvents() {
+        KITA_ENGINE_PROFILE("Poll Input");;
+
         glfwPollEvents();
     }
 
     void Window::swapBuffers() {
+        KITA_ENGINE_PROFILE("Swap buffers");
         glfwSwapBuffers(m_window);
     }
 

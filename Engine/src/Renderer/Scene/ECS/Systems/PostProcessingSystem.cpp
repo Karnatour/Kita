@@ -13,6 +13,8 @@ namespace Kita {
     }
 
     void PostProcessingSystem::render(Scene& scene) {
+        KITA_ENGINE_PROFILE("Post processing system render");
+
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
 

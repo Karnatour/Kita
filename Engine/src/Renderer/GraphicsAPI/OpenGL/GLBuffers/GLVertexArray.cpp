@@ -48,6 +48,7 @@ namespace Kita {
     }
 
     void GLVertexArray::bind() {
+        KITA_ENGINE_PROFILE("Set VAO");
         glBindVertexArray(m_vao);
     }
 } // Kita

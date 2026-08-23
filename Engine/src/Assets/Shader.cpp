@@ -20,6 +20,21 @@ namespace Kita {
         }
     }
 
+    void Shader::setTextureUniforms() {
+        if (!m_textureUniformsSet) {
+            setUniformInt("albedoTex", 0);
+            setUniformInt("metallicRoughnessTex", 1);
+            setUniformInt("cubemapTex", 2);
+            setUniformInt("colorTex", 3);
+            setUniformInt("depthTex", 4);
+            setUniformInt("stencilTex", 5);
+            setUniformInt("skyboxTex", 6);
+            setUniformInt("normalTex", 7);
+            setUniformInt("depthTexArray", 8);
+            m_textureUniformsSet = true;
+        }
+    }
+
     const std::vector<Shader::ShaderInfo>& Shader::getShadersInfo() const {
         return m_shaders;
     }

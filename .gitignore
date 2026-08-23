@@ -7,3 +7,4 @@ Engine/assets/textures/*
 !Engine/assets/textures/DefaultTexture.png
 Engine/assets/models/*
 vcpkg_installed
+CMakeSettings.json

@@ -18,7 +18,7 @@ namespace Kita {
         static RenderingAPI getAPI();
 
         std::pair<int, int> getViewport() const;
-        void renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, std::span<Texture* const> textures = {});
+        void renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, std::span<Texture* const> textures = {}, bool skipSetMaterial = false);
         void setViewport(std::pair<int, int> resolution, bool rewriteStoredPair);
         void restoreViewport();
 
@@ -34,7 +34,7 @@ namespace Kita {
         FrameBuffer& getOutputFramebuffer() const;
         FrameBuffer& getMainFramebuffer() const;
     private:
-        void setMaterialInShader(Shader& shader, std::span<Texture* const> textures, const glm::mat4& modelMatrix);
+        void setMaterialInShader(Shader& shader, std::span<Texture* const> textures);
         void setTexturesInShader(Shader& shader, std::span<Texture* const> textures);
         void resetTextureState(Shader& shader);
 
@@ -42,6 +42,8 @@ namespace Kita {
         std::unique_ptr<FrameBuffer> m_mainFramebuffer;
         std::unique_ptr<FrameBuffer> m_outputFramebuffer; // post process FBO, used by editor
         std::pair<int,int > m_viewport = std::make_pair(1600, 900);
+
+        Texture::TextureFlags m_textureFlags = Texture::TextureFlags::NONE;
 
         static inline RenderingAPI m_api = RenderingAPI::NONE;
         std::unique_ptr<RendererAPI> m_rendererAPI;

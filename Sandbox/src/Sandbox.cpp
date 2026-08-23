@@ -8,8 +8,10 @@ void onSomething(Kita::KeyPressed& event) {
 void Sandbox::onInit() {
     m_scene = std::make_unique<Kita::Scene>();
     m_scene->addDefaultSystems();
-    Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene).value();
-    Kita::AssetImporter::importModel("pkg_a_curtains/NewSponza_Curtains_glTF.gltf", *m_scene).value();
+    //Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene).value();
+    //Kita::AssetImporter::importModel("pkg_a_curtains/NewSponza_Curtains_glTF.gltf", *m_scene).value();
+    Kita::AssetImporter::importModel("Bistro_v5_2/BistroExterior.fbx", *m_scene);
+    Kita::AssetImporter::importModel("Bistro_v5_2/BistroInterior.fbx", *m_scene);
     auto lightEntity = m_scene->createEntity();
     lightEntity.addComponent<Kita::LightComponent>(Kita::LightComponent{.properties = Kita::LightProperties{.direction = glm::vec3(-0.1f, -1.0f, 0.1f), .lightType = Kita::LightType::DIRECTIONAL}});
     lightEntity.addComponent<Kita::DirectionalShadowComponent>(Kita::DirectionalShadowComponent{.properties = Kita::DirectionalShadowProperties{.cascadeCount = 4}});

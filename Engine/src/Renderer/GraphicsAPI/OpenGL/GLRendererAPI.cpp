@@ -29,11 +29,11 @@ namespace Kita {
     }
 
     void GLRendererAPI::enableCapability(const Capability capability) {
-        glEnable(convertCapablityToGL(capability));
+        glEnable(convertCapabilityToGL(capability));
     }
 
     void GLRendererAPI::disableCapability(const Capability capability) {
-        glDisable(convertCapablityToGL(capability));
+        glDisable(convertCapabilityToGL(capability));
     }
 
     void GLRendererAPI::enableBufferWrite(const BufferType bufferType) {
@@ -119,17 +119,23 @@ namespace Kita {
     }
 
     void GLRendererAPI::drawArrays(const size_t verticesCount) {
+        KITA_ENGINE_PROFILE("Draw arrays");
+
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCount));
     }
 
     void GLRendererAPI::drawElements(const size_t indicesCount) {
+        KITA_ENGINE_PROFILE("Draw elements");
+
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCount),GL_UNSIGNED_INT, nullptr);
     }
 
-    GLenum GLRendererAPI::convertCapablityToGL(const Capability capability) {
+    GLenum GLRendererAPI::convertCapabilityToGL(const Capability capability) {
         switch (capability) {
             case Capability::DEPTH_TEST:
                 return GL_DEPTH_TEST;
+            case Capability::CULL_FACE:
+                return GL_CULL_FACE;
             default:
                 KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
                 return GL_NONE;

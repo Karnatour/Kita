@@ -1,5 +1,15 @@
 #version 460 core
 
+const uint ALBEDO             = 1u << 0;
+const uint METALLIC_ROUGHNESS = 1u << 1;
+const uint CUBEMAP            = 1u << 2;
+const uint COLOR              = 1u << 3;
+const uint DEPTH              = 1u << 4;
+const uint STENCIL            = 1u << 5;
+const uint SKYBOX             = 1u << 6;
+const uint NORMAL             = 1u << 7;
+const uint DEPTH_ARRAY        = 1u << 8;
+
 struct Light {
     vec4 position;
     vec4 direction;
@@ -35,20 +45,13 @@ struct PBRProperties {
 
 out vec4 FragColor;
 
+uniform uint textureState;
+
 uniform sampler2D albedoTex;
-uniform bool hasAlbedoTex;
-
 uniform sampler2D metallicRoughnessTex;
-uniform bool hasMetallicRoughnessTex;
-
 uniform sampler2D normalTex;
-uniform bool hasNormalTex;
-
 uniform samplerCube cubemapTex;
-uniform bool hasCubemapTex;
-
-uniform sampler2DArray depthTexArray;//directionalShadowMap textureArray
-uniform bool hasDepthTexArray;
+uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
 
 uniform float iblIntensity;
 
@@ -69,6 +72,7 @@ float DistributionGGX(float normalDotHalfway, float roughness);
 float GeometrySchlickGGX(float normalDot, float roughness);
 float GeometrySmith(float normalDotViewDir, float normalDotLightDir, float roughness);
 float calculateShadow(vec3 normal, vec3 lightDir);
+bool hasTexture(uint flag);
 PBRProperties getPBRProperties();
 
 const float PI = 3.14159265359;
@@ -110,7 +114,7 @@ void main()
 
 vec3 getNormal() {
     vec3 normal;
-    if (hasNormalTex){
+    if (hasTexture(NORMAL)){
         normal = texture(normalTex, texCoord).rgb;
         normal = normal * 2.0 - 1.0;
         normal = normalize(TBNMat * normal);
@@ -256,13 +260,17 @@ float calculateShadow(vec3 normal, vec3 lightDir){
 
     float shadow = 0.0;
     vec2 texelSize = 1.0 / vec2(textureSize(depthTexArray, 0));
-    for (int x = -1; x <= 1; ++x) {
-        for (int y = -1; y <= 1; ++y) {
+    for (int x = -2; x <= 2; ++x) {
+        for (int y = -2; y <= 2; ++y) {
             float pcfDepth = texture(depthTexArray, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
             shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
         }
     }
-    shadow /= 9.0;
+    shadow /= 25.0;
 
     return shadow;
+}
+
+bool hasTexture(uint flag){
+    return (textureState & flag) != 0u;
 }

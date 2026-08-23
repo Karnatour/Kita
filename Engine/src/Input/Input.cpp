@@ -55,11 +55,12 @@ namespace Kita {
     }
 
     void Input::updateMouseMovement(const MouseMoved& event) {
-        m_mousePos.lastMousePosition = m_mousePos.mousePosition;
-        m_mousePos.mousePosition = event.getPosition();
+        auto [x, y] = event.getPosition();
 
-        m_mousePos.mouseOffset.first = m_mousePos.mousePosition.first - m_mousePos.lastMousePosition.first;
-        m_mousePos.mouseOffset.second = m_mousePos.mousePosition.second - m_mousePos.lastMousePosition.second;
+        m_mousePos.mouseOffset.first += x - m_mousePos.mousePosition.first;
+        m_mousePos.mouseOffset.second += y - m_mousePos.mousePosition.second;
+
+        m_mousePos.mousePosition = {x, y};
         m_mousePos.moved = true;
     }
 
@@ -95,9 +96,10 @@ namespace Kita {
         EventManager::listenToEvent<MouseScrolled>(updateMouseScroll);
     }
 
-    void Input::update() {
+    void Input::beginFrame() {
         m_mousePos.moved = false;
         m_mouseScroll.scrolled = false;
+        m_mousePos.mouseOffset   = {0, 0};
     }
 
     std::vector<InputKeys::Modifiers> Input::getSortedModifiers(const int modifiersField) {

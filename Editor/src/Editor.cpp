@@ -78,6 +78,7 @@ void Editor::buildInitialLayout(ImGuiID dockspaceId) {
 }
 
 void Editor::onRender() {
+    KITA_ENGINE_PROFILE("Editor render");
     m_sandbox->onRender();
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -98,6 +99,18 @@ void Editor::onRender() {
     ImGui::DragFloat3("Diffuse", glm::value_ptr(lightComponent.properties.diffuse), 0.05f, 0.0f, 20.0f);
     ImGui::DragFloat("PostProcess Exposure", &postProcessComponent.properties.exposure, 0.01f, 0.0f, 10.0f);
     ImGui::DragFloat("IBL Intensity", &sceneComponent.properties.iblIntensity, 0.01f, 0.0f, 10.0f);
+    const double dt = Kita::Time::getDeltaTime();
+    static double timer = 0.0;
+    static double displayedDt = 0.0;
+
+    timer += dt;
+
+    if (timer >= 0.5) {
+        timer = 0.0;
+        displayedDt = dt;
+    }
+
+    ImGui::Text("Frame time: %.3f ms | FPS: %.0f",displayedDt * 1000.0,1.0 / displayedDt);
     ImGui::End();
 
     /*

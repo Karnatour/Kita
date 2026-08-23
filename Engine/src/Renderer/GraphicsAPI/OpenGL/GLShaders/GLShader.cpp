@@ -5,11 +5,18 @@
 
 namespace Kita {
     void GLShader::bind() {
-        glUseProgram(m_program);
+        KITA_ENGINE_PROFILE("Bind shader");
+        if (m_currentlyBoundProgram != m_program) {
+            m_currentlyBoundProgram = m_program;
+            glUseProgram(m_program);
+        }
     }
 
     GLShader::~GLShader() {
         glDeleteProgram(m_program);
+        if (m_currentlyBoundProgram == m_program) {
+            m_currentlyBoundProgram = 0;
+        }
     }
 
     std::expected<void, Shader::ShaderError> GLShader::createShader(const std::span<const ShaderInfo> shaders) {
@@ -93,40 +100,67 @@ namespace Kita {
         return {};
     }
 
-    void GLShader::setUniformBool(const std::string& location, const bool value) {
-        glUniform1i(glGetUniformLocation(m_program, location.c_str()), static_cast<GLint>(value));
+    void GLShader::setUniformBool(const std::string_view location, const bool value) {
+        KITA_ENGINE_PROFILE("Set uniform bool");
+        glUniform1f(getUniformLocation(location), value);
     }
 
-    void GLShader::setUniformFloat(const std::string& location, const float value) {
-        glUniform1f(glGetUniformLocation(m_program, location.c_str()), value);
+    void GLShader::setUniformFloat(const std::string_view location, const float value) {
+        KITA_ENGINE_PROFILE("Set uniform float");
+        glUniform1f(getUniformLocation(location), value);
     }
 
-    void GLShader::setUniformInt(const std::string& location, const int value) {
-        glUniform1i(glGetUniformLocation(m_program, location.c_str()), value);
+    void GLShader::setUniformInt(const std::string_view location, const int value) {
+        KITA_ENGINE_PROFILE("Set uniform int");
+        glUniform1i(getUniformLocation(location), value);
     }
 
-    void GLShader::setUniformVec2(const std::string& location, const glm::vec2& value) {
-        glUniform2fv(glGetUniformLocation(m_program, location.c_str()), 1, &value[0]);
+    void GLShader::setUniformUnsignedInt(const std::string_view location, const uint32_t value) {
+        KITA_ENGINE_PROFILE("Set uniform unsigned int");
+        glUniform1ui(getUniformLocation(location), value);
     }
 
-    void GLShader::setUniformVec3(const std::string& location, const glm::vec3& value) {
-        glUniform3fv(glGetUniformLocation(m_program, location.c_str()), 1, &value[0]);
+    void GLShader::setUniformVec2(const std::string_view location, const glm::vec2& value) {
+        KITA_ENGINE_PROFILE("Set uniform vec2");
+        glUniform2fv(getUniformLocation(location), 1, &value[0]);
     }
 
-    void GLShader::setUniformVec4(const std::string& location, const glm::vec4& value) {
-        glUniform4fv(glGetUniformLocation(m_program, location.c_str()), 1, &value[0]);
+    void GLShader::setUniformVec3(const std::string_view location, const glm::vec3& value) {
+        KITA_ENGINE_PROFILE("Set uniform vec3");
+        glUniform3fv(getUniformLocation(location), 1, &value[0]);
     }
 
-    void GLShader::setUniformMat2(const std::string& location, const glm::mat2& value) {
-        glUniformMatrix2fv(glGetUniformLocation(m_program, location.c_str()), 1,GL_FALSE, &value[0][0]);
+    void GLShader::setUniformVec4(const std::string_view location, const glm::vec4& value) {
+        KITA_ENGINE_PROFILE("Set uniform vec4");
+        glUniform4fv(getUniformLocation(location), 1, &value[0]);
     }
 
-    void GLShader::setUniformMat3(const std::string& location, const glm::mat3& value) {
-        glUniformMatrix3fv(glGetUniformLocation(m_program, location.c_str()), 1,GL_FALSE, &value[0][0]);
+    void GLShader::setUniformMat2(const std::string_view location, const glm::mat2& value) {
+        KITA_ENGINE_PROFILE("Set uniform mat2");
+        glUniformMatrix2fv(getUniformLocation(location), 1, GL_FALSE, &value[0][0]);
     }
 
-    void GLShader::setUniformMat4(const std::string& location, const glm::mat4& value) {
-        glUniformMatrix4fv(glGetUniformLocation(m_program, location.c_str()), 1,GL_FALSE, &value[0][0]);
+    void GLShader::setUniformMat3(const std::string_view location, const glm::mat3& value) {
+        KITA_ENGINE_PROFILE("Set uniform mat3");
+        glUniformMatrix3fv(getUniformLocation(location), 1,GL_FALSE, &value[0][0]);
+    }
+
+    void GLShader::setUniformMat4(const std::string_view location, const glm::mat4& value) {
+        KITA_ENGINE_PROFILE("Set uniform mat4");
+        glUniformMatrix4fv(getUniformLocation(location), 1,GL_FALSE, &value[0][0]);
+    }
+
+    GLint GLShader::getUniformLocation(const std::string_view location) {
+        KITA_ENGINE_PROFILE("Get uniform location");
+        GLint glLocation;
+
+        if (const auto it = m_shaderLocations.find(location); it != m_shaderLocations.end()) {
+            glLocation = it->second;
+        } else {
+            glLocation = glGetUniformLocation(m_program, std::string(location).c_str());
+            m_shaderLocations.try_emplace(std::string(location), glLocation);
+        }
+        return glLocation;
     }
 
     GLenum GLShader::getGLShaderType(const ShaderType type) {

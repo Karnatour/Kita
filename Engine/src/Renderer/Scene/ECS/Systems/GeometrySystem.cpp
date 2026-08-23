@@ -22,6 +22,8 @@ namespace Kita {
     }
 
     void GeometrySystem::render(Scene& scene) {
+        KITA_ENGINE_PROFILE("Geometry system render");
+
         const auto& assetManager = Engine::getEngine()->getAssetManager();
         auto& renderer = Engine::getEngine()->getRenderer();
         renderer.getMainFramebuffer().bind();

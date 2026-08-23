@@ -13,6 +13,8 @@ namespace Kita {
     }
 
     void SkyboxSystem::render(Scene& scene) {
+        KITA_ENGINE_PROFILE("Skybox system render");
+
         auto entity = Entity(&scene,scene.view<SkyboxComponent>().front());
         if (!entity) {
             return;

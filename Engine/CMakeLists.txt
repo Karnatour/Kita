@@ -140,6 +140,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Components/SceneComponent.h
         src/Renderer/Properties/SceneProperties.h
         src/Renderer/Scene/ECS/Components/NameComponent.h
+        src/Core/Profiler.h
+        src/Util/StringHash.h
 )
 
 #Multithreaded compilation
@@ -173,12 +175,27 @@ target_link_libraries(KitaEngine PUBLIC dwmapi)
 find_package(xxHash CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC xxHash::xxhash)
 
+find_package(Tracy CONFIG REQUIRED)
+target_link_libraries(KitaEngine PUBLIC Tracy::TracyClient)
+#Tracy vcpkg automatically defines TRACY_ENABLE so we must define KITA_TRACY_ENABLE if we want to disable it
+target_compile_definitions(KitaEngine PUBLIC KITA_TRACY_ENABLE)
+
+#Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
+add_custom_command(TARGET KitaEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:Tracy::TracyClient>
+        $<TARGET_FILE_DIR:KitaEngine>
+)
+
 get_property(_targets DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY IMPORTED_TARGETS)
 message(STATUS "Imported targets: ${_targets}")
 
+get_target_property(_defs Tracy::TracyClient INTERFACE_COMPILE_DEFINITIONS)
+message(STATUS "Tracy interface defines: ${_defs}")
 target_include_directories(KitaEngine PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 target_precompile_headers(KitaEngine PRIVATE ${PROJECT_SOURCE_DIR}/src/kitapch.h)
 
 #Add compile definitions for DLL
-target_compile_definitions(KitaEngine PRIVATE KITAENGINE_EXPORTS KITA_BUILD_DEBUG)
+target_compile_definitions(KitaEngine PRIVATE KITAENGINE_EXPORTS $<$<CONFIG:Debug>:KITA_BUILD_DEBUG>
+)

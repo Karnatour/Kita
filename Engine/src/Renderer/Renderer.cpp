@@ -19,7 +19,10 @@ namespace Kita {
             true, 1);
 
         m_outputFramebuffer = FrameBuffer::createPtr();
-        m_outputFramebuffer->createBuffer(m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}}},true, 1);
+        m_outputFramebuffer->createBuffer(m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}}}, true, 1);
+
+        enableCapability(Capability::CULL_FACE);
+        setCullMode(CullMode::BACK);
     }
 
     RenderingAPI Renderer::getAPI() {
@@ -30,15 +33,20 @@ namespace Kita {
         return m_viewport;
     }
 
-    void Renderer::renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, const std::span<Texture* const> textures) {
+    void Renderer::renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, const std::span<Texture* const> textures, const bool skipSetMaterial) {
+        KITA_ENGINE_PROFILE("Render mesh");
+
         shader.bind();
-        setMaterialInShader(shader, textures, modelMatrix);
+
+        if (!skipSetMaterial) {
+            setMaterialInShader(shader, textures);
+        }
+        shader.setUniformMat4("model", modelMatrix);
 
         mesh.getVertexArray().bind();
         if (mesh.getIndexBuffer()) {
             m_rendererAPI->drawElements(mesh.getIndexBuffer()->getIndices().size());
-        }
-        else {
+        } else {
             m_rendererAPI->drawArrays(mesh.getVertexBuffer().getVertices().size());
         }
     }
@@ -88,7 +96,7 @@ namespace Kita {
         m_rendererAPI->setDepthFunc(function);
     }
 
-    void Renderer::setCullMode(CullMode mode) {
+    void Renderer::setCullMode(const CullMode mode) {
         m_rendererAPI->setCullMode(mode);
     }
 
@@ -100,25 +108,26 @@ namespace Kita {
         return *m_mainFramebuffer;
     }
 
-    void Renderer::setMaterialInShader(Shader& shader, const std::span<Texture* const> textures, const glm::mat4& modelMatrix) {
+    void Renderer::setMaterialInShader(Shader& shader, const std::span<Texture* const> textures) {
+        KITA_ENGINE_PROFILE("Set material in shader");
+
         resetTextureState(shader);
         setTexturesInShader(shader, textures);
-        shader.setUniformMat4("model", modelMatrix);
+        shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
     }
 
     void Renderer::resetTextureState(Shader& shader) {
-        shader.setUniformBool("hasAlbedoTex", false);
-        shader.setUniformBool("hasMetallicRoughnessTex", false);
-        shader.setUniformBool("hasCubemapTex", false);
-        shader.setUniformBool("hasColorTex", false);
-        shader.setUniformBool("hasDepthTex", false);
-        shader.setUniformBool("hasStencilTex", false);
-        shader.setUniformBool("hasSkyboxTex", false);
-        shader.setUniformBool("hasNormalTex", false);
-        shader.setUniformBool("hasDepthTexArray", false);
+        KITA_ENGINE_PROFILE("Reset texture state");
+
+        // depthArray | normal | skybox | stencil | depth | color | cubemap | metallic roughness | albedo
+        m_textureFlags = Texture::TextureFlags::NONE;
+        shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
     }
 
     void Renderer::setTexturesInShader(Shader& shader, const std::span<Texture* const> textures) {
+        KITA_ENGINE_PROFILE("Set textures in shader");
+
+        shader.setTextureUniforms();
         for (const auto texture : textures) {
             if (texture == nullptr) {
                 continue;
@@ -126,48 +135,39 @@ namespace Kita {
             switch (texture->getType()) {
                 case Texture::TextureType::ALBEDO:
                     texture->bind(0);
-                    shader.setUniformInt("albedoTex", 0);
-                    shader.setUniformBool("hasAlbedoTex", true);
+                    m_textureFlags |= Texture::TextureFlags::ALBEDO;
                     break;
                 case Texture::TextureType::METALLIC_ROUGHNESS:
                     texture->bind(1);
-                    shader.setUniformInt("metallicRoughnessTex", 1);
-                    shader.setUniformBool("hasMetallicRoughnessTex", true);
+                    m_textureFlags |= Texture::TextureFlags::METALLIC_ROUGHNESS;
                     break;
                 case Texture::TextureType::CUBEMAP:
                     texture->bind(2);
-                    shader.setUniformInt("cubemapTex", 2);
-                    shader.setUniformBool("hasCubemapTex", true);
+                    m_textureFlags |= Texture::TextureFlags::CUBEMAP;
                     break;
                 case Texture::TextureType::COLOR:
                     texture->bind(3);
-                    shader.setUniformInt("colorTex", 3);
-                    shader.setUniformBool("hasColorTex", true);
+                    m_textureFlags |= Texture::TextureFlags::COLOR;
                     break;
                 case Texture::TextureType::DEPTH:
                     texture->bind(4);
-                    shader.setUniformInt("depthTex", 4);
-                    shader.setUniformBool("hasDepthTex", true);
+                    m_textureFlags |= Texture::TextureFlags::DEPTH;
                     break;
                 case Texture::TextureType::STENCIL:
                     texture->bind(5);
-                    shader.setUniformInt("stencilTex", 5);
-                    shader.setUniformBool("hasStencilTex", true);
+                    m_textureFlags |= Texture::TextureFlags::STENCIL;
                     break;
                 case Texture::TextureType::SKYBOX:
                     texture->bind(6);
-                    shader.setUniformInt("skyboxTex", 6);
-                    shader.setUniformBool("hasSkyboxTex", true);
+                    m_textureFlags |= Texture::TextureFlags::SKYBOX;
                     break;
                 case Texture::TextureType::NORMAL:
                     texture->bind(7);
-                    shader.setUniformInt("normalTex", 7);
-                    shader.setUniformBool("hasNormalTex", true);
+                    m_textureFlags |= Texture::TextureFlags::NORMAL;
                     break;
                 case Texture::TextureType::DEPTH_ARRAY:
                     texture->bind(8);
-                    shader.setUniformInt("depthTexArray", 8);
-                    shader.setUniformBool("hasDepthTexArray", true);
+                    m_textureFlags |= Texture::TextureFlags::DEPTH_ARRAY;
                     break;
                 default:
                     std::string str = texture->getPath().has_value() ? texture->getPath().value().string() : std::string("missing path");

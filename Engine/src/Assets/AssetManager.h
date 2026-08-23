@@ -50,7 +50,7 @@ namespace Kita {
                 return std::move(texture);
             } else if (result.error() == Texture::TextureError::FILE) {
                 KITA_ENGINE_ERROR("[AssetBuilder] File error while building texture {}", path.has_value() ? path.value().string() : "<no path>");
-            } else if (result.error() == Texture::TextureError::USUPPORTED_NUM_OF_CHANNELS) {
+            } else if (result.error() == Texture::TextureError::UNSUPPORTED_NUM_OF_CHANNELS) {
                 KITA_ENGINE_ERROR("[AssetBuilder] Unsupported number of channels while building texture {}", path.has_value() ? path.value().string() : "<no path>");
             }
             return nullptr;

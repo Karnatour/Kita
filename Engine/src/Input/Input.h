@@ -16,7 +16,6 @@ namespace Kita {
     };
 
     struct MouseMovement {
-        std::pair<double, double> lastMousePosition;
         std::pair<double, double> mousePosition;
         std::pair<double, double> mouseOffset;
         bool moved = false;
@@ -42,7 +41,7 @@ namespace Kita {
         friend class Engine;
 
         static void init();
-        static void update();
+        static void beginFrame();
         static void updateKeyPress(const KeyPressed& event);
         static void updateKeyRelease(const KeyReleased& event);
         static void updateButtonPress(const MousePressed& event);
@@ -56,6 +55,6 @@ namespace Kita {
         static inline std::vector<MouseWithModifier> m_mousePressedKeys;
         static inline MouseMovement m_mousePos;
         static inline MouseScroll m_mouseScroll;
-
+        static inline int eventCount = 0;
     };
 } // Kita

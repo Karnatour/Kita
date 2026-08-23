@@ -6,7 +6,7 @@ namespace Kita {
     class GLRendererAPI final : public RendererAPI {
     public:
         static GLenum convertBufferTypeToInternalFormat(BufferType buffer);
-        static GLenum convertCapablityToGL(Capability capability);
+        static GLenum convertCapabilityToGL(Capability capability);
         static GLbitfield convertBitToGL(ClearBit bit);
 
     private:

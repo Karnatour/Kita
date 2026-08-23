@@ -23,6 +23,11 @@ namespace Kita {
         const std::filesystem::path filePath(MODELS_PREFIX / path);
         KITA_ENGINE_DEBUG("[AssetImporter] Starting process of model: {}", filePath.string());
 
+
+        if (!std::filesystem::exists(filePath)) {
+            return std::unexpected(ImportError::FILE);
+        }
+
         Assimp::Importer importer;
         const aiScene* aiScene = importer.ReadFile(filePath.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_SortByPType);
 

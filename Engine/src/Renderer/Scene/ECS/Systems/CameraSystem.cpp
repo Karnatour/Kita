@@ -21,6 +21,8 @@ namespace Kita {
     }
 
     void CameraSystem::render(Scene& scene) {
+        KITA_ENGINE_PROFILE("Camera system render");
+
         // lazy creation on render thread
         if (m_cameraUBO == nullptr) {
             m_cameraUBO = UniformBuffer::createPtr();

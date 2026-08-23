@@ -2,7 +2,8 @@
 
 namespace Kita {
     enum class Capability {
-        DEPTH_TEST
+        DEPTH_TEST,
+        CULL_FACE
     };
 
     enum class DepthFunction {

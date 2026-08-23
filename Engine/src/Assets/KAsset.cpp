@@ -12,6 +12,11 @@ namespace Kita {
         KAssetPath.replace_extension("kasset");
 
         try {
+            if (!std::filesystem::exists(KAssetPath)) {
+                KITA_ENGINE_INFO(".KAsset file is missing, it will be baked now");
+                return std::unexpected(AssetImporter::ImportError::KASSET);
+            }
+
             std::ifstream file(KAssetPath, std::ios::binary | std::ios::in);
             file.exceptions(std::istream::failbit | std::istream::badbit);
 
@@ -200,8 +205,6 @@ namespace Kita {
         nodeHeader.parentIndex = parentIndex;
         nodeHeader.nodeIndex = nodeIndex;
 
-        KITA_ENGINE_DEBUG("Current parent index: {} current nodeIndex: {}", parentIndex, nodeIndex);
-
         //Name
         if (entity.hasAllComponents<NameComponent>()) {
             const std::string& name = entity.getComponent<NameComponent>().name;
@@ -280,10 +283,8 @@ namespace Kita {
         if (!fileHash) {
             throw std::runtime_error(fmt::format("Unable to calculate file hash for: {}", filePath.string()));
         }
-        KITA_ENGINE_DEBUG("File hash: {}", fileHash.value());
         fileHeader.sourceFileHash = fileHash.value();
         fileHeader.nodeCount = nodeCount;
-        KITA_ENGINE_DEBUG("NodeCount: {}", nodeCount);
         file.write(reinterpret_cast<const char*>(&fileHeader), sizeof(fileHeader));
     }
 
