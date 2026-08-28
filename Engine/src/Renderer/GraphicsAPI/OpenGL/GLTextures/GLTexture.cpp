@@ -3,6 +3,7 @@
 
 #include <glad/glad.h>
 #include <stb_image.h>
+#include <gli/gli.hpp>
 
 #include "../../../../Assets/AssetImporter.h"
 #include "../../../../Assets/AssetManager.h"
@@ -41,6 +42,10 @@ namespace Kita {
 
         if (!texturePath.has_value()) {
             KITA_ENGINE_ERROR("Texture type: {}, supports only textures with path", magic_enum::enum_name(textureType));
+        }
+
+        if (texturePath->extension() == ".dds") {
+            return loadDDSTexture();
         }
 
         stbi_set_flip_vertically_on_load(true);
@@ -106,8 +111,7 @@ namespace Kita {
             glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, image);
 
             stbi_image_free(image);
-        }
-        else {
+        } else {
             KITA_ENGINE_ERROR("Unable to load texture, {}", m_path.value().string());
             return std::unexpected(TextureError::FILE);
         }
@@ -201,5 +205,58 @@ namespace Kita {
     void GLTexture::destroy() {
         glDeleteTextures(1, &m_texture);
         m_texture = 0;
+    }
+
+    std::expected<void, Texture::TextureError> GLTexture::loadDDSTexture() {
+        gli::texture image = gli::load((AssetManager::TEXTURE_PREFIX / m_path.value()).string());
+        if (image.empty()) {
+            return std::unexpected(TextureError::FILE);
+        }
+
+        const gli::gl gl(gli::gl::PROFILE_GL33);
+        gli::gl::format format = gl.translate(image.format(), image.swizzles());
+
+        glCreateTextures(gl.translate(image.target()), 1, &m_texture);
+
+#ifdef KITA_BUILD_DEBUG
+        glObjectLabel(GL_TEXTURE, m_texture, -1, m_path->string().c_str());
+#endif
+
+        glTextureParameteri(m_texture, GL_TEXTURE_BASE_LEVEL, 0);
+        glTextureParameteri(m_texture, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(image.levels() - 1));
+
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, image.levels() > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+
+        glTextureParameteriv(m_texture, GL_TEXTURE_SWIZZLE_RGBA, &format.Swizzles[0]);
+
+        KITA_ENGINE_DEBUG("DDS {}: GL internal format = 0x{:X}", m_path->string(), static_cast<GLenum>(format.Internal));
+
+        auto toSRGBInternalFormat = [](const gli::gl::internal_format internalFormat) {
+            switch (internalFormat) {
+                case gli::gl::INTERNAL_RGBA_DXT1:
+                    return gli::gl::INTERNAL_SRGB_DXT1;
+                case gli::gl::INTERNAL_RGBA_DXT5:
+                    return gli::gl::INTERNAL_SRGB_ALPHA_DXT5;
+                default:
+                    return internalFormat;
+            }
+        };
+
+        if (m_textureType == TextureType::ALBEDO || m_textureType == TextureType::COLOR) {
+            format.Internal = toSRGBInternalFormat(format.Internal);
+        }
+
+        const glm::ivec3 extent(image.extent(0));
+        glTextureStorage2D(m_texture, static_cast<GLint>(image.levels()), format.Internal, extent.x, extent.y);
+
+        for (std::size_t level = 0; level < image.levels(); ++level) {
+            const auto levelExtent = glm::ivec3(image.extent(level));
+            glCompressedTextureSubImage2D(m_texture, static_cast<GLint>(level), 0, 0, levelExtent.x, levelExtent.y, format.Internal, static_cast<GLsizei>(image.size(level)), image.data(0, 0, level));
+        }
+
+        return {};
     }
 } // Kita

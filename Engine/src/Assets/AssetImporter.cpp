@@ -29,7 +29,24 @@ namespace Kita {
         }
 
         Assimp::Importer importer;
-        const aiScene* aiScene = importer.ReadFile(filePath.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_GenNormals | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_SortByPType);
+
+        importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
+
+        constexpr unsigned int flags =
+            aiProcess_Triangulate |
+            aiProcess_SortByPType |
+            aiProcess_FindDegenerates |
+            aiProcess_FindInvalidData |
+            aiProcess_GenSmoothNormals |
+            aiProcess_GenUVCoords |
+            aiProcess_CalcTangentSpace |
+            aiProcess_JoinIdenticalVertices |
+            aiProcess_ImproveCacheLocality |
+            aiProcess_RemoveRedundantMaterials |
+            aiProcess_GenBoundingBoxes |
+            aiProcess_ValidateDataStructure;
+
+        const aiScene* aiScene = importer.ReadFile(filePath.string(), flags);
 
         if (!aiScene || aiScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !aiScene->mRootNode) {
             return std::unexpected(ImportError::FILE);
@@ -63,7 +80,7 @@ namespace Kita {
                 ignore = true;
             }
 
-            if (auto assetID = importTexture(aiTextureType_BASE_COLOR, *aiMaterial, path)) {
+            if (auto assetID = importTexture(aiTextureType_BASE_COLOR, *aiMaterial, path).or_else([&]() { return importTexture(aiTextureType_DIFFUSE, *aiMaterial, path); })) {
                 albedoTextureID = assetID.value();
             }
             if (auto assetID = importTexture(aiTextureType_GLTF_METALLIC_ROUGHNESS, *aiMaterial, path)) {
@@ -130,7 +147,7 @@ namespace Kita {
     }
 
     void AssetImporter::addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials) {
-        if (aiMesh->mMaterialIndex > materials.size()) {
+        if (aiMesh->mMaterialIndex >= materials.size()) {
             KITA_ENGINE_ERROR("[AssetImporter] Invalid material index for mesh: {}", aiMesh->mName.C_Str());
             entity.addComponent<MaterialComponent>();
             return;
@@ -194,6 +211,7 @@ namespace Kita {
     Texture::TextureType AssetImporter::assimpToKitaTextureType(const aiTextureType& ai_texture) {
         switch (ai_texture) {
             case aiTextureType_BASE_COLOR:
+            case aiTextureType_DIFFUSE:
                 return Texture::TextureType::ALBEDO;
             case aiTextureType_GLTF_METALLIC_ROUGHNESS:
                 return Texture::TextureType::METALLIC_ROUGHNESS;
@@ -201,17 +219,19 @@ namespace Kita {
             case aiTextureType_NORMALS:
                 return Texture::TextureType::NORMAL;
             default:
+                KITA_ENGINE_WARN("[AssetImporter] Tried to convert not supported texture type: {}", magic_enum::enum_name(ai_texture));
                 return Texture::TextureType::NONE;
         }
     }
 
     std::optional<AssetManager::AssetID> AssetImporter::importTexture(const aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path) {
         if (aiMaterial.GetTextureCount(textureType) == 0) {
+            KITA_ENGINE_WARN("[AssetImporter] Material {} has no textures for this texture type {}", path.string(), magic_enum::enum_name(textureType));
             return std::nullopt;
         }
 
         if (aiMaterial.GetTextureCount(textureType) > 1) {
-            KITA_ENGINE_WARN("[AssetImporter] Material {} has more than one texture for texture type {}", path.string(), magic_enum::enum_name(assimpToKitaTextureType(textureType)));
+            KITA_ENGINE_WARN("[AssetImporter] Material {} has more than one texture for texture type {}", path.string(), magic_enum::enum_name(textureType));
         }
 
         aiString aiStr;

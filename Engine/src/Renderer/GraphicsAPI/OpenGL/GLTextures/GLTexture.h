@@ -12,6 +12,7 @@ namespace Kita {
         void destroy() override;
 
     private:
+        std::expected<void, TextureError> loadDDSTexture();
         std::expected<void, TextureError> createSkyboxTexture();
         std::expected<void, TextureError> createCubemapTexture(const std::pair<int, int>& resolution);
     };

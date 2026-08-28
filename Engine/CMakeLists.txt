@@ -178,7 +178,7 @@ target_link_libraries(KitaEngine PUBLIC xxHash::xxhash)
 find_package(Tracy CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC Tracy::TracyClient)
 #Tracy vcpkg automatically defines TRACY_ENABLE so we must define KITA_TRACY_ENABLE if we want to disable it
-target_compile_definitions(KitaEngine PUBLIC KITA_TRACY_ENABLE)
+#target_compile_definitions(KitaEngine PUBLIC KITA_TRACY_ENABLE)
 
 #Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
 add_custom_command(TARGET KitaEngine POST_BUILD

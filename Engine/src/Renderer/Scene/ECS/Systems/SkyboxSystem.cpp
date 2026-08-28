@@ -27,6 +27,8 @@ namespace Kita {
 
         auto& skyboxComponent = entity.getComponent<SkyboxComponent>();
 
+        renderer.disableCapability(Capability::CULL_FACE);
+
         if (m_cubemapCaptureFBO == nullptr) {
             m_cubemapCaptureFBO = FrameBuffer::createPtr();
             //temp attachments so FBO is complete
@@ -53,6 +55,8 @@ namespace Kita {
         renderer.enableBufferWrite(BufferType::DEPTH);
         renderer.setDepthFunc(DepthFunction::LESS);
         renderer.getMainFramebuffer().unbind();
+
+        renderer.enableCapability(Capability::CULL_FACE);
     }
 
     void SkyboxSystem::convertSkyboxTextureToCubemap(SkyboxComponent& skyboxComponent) {

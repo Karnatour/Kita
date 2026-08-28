@@ -57,6 +57,10 @@
     {
       "name": "tracy",
       "version>=": "0.13.1"
+    },
+    {
+      "name": "gli",
+      "version>=": "2021-07-06#2"
     }
   ],
   "builtin-baseline": "74f5fda46bfe10d8dcbbbb6770a7a294a300fbbb"
