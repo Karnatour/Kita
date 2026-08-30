@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include "../Assets/AssetManager.h"
+#include "../Physics/PhysicsManager.h"
 
 
 namespace Kita {
@@ -22,7 +23,7 @@ namespace Kita {
         void run();
         void stop();
 
-        bool isEditor();
+        bool isEditor() const;
 
         Window& getWindow();
         Renderer& getRenderer();
@@ -38,6 +39,7 @@ namespace Kita {
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Renderer> m_renderer;
         std::unique_ptr<AssetManager> m_assetManager;
+        std::unique_ptr<PhysicsManager> m_physicsManager;
         std::shared_ptr<IGameInstance> m_game;
         std::chrono::time_point<std::chrono::steady_clock> m_currentFrameTime;
     };

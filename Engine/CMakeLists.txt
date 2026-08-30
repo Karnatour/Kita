@@ -142,6 +142,20 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Components/NameComponent.h
         src/Core/Profiler.h
         src/Util/StringHash.h
+        src/Physics/PhysicsManager.cpp
+        src/Physics/PhysicsManager.h
+        src/Physics/ObjectLayerPairFilter.cpp
+        src/Physics/ObjectLayerPairFilter.h
+        src/Physics/BroadPhaseLayer.cpp
+        src/Physics/BroadPhaseLayer.h
+        src/Physics/ObjectLayerVsBroadPhaseLayerFilter.cpp
+        src/Physics/ObjectLayerVsBroadPhaseLayerFilter.h
+        src/Physics/ContactListener.cpp
+        src/Physics/ContactListener.h
+        src/Physics/BodyActivationListener.cpp
+        src/Physics/BodyActivationListener.h
+        src/Physics/PhysicsLayers.h
+        src/Renderer/Scene/ECS/Components/PhysicsComponent.h
 )
 
 #Multithreaded compilation
@@ -179,6 +193,9 @@ find_package(Tracy CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC Tracy::TracyClient)
 #Tracy vcpkg automatically defines TRACY_ENABLE so we must define KITA_TRACY_ENABLE if we want to disable it
 #target_compile_definitions(KitaEngine PUBLIC KITA_TRACY_ENABLE)
+
+find_package(Jolt CONFIG REQUIRED)
+target_link_libraries(KitaEngine PUBLIC Jolt::Jolt)
 
 #Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
 add_custom_command(TARGET KitaEngine POST_BUILD

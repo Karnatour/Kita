@@ -28,6 +28,9 @@ namespace Kita {
         m_assetManager = std::make_unique<AssetManager>();
         m_assetManager->addDefaultAssets();
 
+        m_physicsManager = std::make_unique<PhysicsManager>();
+        m_physicsManager->init();
+
         Input::init();
         EventManager::listenToEvent<WindowClosed>(onWindowClosed);
 
@@ -81,7 +84,8 @@ namespace Kita {
         m_isRunning = false;
     }
 
-    bool Engine::isEditor() {
+    bool Engine::isEditor() const
+    {
         return m_isEditor;
     }
 
@@ -103,6 +107,7 @@ namespace Kita {
         Time::updateDeltaTime(m_currentFrameTime);
         Input::beginFrame();
         m_window->poolEvents();
+        m_physicsManager->update();
     }
 
     void Engine::render() {
@@ -117,6 +122,7 @@ namespace Kita {
     }
 
     void Engine::exit() {
+        m_physicsManager->exit();
         m_window->exit();
     }
 

@@ -7,6 +7,7 @@
 #include "MeshComponent.h"
 #include "NameComponent.h"
 #include "PathComponent.h"
+#include "PhysicsComponent.h"
 #include "PostProcessingComponent.h"
 #include "RelationshipComponents.h"
 #include "RenderTags.h"

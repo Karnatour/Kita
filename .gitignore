@@ -8,3 +8,4 @@ Engine/assets/textures/*
 Engine/assets/models/*
 vcpkg_installed
 CMakeSettings.json
+vcpkg

@@ -137,6 +137,16 @@ namespace Kita {
             return getOrCreateAssetImpl<T>(path, options, std::forward<Args>(args)...);
         }
 
+        template <std::derived_from<Asset> T, typename... Args>
+        AssetID createAsset(Args&&... args) {
+            return createAssetImpl<T>(std::nullopt, {}, std::forward<Args>(args)...);
+        }
+
+        template <std::derived_from<Asset> T, typename... Args>
+        AssetID createAsset(const std::optional<std::filesystem::path>& path, const AssetOptions options, Args&&... args) {
+            return createAssetImpl<T>(path, options, std::forward<Args>(args)...);
+        }
+
     private:
         template <std::derived_from<Asset> T, typename... Args>
         AssetResult<T> getOrCreateAssetImpl(const std::optional<std::filesystem::path>& path, const AssetOptions options, Args&&... args) {
@@ -175,18 +185,6 @@ namespace Kita {
             return AssetResult<T>{.id = DEFAULT_ASSET_ID, .asset = *defaultIt->second};
         }
 
-    public:
-        template <std::derived_from<Asset> T, typename... Args>
-        AssetID createAsset(Args&&... args) {
-            return createAssetImpl<T>(std::nullopt, {}, std::forward<Args>(args)...);
-        }
-
-        template <std::derived_from<Asset> T, typename... Args>
-        AssetID createAsset(const std::optional<std::filesystem::path>& path, const AssetOptions options, Args&&... args) {
-            return createAssetImpl<T>(path, options, std::forward<Args>(args)...);
-        }
-
-    private:
         template <std::derived_from<Asset> T, typename... Args>
         AssetID createAssetImpl(const std::optional<std::filesystem::path>& path, const AssetOptions options, Args&&... args) {
             // get unordered_map of correct type
@@ -233,25 +231,24 @@ namespace Kita {
             return DEFAULT_ASSET_ID;
         }
 
-    private:
-        friend class Engine;
-
         template <std::derived_from<Asset> T, typename... Args>
         static std::unique_ptr<T> buildAsset(std::optional<std::filesystem::path> path, Args&&... args) {
             return AssetBuilder<T>::build(std::move(path), std::forward<Args>(args)...);
         }
-
-        void addDefaultAssets();
-
-        AssetID getNextID();
-        std::optional<AssetID> getIDForStringPath(const std::string& string);
-        AssetID getOrAddStringPath(const std::string& string);
 
         template <std::derived_from<Asset> T>
         static std::unordered_map<AssetID, std::unique_ptr<T>>& getBucket() {
             static std::unordered_map<AssetID, std::unique_ptr<T>> bucket;
             return bucket;
         }
+
+
+        friend class Engine;
+        void addDefaultAssets();
+
+        AssetID getNextID();
+        std::optional<AssetID> getIDForStringPath(const std::string& string);
+        AssetID getOrAddStringPath(const std::string& string);
 
         std::unordered_map<std::string, AssetID> m_stringPathToID;
     };
