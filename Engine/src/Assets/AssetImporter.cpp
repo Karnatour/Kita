@@ -8,20 +8,21 @@
 #include "../Core/Engine.h"
 #include "../Renderer/Scene/ECS/Components/Components.h"
 #include "../Renderer/Scene/ECS/Components/RenderTags.h"
+#include "../Renderer/Util/MeshUtil.h"
 
 namespace Kita {
     std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene) {
-        std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene);
+        /*std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene);
         if (result) {
             return result;
         }
 
         if (result.error() == ImportError::HASH_MISMATCH) {
             KITA_ENGINE_INFO("[AssetImporter] Hash mismatch for asset: {}", path.string());
-        }
+        }*/
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
-        KITA_ENGINE_DEBUG("[AssetImporter] Starting process of model: {}", filePath.string());
+        KITA_ENGINE_INFO("[AssetImporter] Starting process of model: {}", filePath.string());
 
 
         if (!std::filesystem::exists(filePath)) {
@@ -58,7 +59,9 @@ namespace Kita {
 
         processNode(aiScene, aiScene->mRootNode, scene, rootEntity, materials, aiMatrix4x4());
 
-        KAsset::saveToFile(rootEntity, path);
+        rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
+
+        //KAsset::saveToFile(rootEntity, path);
         rootEntity.addComponent<PathComponent>(path);
 
         return rootEntity;
@@ -105,6 +108,9 @@ namespace Kita {
 
         parentEntity.addComponent<ChildrenComponent>();
         parentEntity.addComponent<NameComponent>(NameComponent{.name = aiNode->mName.C_Str()});
+        parentEntity.addComponent<TransformationComponent>(TransformationComponent{.localModel = convertAiModelMatrixToGLM(aiNode->mTransformation), .worldModel = convertAiModelMatrixToGLM(worldTransform)});
+        parentEntity.addComponent<RenderInShadowPass>();
+        parentEntity.addComponent<RenderInMainPass>();
 
         // we must fetch the component before every addition since entt can reallocate and invalidate the reference
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
@@ -138,11 +144,12 @@ namespace Kita {
         }
 
         addMaterialComponent(newEntity, aiMesh, materials);
-        newEntity.addComponent<MeshComponent>(Engine::getEngine()->getAssetManager().createAsset<Mesh>(std::move(vertices), std::move(indices)));
+
+        const auto& engine = Engine::getEngine();
+        const AssetManager::AssetID meshID = engine->getAssetManager().createAsset<Mesh>(std::move(vertices), std::move(indices));
+
+        newEntity.addComponent<MeshComponent>(MeshComponent{.meshID = meshID});
         newEntity.addComponent<NameComponent>(NameComponent{.name = aiMesh->mName.C_Str()});
-        newEntity.addComponent<RenderInShadowPass>();
-        newEntity.addComponent<RenderInMainPass>();
-        newEntity.addComponent<TransformationComponent>(TransformationComponent{.model = convertAiModelMatrixToGLM(aiTransformMatrix)});
         return newEntity;
     }
 

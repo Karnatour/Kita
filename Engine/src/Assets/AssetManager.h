@@ -10,7 +10,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "../Core/Assert.h"
-#include "../Renderer/Scene/Primitives/Mesh.h"
+#include "Mesh.h"
 
 namespace Kita {
     template <typename T>

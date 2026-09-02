@@ -62,6 +62,8 @@ namespace Kita {
                 }
             }
 
+            rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
+
             return rootEntity;
         }
         catch (const std::ifstream::failure& e) {
@@ -148,10 +150,13 @@ namespace Kita {
     MeshComponent KAsset::readMesh(std::ifstream& file) {
         MeshHeader meshHeader;
         file.read(reinterpret_cast<char*>(&meshHeader), sizeof(meshHeader));
-        std::vector<VertexProperties> vertices(meshHeader.vertexCount);
+
+        std::vector<VertexProperties> vertices;
+        vertices.resize(meshHeader.vertexCount);
         file.read(reinterpret_cast<char*>(vertices.data()), static_cast<std::streamsize>(vertices.size() * sizeof(VertexProperties)));
 
-        std::vector<unsigned int> indices(meshHeader.indexCount);
+        std::vector<unsigned int> indices;
+        indices.resize(meshHeader.indexCount);
         file.read(reinterpret_cast<char*>(indices.data()), static_cast<std::streamsize>(indices.size() * sizeof(unsigned int)));
 
         return MeshComponent{Engine::getEngine()->getAssetManager().createAsset<Mesh>(std::move(vertices), std::move(indices))};
@@ -196,7 +201,7 @@ namespace Kita {
         const glm::quat rotation(transformationData.rotation[3], transformationData.rotation[0], transformationData.rotation[1], transformationData.rotation[2]);
         const glm::vec3 scale(transformationData.scale[0], transformationData.scale[1], transformationData.scale[2]);
 
-        return TransformationComponent{.model = glm::recompose(scale, rotation, translation, glm::vec3(0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f))};
+        return TransformationComponent{.worldModel = glm::recompose(scale, rotation, translation, glm::vec3(0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f))};
     }
 
 
@@ -407,7 +412,7 @@ namespace Kita {
             glm::quat rotation;
             glm::vec4 perspective;
 
-            glm::decompose(entity.getComponent<TransformationComponent>().model, scale, rotation, translation, skew, perspective);
+            glm::decompose(entity.getComponent<TransformationComponent>().worldModel, scale, rotation, translation, skew, perspective);
 
             TransformationData transformationData;
             transformationData.translation[0] = translation.x;

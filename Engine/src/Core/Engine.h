@@ -25,9 +25,10 @@ namespace Kita {
 
         bool isEditor() const;
 
-        Window& getWindow();
-        Renderer& getRenderer();
-        AssetManager& getAssetManager();
+        Window& getWindow() const;
+        Renderer& getRenderer() const;
+        AssetManager& getAssetManager() const;
+        PhysicsManager& getPhysicsManager() const;
     private:
         void render();
         void update();

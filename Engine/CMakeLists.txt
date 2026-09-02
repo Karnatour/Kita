@@ -50,8 +50,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Properties/VertexProperties.h
         src/Renderer/Renderer.cpp
         src/Renderer/Renderer.h
-        src/Renderer/Scene/Primitives/Mesh.cpp
-        src/Renderer/Scene/Primitives/Mesh.h
+        src/Assets/Mesh.cpp
+        src/Assets/Mesh.h
         src/Renderer/Scene/Scene.cpp
         src/Renderer/Scene/Scene.h
         src/Renderer/Types/RenderingAPI.h
@@ -156,6 +156,11 @@ add_library(KitaEngine SHARED
         src/Physics/BodyActivationListener.h
         src/Physics/PhysicsLayers.h
         src/Renderer/Scene/ECS/Components/PhysicsComponent.h
+        src/Physics/PhysicsBroadPhaseLayers.h
+        src/Renderer/Util/MeshUtil.cpp
+        src/Renderer/Util/MeshUtil.h
+        src/Renderer/Scene/ECS/Systems/PhysicsSystem.cpp
+        src/Renderer/Scene/ECS/Systems/PhysicsSystem.h
 )
 
 #Multithreaded compilation

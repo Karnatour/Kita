@@ -1,13 +1,13 @@
 #pragma once
-#include "../../Buffers/VertexArray.h"
-#include "../../Buffers/VertexBuffer.h"
-#include "../../Buffers/IndexBuffer.h"
+#include "../Renderer/Buffers/VertexArray.h"
+#include "../Renderer/Buffers/VertexBuffer.h"
+#include "../Renderer/Buffers/IndexBuffer.h"
 #include <memory>
 #include <vector>
 
-#include "../../../Assets/Asset.h"
-#include "../../../Core/DllTemplate.h"
-#include "../../Util/GeometryUtil.h"
+#include "Asset.h"
+#include "../Core/DllTemplate.h"
+#include "../Renderer/Util/GeometryUtil.h"
 
 namespace Kita {
     class KITAENGINE_API Mesh : public Asset {

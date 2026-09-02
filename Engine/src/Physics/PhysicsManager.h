@@ -1,34 +1,48 @@
 #pragma once
+#include "../Core/DllTemplate.h"
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/TempAllocator.h>
 #include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Collision/Shape/MeshShape.h>
 
 #include "BodyActivationListener.h"
 #include "BroadPhaseLayer.h"
 #include "ContactListener.h"
 #include "ObjectLayerPairFilter.h"
 #include "ObjectLayerVsBroadPhaseLayerFilter.h"
+#include "../Assets/Mesh.h"
+#include "../Renderer/Scene/ECS/Entity.h"
 
-namespace Kita
-{
-    class PhysicsManager
-    {
+namespace Kita {
+
+    class KITAENGINE_API PhysicsManager {
     public:
-        JPH::BodyID createBody(const JPH::BodyCreationSettings& creationSettings, bool activate);
+        JPH::BodyID createBody(const JPH::BodyCreationSettings& creationSettings, JPH::EActivation activate);
+        JPH::BodyID createBody(Entity rootEntity, JPH::EMotionType motionType, PhysicsLayers::Layers layer, JPH::EActivation activate);
+        JPH::BodyID changeMotionType(Entity rootEntity, JPH::BodyID bodyID, JPH::EMotionType motionType, PhysicsLayers::Layers layer, JPH::EActivation activate);
+        void changePosition(JPH::BodyID id, glm::vec3 position);
+        glm::vec3 getPosition(JPH::BodyID id) const;
+        glm::mat4 getModelMatrix(JPH::BodyID id) const;
         void removeBody(JPH::BodyID id);
         void destroyBody(JPH::BodyID id);
         bool isBodyActive(JPH::BodyID id) const;
         void activateBody(JPH::BodyID id);
         void deactivateBody(JPH::BodyID id);
+
     private:
         friend class Engine;
 
         void init();
         void update();
         void exit();
-        static void TraceImpl(const char *inFMT, ...);
-        static bool AssertFailedImpl(const char *inExpression, const char *inMessage, const char *inFile, JPH::uint inLine);
+
+        static void TraceImpl(const char* inFMT, ...);
+        static bool AssertFailedImpl(const char* inExpression, const char* inMessage, const char* inFile, JPH::uint inLine);
+        JPH::ShapeSettings::ShapeResult createMeshShapeSettings(const Mesh& mesh);
+        JPH::ShapeSettings::ShapeResult createConvexHullShape(const Mesh& mesh);
+        JPH::Shape::ShapeResult createCompoundShape(Entity rootEntity, const glm::mat4& rootWorldMatrix, JPH::EMotionType motionType);
+
         std::unique_ptr<JPH::TempAllocatorImpl> m_tempAllocator;
         std::unique_ptr<JPH::JobSystemThreadPool> m_jobSystemThreadPool;
         std::unique_ptr<BroadPhaseLayer> m_broadPhaseLayer;

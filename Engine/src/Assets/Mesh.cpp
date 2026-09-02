@@ -1,5 +1,5 @@
-#include "../../../kitapch.h"
-#include "Mesh.h"
+#include "../kitapch.h"
+#include "../Assets/Mesh.h"
 
 namespace Kita {
     Mesh::Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices) {

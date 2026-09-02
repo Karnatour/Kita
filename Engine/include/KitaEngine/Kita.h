@@ -29,7 +29,7 @@
 #include "../src/Renderer/Scene/ECS/Entity.h"
 #include "../src/Renderer/Scene/Scene.h"
 #include "../src/Renderer/Util/LightUtil.h"
-#include "../src/Renderer/Scene/Primitives/Mesh.h"
+#include "../../src/Assets/Mesh.h"
 #include "../src/Assets/Shader.h"
 #include "../src/Renderer/Util/GeometryUtil.h"
 #include "../src/Renderer/Properties/VertexProperties.h"

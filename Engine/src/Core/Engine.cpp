@@ -84,21 +84,24 @@ namespace Kita {
         m_isRunning = false;
     }
 
-    bool Engine::isEditor() const
-    {
+    bool Engine::isEditor() const {
         return m_isEditor;
     }
 
-    Window& Engine::getWindow() {
+    Window& Engine::getWindow() const {
         return *m_window;
     }
 
-    Renderer& Engine::getRenderer() {
+    Renderer& Engine::getRenderer() const {
         return *m_renderer;
     }
 
-    AssetManager& Engine::getAssetManager() {
+    AssetManager& Engine::getAssetManager() const {
         return *m_assetManager;
+    }
+
+    PhysicsManager& Engine::getPhysicsManager() const {
+        return *m_physicsManager;
     }
 
     void Engine::update() {

@@ -34,10 +34,10 @@ namespace Kita {
         };
 
         struct NodeHeader {
-            char name[MAX_NAME_LENGTH] = "Unnamed node";
             uint32_t parentIndex = std::numeric_limits<unsigned int>().max();
             uint32_t nodeIndex = std::numeric_limits<unsigned int>().max();
             uint32_t subNodesCount = 0;
+            char name[MAX_NAME_LENGTH] = "Unnamed node";
         };
 
         struct SubNodeHeader {

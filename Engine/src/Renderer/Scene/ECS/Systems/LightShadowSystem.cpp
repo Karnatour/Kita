@@ -4,11 +4,7 @@
 #include "../../Scene.h"
 #include "../../../../Core/Engine.h"
 #include "../../../Util/LightUtil.h"
-#include "../Components/LightShadowComponents.h"
-#include "../Components/CameraComponent.h"
-#include "../Components/MeshComponent.h"
-#include "../Components/RenderTags.h"
-#include "../Components/TransformationComponent.h"
+#include "../Components/Components.h"
 
 namespace Kita {
     int LightShadowSystem::getOrder() {
@@ -77,9 +73,17 @@ namespace Kita {
         renderer.setViewport(properties.resolution, false);
         renderer.clearBit({{ClearBit::DEPTH}});
         renderer.setCullMode(CullMode::FRONT);
-        for (const auto [entity,meshComponent, transformationComponent] : scene.view<MeshComponent, TransformationComponent, RenderInShadowPass>().each()) {
-            renderer.renderMesh(assetManager.getAsset<Mesh>(meshComponent.meshID), shader, transformationComponent.model, {}, true);
+
+        for (const auto [entity,children, transformation] : scene.view<ChildrenComponent, TransformationComponent, RenderInShadowPass>().each()) {
+            for (const auto child : children.children) {
+                if (Entity childEntity(&scene, child); childEntity.hasAllComponents<MeshComponent, MaterialComponent>()) {
+                    Mesh& mesh = assetManager.getAsset<Mesh>(childEntity.getComponent<MeshComponent>().meshID);
+
+                    renderer.renderMesh(mesh, shader, transformation.worldModel, {}, true);
+                }
+            }
         }
+
         renderer.setCullMode(CullMode::BACK);
 
         renderer.restoreViewport();

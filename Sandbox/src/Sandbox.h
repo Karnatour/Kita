@@ -17,6 +17,7 @@ public:
     Kita::Scene& getScene();
 private:
     std::unique_ptr<Kita::Scene> m_scene;
+    Kita::Entity m_sphere;
 };
 
 extern "C" SANDBOX_API Kita::IGameInstance* createGameInstance();

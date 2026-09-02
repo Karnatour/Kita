@@ -22,7 +22,7 @@
 
 - **DLL-based engine**
 - **Keyboard & mouse input**
-- **3D API independent Renderer** with modern OpenGL 4.6.0 (SSBO, direct state access)  
+- **3D API independent Renderer** with modern OpenGL 4.6.0 (SSBO, direct state access)
   *(Vulkan backend planned next)*
 - **Buffers:** VBO, IBO, FBO, RBO, UBO, SSBO
 - **PBR lighting model**
@@ -53,5 +53,5 @@ User-loaded assets must be placed in the correct folders (relative path then can
 
 When a model is loaded for the first time, **Kita** will:
 
-1. ~~Bake it into its internal **KAsset** format (`.kasset`) (Skipping Assimp loading next time)~~
+1. Bake it into its internal **KAsset** format (`.kasset`) (Skipping Assimp loading next time)
 2. Copy the model textures into `assets/textures/`

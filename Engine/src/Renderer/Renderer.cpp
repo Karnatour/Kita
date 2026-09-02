@@ -2,7 +2,7 @@
 #include "Renderer.h"
 #include "../Assets/Shader.h"
 #include "../Core/Engine.h"
-#include "Scene/Primitives/Mesh.h"
+#include "../Assets/Mesh.h"
 #include "../Events/EventManager.h"
 #include "Buffers/FrameBuffer.h"
 

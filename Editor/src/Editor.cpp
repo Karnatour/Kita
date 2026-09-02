@@ -110,7 +110,10 @@ void Editor::onRender() {
         displayedDt = dt;
     }
 
-    ImGui::Text("Frame time: %.3f ms | FPS: %.0f",displayedDt * 1000.0,1.0 / displayedDt);
+    Kita::Entity activeCamera = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::ActiveCamera>().front());
+    auto& cameraComponent = activeCamera.getComponent<Kita::CameraComponent>();
+    ImGui::Text("Frame time: %.3f ms | FPS: %.0f", displayedDt * 1000.0, 1.0 / displayedDt);
+    ImGui::Text("Position: %.2f %.2f %.2f", cameraComponent.properties.position.x, cameraComponent.properties.position.y, cameraComponent.properties.position.z);
     ImGui::End();
 
     /*

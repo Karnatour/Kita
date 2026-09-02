@@ -40,12 +40,12 @@ namespace Kita {
         }
 
         template <typename T>
-        T& getComponent() {
+        T& getComponent() const {
             return m_scene->m_registry.get<T>(m_enttEntity);
         }
 
         template <typename T>
-        T* tryGetComponent() {
+        T* tryGetComponent() const {
             return m_scene->m_registry.try_get<T>(m_enttEntity);
         }
 
