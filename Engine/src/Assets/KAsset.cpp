@@ -37,8 +37,19 @@ namespace Kita {
                 NodeHeader nodeHeader;
                 file.read(reinterpret_cast<char*>(&nodeHeader), sizeof(nodeHeader));
 
+                // sanity check: catches stream desync immediately
+                if (nodeHeader.nodeIndex != i || (i > 0 && nodeHeader.parentIndex >= i)) {
+                    throw std::runtime_error(fmt::format("Corrupt KAsset node header at index {}: read nodeIndex={}, parentIndex={}", i, nodeHeader.nodeIndex, nodeHeader.parentIndex));
+                }
+
+                const glm::mat4 parentWorld = (i == 0) ? glm::mat4(1.0f) : entities.at(nodeHeader.parentIndex).getComponent<TransformationComponent>().worldModel;
+
                 Entity nodeEntity = scene.createEntity();
                 nodeEntity.addComponent<ChildrenComponent>();
+                nodeEntity.addComponent<TransformationComponent>(readTransformation(nodeHeader.transformationData, parentWorld));
+                nodeEntity.addComponent<RenderInShadowPass>();
+                nodeEntity.addComponent<RenderInMainPass>();
+                
                 entities.insert({nodeHeader.nodeIndex, nodeEntity});
                 if (i == 0) {
                     rootEntity = nodeEntity;
@@ -51,8 +62,6 @@ namespace Kita {
                     file.read(reinterpret_cast<char*>(&subNodeHeader), sizeof(subNodeHeader));
 
                     Entity chunkEntity = scene.createEntity();
-                    chunkEntity.addComponent<RenderInShadowPass>();
-                    chunkEntity.addComponent<RenderInMainPass>();
                     for (int k = 0; k < subNodeHeader.chunkCount; ++k) {
                         ChunkHeader chunkHeader;
                         file.read(reinterpret_cast<char*>(&chunkHeader), sizeof(chunkHeader));
@@ -65,6 +74,10 @@ namespace Kita {
             rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
 
             return rootEntity;
+        }
+        catch (const std::out_of_range& e) {
+            KITA_ENGINE_ERROR("Error while loading KAsset (bad node index). Path {}, error: {}", KAssetPath.string(), e.what());
+            return std::unexpected(AssetImporter::ImportError::KASSET);
         }
         catch (const std::ifstream::failure& e) {
             KITA_ENGINE_ERROR("Error while loading KAsset. Path {}, error: {}", KAssetPath.string(), e.what());
@@ -128,9 +141,6 @@ namespace Kita {
                 chunkEntity.addComponent<MaterialComponent>(readMaterial(file));
                 break;
             }
-            case ChunkType::TRANSFORMATION:
-                chunkEntity.addComponent<TransformationComponent>(readTransformation(file));
-                break;
         }
 
         if (const auto chunkEnd = file.tellg(); static_cast<uint64_t>(chunkEnd - chunkStart) != chunk.chunkSize) {
@@ -193,19 +203,17 @@ namespace Kita {
         return materialComponent;
     }
 
-    TransformationComponent KAsset::readTransformation(std::ifstream& file) {
-        TransformationData transformationData;
-        file.read(reinterpret_cast<char*>(&transformationData), sizeof(transformationData));
-
+    TransformationComponent KAsset::readTransformation(const TransformationData& transformationData, const glm::mat4& parentWorld) {
         const glm::vec3 translation(transformationData.translation[0], transformationData.translation[1], transformationData.translation[2]);
         const glm::quat rotation(transformationData.rotation[3], transformationData.rotation[0], transformationData.rotation[1], transformationData.rotation[2]);
         const glm::vec3 scale(transformationData.scale[0], transformationData.scale[1], transformationData.scale[2]);
 
-        return TransformationComponent{.worldModel = glm::recompose(scale, rotation, translation, glm::vec3(0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f))};
+        const glm::mat4 local = glm::recompose(scale, rotation, translation, glm::vec3(0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+        return TransformationComponent{.localModel = local, .worldModel = parentWorld * local};
     }
 
-
-    void KAsset::writeNodes(std::ofstream& file, Entity entity, uint32_t& nodeIndex, uint32_t parentIndex) {
+    void KAsset::writeNodes(std::ofstream& file, const Entity entity, uint32_t& nodeIndex, const uint32_t parentIndex) {
         NodeHeader nodeHeader;
         nodeHeader.parentIndex = parentIndex;
         nodeHeader.nodeIndex = nodeIndex;
@@ -223,10 +231,13 @@ namespace Kita {
             nodeHeader.name[n] = '\0';
         }
 
+        //Transformation
+        nodeHeader.transformationData = getTransformationData(entity);
+
         //SubNodesCount
         for (const auto child : entity.getComponent<ChildrenComponent>().children) {
             auto childEntity = Entity(entity.getScene(), child);
-            if (childEntity.hasAnyComponent<MeshComponent, MaterialComponent, TransformationComponent>()) {
+            if (childEntity.hasAnyComponent<MeshComponent, MaterialComponent>()) {
                 nodeHeader.subNodesCount = nodeHeader.subNodesCount + 1;
             }
         }
@@ -236,7 +247,7 @@ namespace Kita {
         for (const auto child : entity.getComponent<ChildrenComponent>().children) {
             auto childEntity = Entity(entity.getScene(), child);
 
-            if (!childEntity.hasAnyComponent<MeshComponent, MaterialComponent, TransformationComponent>()) {
+            if (!childEntity.hasAnyComponent<MeshComponent, MaterialComponent>()) {
                 continue;
             }
 
@@ -247,17 +258,8 @@ namespace Kita {
             if (childEntity.hasAllComponents<MaterialComponent>()) {
                 subChunkCount = subChunkCount + 1;
             }
-            if (childEntity.hasAllComponents<TransformationComponent>()) {
-                subChunkCount = subChunkCount + 1;
-            }
 
             SubNodeHeader subNodeHeader;
-            if (childEntity.hasAllComponents<NameComponent>()) {
-                const std::string name = childEntity.getComponent<NameComponent>().name;
-                const size_t n = std::min(name.size(), sizeof(subNodeHeader.name) - 1);
-                std::copy_n(name.begin(), n, subNodeHeader.name);
-                subNodeHeader.name[n] = '\0';
-            }
             subNodeHeader.chunkCount = subChunkCount;
             file.write(reinterpret_cast<const char*>(&subNodeHeader), sizeof(subNodeHeader));
 
@@ -266,9 +268,6 @@ namespace Kita {
             }
             if (childEntity.hasAllComponents<MaterialComponent>()) {
                 writeMaterial(file, childEntity);
-            }
-            if (childEntity.hasAllComponents<TransformationComponent>()) {
-                writeTransformation(file, childEntity);
             }
         }
 
@@ -406,15 +405,16 @@ namespace Kita {
         strcpy_s(materialHeader.shaderPaths[1], fragmentPath.c_str());
     }
 
-    void KAsset::writeTransformation(std::ofstream& file, Entity entity) {
+    KAsset::TransformationData KAsset::getTransformationData(const Entity entity) {
+        TransformationData transformationData;
+
         if (entity.hasAllComponents<TransformationComponent>()) {
             glm::vec3 scale, translation, skew;
             glm::quat rotation;
             glm::vec4 perspective;
 
-            glm::decompose(entity.getComponent<TransformationComponent>().worldModel, scale, rotation, translation, skew, perspective);
+            glm::decompose(entity.getComponent<TransformationComponent>().localModel, scale, rotation, translation, skew, perspective);
 
-            TransformationData transformationData;
             transformationData.translation[0] = translation.x;
             transformationData.translation[1] = translation.y;
             transformationData.translation[2] = translation.z;
@@ -427,12 +427,7 @@ namespace Kita {
             transformationData.rotation[1] = rotation.y;
             transformationData.rotation[2] = rotation.z;
             transformationData.rotation[3] = rotation.w;
-
-            ChunkHeader chunk;
-            chunk.chunkType = static_cast<uint32_t>(ChunkType::TRANSFORMATION);
-            chunk.chunkSize = sizeof(TransformationData);
-            file.write(reinterpret_cast<const char*>(&chunk), sizeof(chunk));
-            file.write(reinterpret_cast<const char*>(&transformationData), sizeof(transformationData));
         }
+        return transformationData;
     }
 } // Kita

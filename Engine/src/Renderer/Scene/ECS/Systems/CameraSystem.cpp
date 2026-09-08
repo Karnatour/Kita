@@ -14,7 +14,9 @@ namespace Kita {
         for (auto [entity,camera] : scene.view<CameraComponent>().each()) {
             CameraProperties& properties = camera.properties;
 
-            updatePosition(properties);
+            if (!properties.ignorePosition) {
+                updatePosition(properties);
+            }
             updateEulerAngles(properties);
             updateZoom(properties);
         }
@@ -101,8 +103,7 @@ namespace Kita {
 
                 updateOrientationVectors(properties);
             }
-        }
-        else {
+        } else {
             engineWindow.setCursorMode(CursorMode::SHOWN);
         }
     }

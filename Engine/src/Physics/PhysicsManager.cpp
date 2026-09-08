@@ -121,8 +121,7 @@ namespace Kita {
         m_objectLayerPairFilter = std::make_unique<ObjectLayerPairFilter>();
 
         m_physicsSystem = std::make_unique<JPH::PhysicsSystem>();
-        m_physicsSystem->Init(MAX_BODIES, NUM_BODY_MUTEXES, MAX_BODY_PAIRS, MAX_CONTACT_CONSTRAINS, *m_broadPhaseLayer,
-                              *m_objectVsBroadPhaseLayerFilter, *m_objectLayerPairFilter);
+        m_physicsSystem->Init(MAX_BODIES, NUM_BODY_MUTEXES, MAX_BODY_PAIRS, MAX_CONTACT_CONSTRAINS, *m_broadPhaseLayer, *m_objectVsBroadPhaseLayerFilter, *m_objectLayerPairFilter);
 
         m_bodyActivationListener = std::make_unique<BodyActivationListener>();
         m_physicsSystem->SetBodyActivationListener(m_bodyActivationListener.get());

@@ -12,14 +12,14 @@
 
 namespace Kita {
     std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene) {
-        /*std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene);
+        std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene);
         if (result) {
             return result;
         }
 
         if (result.error() == ImportError::HASH_MISMATCH) {
             KITA_ENGINE_INFO("[AssetImporter] Hash mismatch for asset: {}", path.string());
-        }*/
+        }
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
         KITA_ENGINE_INFO("[AssetImporter] Starting process of model: {}", filePath.string());
@@ -61,7 +61,7 @@ namespace Kita {
 
         rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
 
-        //KAsset::saveToFile(rootEntity, path);
+        KAsset::saveToFile(rootEntity, path);
         rootEntity.addComponent<PathComponent>(path);
 
         return rootEntity;

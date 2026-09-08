@@ -161,6 +161,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/MeshUtil.h
         src/Renderer/Scene/ECS/Systems/PhysicsSystem.cpp
         src/Renderer/Scene/ECS/Systems/PhysicsSystem.h
+        src/Renderer/Scene/ECS/Components/CharacterComponent.h
+        src/Renderer/Properties/CharacterProperties.h
 )
 
 #Multithreaded compilation

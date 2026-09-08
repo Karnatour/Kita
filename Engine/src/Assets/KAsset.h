@@ -23,7 +23,6 @@ namespace Kita {
         enum class ChunkType : uint32_t {
             MESH = 0x4D455348, // MESH
             MATERIAL = 0x4D415445, // MATE
-            TRANSFORMATION = 0x5452414E // TRAN
         };
 
         struct FileHeader {
@@ -33,15 +32,21 @@ namespace Kita {
             uint32_t nodeCount = 0;
         };
 
+        struct TransformationData {
+            float translation[3] = {0.0f, 0.0f, 0.0f};
+            float rotation[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+            float scale[3] = {1.0f, 1.0f, 1.0f};
+        };
+
         struct NodeHeader {
             uint32_t parentIndex = std::numeric_limits<unsigned int>().max();
             uint32_t nodeIndex = std::numeric_limits<unsigned int>().max();
             uint32_t subNodesCount = 0;
+            TransformationData transformationData = {};
             char name[MAX_NAME_LENGTH] = "Unnamed node";
         };
 
         struct SubNodeHeader {
-            char name[MAX_NAME_LENGTH] = "Unnamed mesh";
             uint32_t chunkCount = 0;
         };
 
@@ -62,12 +67,6 @@ namespace Kita {
             char shaderPaths[MAX_MATERIAL_SHADER_PATH_COUNT][MAX_PATH_LENGTH]; //vertex, fragment
         };
 
-        struct TransformationData {
-            float translation[3] = {0.0f, 0.0f, 0.0f};
-            float rotation[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-            float scale[3] = {1.0f, 1.0f, 1.0f};
-        };
-
         static std::expected<Entity, AssetImporter::ImportError> loadFromFile(const std::filesystem::path& path, Scene& scene);
         static bool saveToFile(Entity rootEntity, const std::filesystem::path& path);
 
@@ -77,14 +76,14 @@ namespace Kita {
         static void checkHeaderFormat(const FileHeader& fileHeader, const std::filesystem::path& path);
         static MeshComponent readMesh(std::ifstream& file);
         static MaterialComponent readMaterial(std::ifstream& file);
-        static TransformationComponent readTransformation(std::ifstream& file);
+        static TransformationComponent readTransformation(const TransformationData& transformationData, const glm::mat4& parentWorld);
         static void writeNodes(std::ofstream& file, Entity entity, uint32_t& nodeIndex, uint32_t parentIndex);
         static void writeFileHeader(std::ofstream& file, uint32_t nodeCount, const std::filesystem::path& filePath);
         static void writeMesh(std::ofstream& file, Entity entity);
         static void writeMaterial(std::ofstream& file, Entity entity);
         static void writeTextures(MaterialData& materialHeader, std::span<Texture* const> textures);
         static void writeShader(MaterialData& materialHeader, const Shader& shader);
-        static void writeTransformation(std::ofstream& file, Entity entity);
+        static TransformationData getTransformationData(Entity entity);
 
 
     };
