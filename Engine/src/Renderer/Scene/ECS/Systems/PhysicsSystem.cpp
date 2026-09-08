@@ -3,6 +3,7 @@
 
 #include "../../Scene.h"
 #include "../../../../Core/Engine.h"
+#include "../../../Util/PhysicsUtil.h"
 #include "../Components/Components.h"
 
 namespace Kita {
@@ -11,6 +12,16 @@ namespace Kita {
     }
 
     void PhysicsSystem::update(Scene& scene) {
+        if (Engine::getEngine()->isFirstFrame()) {
+            initPlayerCharacterComponents(scene);
+        }
+        updateModelMatrices(scene);
+    }
+
+    void PhysicsSystem::render(Scene& scene) {
+    }
+
+    void PhysicsSystem::updateModelMatrices(Scene& scene) {
         const auto& physicsManager = Engine::getEngine()->getPhysicsManager();
 
         for (auto [entityID, physics, transformation] : scene.view<PhysicsComponent, TransformationComponent>().each()) {
@@ -29,10 +40,27 @@ namespace Kita {
         }
     }
 
-    void PhysicsSystem::render(Scene& scene) {
+    void PhysicsSystem::initPlayerCharacterComponents(Scene& scene) {
+        auto& physicsManager = Engine::getEngine()->getPhysicsManager();
+
+        for (auto [entityID, playerCharacter] : scene.view<PlayerCharacterComponent>().each()) {
+            PlayerCharacterProperties& properties = playerCharacter.properties;
+
+            JPH::Ref settings = new JPH::CharacterVirtualSettings();
+            settings->mShape = ;
+            settings->mInnerBodyShape = ;
+            settings->mInnerBodyLayer = PhysicsLayers::MOVING;
+            settings->mEnhancedInternalEdgeRemoval = true;
+            settings->mMass = properties.mass;
+            settings->mCharacterPadding
+            settings->mMaxStrength = properties.maxStrength;
+            settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -properties.characterRadiusStanding);
+
+            properties.character = new JPH::CharacterVirtual(settings, PhysicsUtil::GLMToJPHRVec3(properties.position), JPH::Quat::sIdentity(), 0, &physicsManager.getPhysicsSystem());
+        }
     }
 
-    void PhysicsSystem::syncTransformation(Entity entity, const glm::mat4& parentModelMatrix) {
+    void PhysicsSystem::syncTransformation(const Entity entity, const glm::mat4& parentModelMatrix) {
         auto& [localModel, worldModel] = entity.getComponent<TransformationComponent>();
         worldModel = parentModelMatrix * localModel;
 

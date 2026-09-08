@@ -9,16 +9,16 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/StaticCompoundShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/ScaledShape.h>
-#include <Jolt/Physics/PhysicsSystem.h>
 
+#include "../Core/Engine.h"
 #include "../Core/Time.h"
 #include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
 #include "../Renderer/Util/MeshUtil.h"
+#include "../Renderer/Util/PhysicsUtil.h"
 #include "../Renderer/Util/TransformationUtil.h"
 
 namespace Kita {
@@ -37,10 +37,8 @@ namespace Kita {
         }
 
         const auto decomposedRoot = TransformationUtil::decompose(rootWorldMatrix);
-        const JPH::RVec3 rootPosition(decomposedRoot.position.x, decomposedRoot.position.y, decomposedRoot.position.z);
-        const JPH::Quat rootRotation(decomposedRoot.rotation.x, decomposedRoot.rotation.y, decomposedRoot.rotation.z, decomposedRoot.rotation.w);
 
-        auto creationSettings = JPH::BodyCreationSettings(result.Get(), rootPosition, rootRotation, motionType, layer);
+        const auto creationSettings = JPH::BodyCreationSettings(result.Get(), PhysicsUtil::GLMToJPHRVec3(decomposedRoot.position), PhysicsUtil::GLMToJPHQuat(decomposedRoot.rotation), motionType, layer);
 
         return createBody(creationSettings, activate);
     }
@@ -63,12 +61,12 @@ namespace Kita {
     }
 
     void PhysicsManager::changePosition(const JPH::BodyID id, const glm::vec3 position) {
-        m_physicsSystem->GetBodyInterface().SetPosition(id, JPH::Vec3Arg(position.x, position.y, position.z), JPH::EActivation::Activate);
+        m_physicsSystem->GetBodyInterface().SetPosition(id, PhysicsUtil::GLMToJPHRVec3(position), JPH::EActivation::Activate);
     }
 
     glm::vec3 PhysicsManager::getPosition(const JPH::BodyID id) const {
         const JPH::RVec3 joltPos = m_physicsSystem->GetBodyInterface().GetPosition(id);
-        return glm::vec3(joltPos.GetX(), joltPos.GetY(), joltPos.GetZ());
+        return PhysicsUtil::JPHToGLMVec3(joltPos);
     }
 
     glm::mat4 PhysicsManager::getModelMatrix(const JPH::BodyID id) const {
@@ -76,8 +74,7 @@ namespace Kita {
 
         glm::mat4 model;
         for (int col = 0; col < 4; ++col) {
-            const JPH::Vec4 c = joltMat.GetColumn4(col);
-            model[col] = glm::vec4(c.GetX(), c.GetY(), c.GetZ(), c.GetW());
+            model[col] = PhysicsUtil::JPHToGLMVec4(joltMat.GetColumn4(col));
         }
 
         return model;
@@ -103,6 +100,10 @@ namespace Kita {
         m_physicsSystem->GetBodyInterface().DeactivateBody(id);
     }
 
+    JPH::PhysicsSystem& PhysicsManager::getPhysicsSystem() {
+        return *m_physicsSystem;
+    }
+
     void PhysicsManager::init() {
         JPH::RegisterDefaultAllocator();
 
@@ -114,8 +115,7 @@ namespace Kita {
         JPH::RegisterTypes();
 
         m_tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
-        m_jobSystemThreadPool = std::make_unique<JPH::JobSystemThreadPool>(
-            JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+        m_jobSystemThreadPool = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
         m_broadPhaseLayer = std::make_unique<BroadPhaseLayer>();
         m_objectVsBroadPhaseLayerFilter = std::make_unique<ObjectLayerVsBroadPhaseLayerFilter>();
         m_objectLayerPairFilter = std::make_unique<ObjectLayerPairFilter>();
@@ -131,9 +131,8 @@ namespace Kita {
     }
 
     void PhysicsManager::update() {
-        if (m_firstFrame) {
+        if (Engine::getEngine()->isFirstFrame()) {
             m_physicsSystem->OptimizeBroadPhase();
-            m_firstFrame = false;
         }
 
         m_accomulator = m_accomulator + static_cast<float>(Time::getDeltaTime());
@@ -182,9 +181,9 @@ namespace Kita {
 
             for (size_t i = 0; i < vertices.size(); i = i + 3) {
                 triangleList.push_back(JPH::Triangle(
-                    JPH::Float3(vertices[i + 0].position.x, vertices[i + 0].position.y, vertices[i + 0].position.z),
-                    JPH::Float3(vertices[i + 1].position.x, vertices[i + 1].position.y, vertices[i + 1].position.z),
-                    JPH::Float3(vertices[i + 2].position.x, vertices[i + 2].position.y, vertices[i + 2].position.z)));
+                    PhysicsUtil::GLMToJPHFloat3(vertices[i + 0].position),
+                    PhysicsUtil::GLMToJPHFloat3(vertices[i + 1].position),
+                    PhysicsUtil::GLMToJPHFloat3(vertices[i + 2].position)));
             }
 
             return JPH::MeshShapeSettings(triangleList).Create();
@@ -199,7 +198,7 @@ namespace Kita {
         vertexList.reserve(vertices.size() / 3);
 
         for (const auto& vertex : vertices) {
-            vertexList.push_back(JPH::Float3(vertex.position.x, vertex.position.y, vertex.position.z));
+            vertexList.push_back(PhysicsUtil::GLMToJPHFloat3(vertex.position));
         }
 
         auto& indices = mesh.getIndexBuffer()->getIndices();
@@ -219,7 +218,7 @@ namespace Kita {
         auto& vertices = mesh.getVertexBuffer().getVertices();
         points.reserve(vertices.size());
         for (const auto& vertex : vertices) {
-            points.push_back(JPH::Vec3(vertex.position.x, vertex.position.y, vertex.position.z));
+            points.emplace_back(PhysicsUtil::GLMToJPHVec3(vertex.position));
         }
 
         return JPH::ConvexHullShapeSettings(points).Create();
@@ -240,16 +239,13 @@ namespace Kita {
             }
 
             const glm::mat4 relativeTransform = invRoot * worldTransform;
-            const TransformationUtil::DecomposedTransform decomposed = TransformationUtil::decompose(relativeTransform);
-
-            const auto position = JPH::RVec3(decomposed.position.x, decomposed.position.y, decomposed.position.z);
-            const auto rotation = JPH::Quat(decomposed.rotation.x, decomposed.rotation.y, decomposed.rotation.z, decomposed.rotation.w);
+            const auto [position, rotation, scale] = TransformationUtil::decompose(relativeTransform);
 
             JPH::ShapeRefC subShape = result.Get();
 
             constexpr float kScaleEpsilon = 1e-4f;
-            if (glm::any(glm::greaterThan(glm::abs(decomposed.scale - glm::vec3(1.0f)), glm::vec3(kScaleEpsilon)))) {
-                JPH::ScaledShapeSettings scaledSettings(subShape, JPH::Vec3(decomposed.scale.x, decomposed.scale.y, decomposed.scale.z));
+            if (glm::any(glm::greaterThan(glm::abs(scale - glm::vec3(1.0f)), glm::vec3(kScaleEpsilon)))) {
+                JPH::ScaledShapeSettings scaledSettings(subShape, JPH::Vec3(scale.x, scale.y, scale.z));
                 auto scaledResult = scaledSettings.Create();
                 if (scaledResult.HasError()) {
                     KITA_ENGINE_ERROR("[PhysicsManager] Failed to scale sub-shape: {}", scaledResult.GetError());
@@ -258,7 +254,7 @@ namespace Kita {
                 subShape = scaledResult.Get();
             }
 
-            compoundSettings.AddShape(position, rotation, subShape);
+            compoundSettings.AddShape(PhysicsUtil::GLMToJPHVec3(position), PhysicsUtil::GLMToJPHQuat(rotation), subShape);
         }
 
         return compoundSettings.Create();

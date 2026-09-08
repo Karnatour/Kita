@@ -24,6 +24,7 @@ namespace Kita {
         void stop();
 
         bool isEditor() const;
+        bool isFirstFrame() const;
 
         Window& getWindow() const;
         Renderer& getRenderer() const;
@@ -37,6 +38,7 @@ namespace Kita {
 
         bool m_isRunning = false;
         bool m_isEditor = false;
+        bool m_isFirstFrame = true;
         std::unique_ptr<Window> m_window;
         std::unique_ptr<Renderer> m_renderer;
         std::unique_ptr<AssetManager> m_assetManager;

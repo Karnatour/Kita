@@ -10,7 +10,10 @@ namespace Kita {
         int getOrder() override;
         void update(Scene& scene) override;
         void render(Scene& scene) override;
+
     private:
+        void initPlayerCharacterComponents(Scene& scene);
+        void updateModelMatrices(Scene& scene);
         void syncTransformation(Entity entity, const glm::mat4& parentModelMatrix);
     };
 } // Kita

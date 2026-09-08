@@ -75,6 +75,7 @@ namespace Kita {
 
             m_window->swapBuffers();
             KITA_ENGINE_PROFILE_FRAME_MARK;
+            m_isFirstFrame = false;
         }
         m_game->onExit();
         exit();
@@ -86,6 +87,10 @@ namespace Kita {
 
     bool Engine::isEditor() const {
         return m_isEditor;
+    }
+
+    bool Engine::isFirstFrame() const {
+        return m_isFirstFrame;
     }
 
     Window& Engine::getWindow() const {

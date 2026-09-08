@@ -54,7 +54,7 @@ namespace Kita {
                 if (i == 0) {
                     rootEntity = nodeEntity;
                 } else {
-                    entities.at(nodeHeader.parentIndex).getComponent<ChildrenComponent>().children.push_back(nodeEntity.getEnttEntityID());
+                    entities.at(nodeHeader.parentIndex).getComponent<ChildrenComponent>().children.emplace_back(nodeEntity.getEnttEntityID());
                 }
 
                 for (uint32_t j = 0; j < nodeHeader.subNodesCount; ++j) {
@@ -67,7 +67,7 @@ namespace Kita {
                         file.read(reinterpret_cast<char*>(&chunkHeader), sizeof(chunkHeader));
                         loadChunk(file, chunkHeader, chunkEntity);
                     }
-                    nodeEntity.getComponent<ChildrenComponent>().children.push_back(chunkEntity.getEnttEntityID());
+                    nodeEntity.getComponent<ChildrenComponent>().children.emplace_back(chunkEntity.getEnttEntityID());
                 }
             }
 

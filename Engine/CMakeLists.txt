@@ -161,8 +161,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Util/MeshUtil.h
         src/Renderer/Scene/ECS/Systems/PhysicsSystem.cpp
         src/Renderer/Scene/ECS/Systems/PhysicsSystem.h
-        src/Renderer/Scene/ECS/Components/CharacterComponent.h
-        src/Renderer/Properties/CharacterProperties.h
+        src/Renderer/Scene/ECS/Components/PlayerCharacterComponent.h
+        src/Renderer/Properties/PlayerCharacterProperties.h
+        src/Renderer/Util/PhysicsUtil.cpp
+        src/Renderer/Util/PhysicsUtil.h
 )
 
 #Multithreaded compilation
@@ -203,6 +205,7 @@ target_link_libraries(KitaEngine PUBLIC Tracy::TracyClient)
 
 find_package(Jolt CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC Jolt::Jolt)
+target_compile_definitions(KitaEngine PUBLIC JPH_DOUBLE_PRECISION)
 
 #Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
 add_custom_command(TARGET KitaEngine POST_BUILD

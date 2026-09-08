@@ -29,6 +29,7 @@ namespace Kita {
         bool isBodyActive(JPH::BodyID id) const;
         void activateBody(JPH::BodyID id);
         void deactivateBody(JPH::BodyID id);
+        JPH::PhysicsSystem& getPhysicsSystem();
 
     private:
         friend class Engine;
@@ -62,6 +63,5 @@ namespace Kita {
         static constexpr float MAX_ACCOMULATED_TIME = 0.25f;
 
         float m_accomulator = 0.0f;
-        bool m_firstFrame = true;
     };
 } // Kita
