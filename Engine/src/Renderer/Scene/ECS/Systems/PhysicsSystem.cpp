@@ -1,4 +1,8 @@
 #include "../../../../kitapch.h"
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+
 #include "PhysicsSystem.h"
 
 #include "../../Scene.h"
@@ -44,19 +48,26 @@ namespace Kita {
         auto& physicsManager = Engine::getEngine()->getPhysicsManager();
 
         for (auto [entityID, playerCharacter] : scene.view<PlayerCharacterComponent>().each()) {
-            PlayerCharacterProperties& properties = playerCharacter.properties;
+            PlayerCharacterProperties& p = playerCharacter.properties;
+
+            const auto standingPos = JPH::Vec3(0.0f, 0.5f * p.heightStanding + p.radiusStanding, 0.0f);
+            const auto crouchingPos = JPH::Vec3(0.0f, 0.5f * p.heightCrouching + p.radiusCrouching, 0.0f);
+
+            p.standingShape = JPH::RotatedTranslatedShapeSettings(standingPos, JPH::Quat::sIdentity(), new JPH::CapsuleShape(0.5 * p.heightStanding, p.radiusStanding)).Create().Get();
+            p.crouchingShape = JPH::RotatedTranslatedShapeSettings(crouchingPos, JPH::Quat::sIdentity(), new JPH::CapsuleShape(0.5 * p.heightCrouching, p.radiusCrouching)).Create().Get();
+            p.innerStandingShape = JPH::RotatedTranslatedShapeSettings(standingPos, JPH::Quat::sIdentity(), new JPH::CapsuleShape(0.5 * p.innerShapeFraction * p.heightStanding, p.innerShapeFraction * p.radiusStanding)).Create().Get();
+            p.innerCrouchingShape = JPH::RotatedTranslatedShapeSettings(crouchingPos, JPH::Quat::sIdentity(), new JPH::CapsuleShape(0.5 * p.innerShapeFraction * p.heightCrouching, p.innerShapeFraction * p.radiusCrouching)).Create().Get();
 
             JPH::Ref settings = new JPH::CharacterVirtualSettings();
-            settings->mShape = ;
-            settings->mInnerBodyShape = ;
+            settings->mShape = p.standingShape;
+            settings->mInnerBodyShape = p.innerStandingShape;
             settings->mInnerBodyLayer = PhysicsLayers::MOVING;
             settings->mEnhancedInternalEdgeRemoval = true;
-            settings->mMass = properties.mass;
-            settings->mCharacterPadding
-            settings->mMaxStrength = properties.maxStrength;
-            settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -properties.characterRadiusStanding);
+            settings->mMass = p.mass;
+            settings->mMaxStrength = p.maxStrength;
+            settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -p.radiusStanding);
 
-            properties.character = new JPH::CharacterVirtual(settings, PhysicsUtil::GLMToJPHRVec3(properties.position), JPH::Quat::sIdentity(), 0, &physicsManager.getPhysicsSystem());
+            p.character = new JPH::CharacterVirtual(settings, PhysicsUtil::GLMToJPHRVec3(p.position), JPH::Quat::sIdentity(), 0, &physicsManager.getPhysicsSystem());
         }
     }
 

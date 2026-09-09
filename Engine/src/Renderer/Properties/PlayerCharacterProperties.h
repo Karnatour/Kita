@@ -18,15 +18,20 @@ namespace Kita {
         bool isCurrentlyJumping = false;
 
         //Size
-        float characterRadiusStanding = 0.3f;
-        float characterHeightStanding = 1.35f;
-        float characterRadiusCrouching = 0.3f;
-        float characterHeightCrouching = 0.8f;
+        float heightStanding = 1.35f;
+        float radiusStanding = 0.3f;
+        float heightCrouching = 0.8f;
+        float radiusCrouching = 0.3f;
         float innerShapeFraction = 0.9f;
 
         //JPH Internal shouldn't be used by user
         JPH::Vec3 desiredVelocity = JPH::Vec3::sZero();
         JPH::Ref<JPH::CharacterVirtual> character;
         JPH::Ref<JPH::Shape> currentShape;
+
+        JPH::RefConst<JPH::Shape> standingShape;
+        JPH::RefConst<JPH::Shape> crouchingShape;
+        JPH::RefConst<JPH::Shape> innerCrouchingShape;
+        JPH::RefConst<JPH::Shape> innerStandingShape;
     };
 } // Kita
