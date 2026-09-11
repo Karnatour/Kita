@@ -60,7 +60,7 @@ namespace Kita {
 
         static constexpr double FIXED_DELTA_TIME = 1.0f / 60.0f;
         static constexpr int COLLISION_STEPS = 1;
-        static constexpr double MAX_ACCOMULATED_TIME = 0.25f;
+        static constexpr double MAX_ACCOMULATED_TIME = FIXED_DELTA_TIME * 3.0;
 
         double m_accomulator = 0.0f;
     };

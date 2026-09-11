@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <expected>
 #include <filesystem>
+#include <typeindex>
 #include <magic_enum/magic_enum.hpp>
 #include "Shader.h"
 #include "Texture.h"
@@ -69,6 +70,12 @@ namespace Kita {
 
     class KITAENGINE_API AssetManager {
     public:
+        AssetManager() = default;
+        AssetManager(const AssetManager&) = delete;
+        AssetManager& operator=(const AssetManager&) = delete;
+        AssetManager(AssetManager&&) = default;
+        AssetManager& operator=(AssetManager&&) = default;
+
         using AssetID = uint32_t;
         static constexpr AssetID DEFAULT_ASSET_ID = 0;
         static constexpr AssetID INVALID_ASSET_ID = std::numeric_limits<uint32_t>::max();
@@ -104,7 +111,7 @@ namespace Kita {
             KITA_ENGINE_ERROR("[AssetBuilder] Asset for key not found, returning default, path: {}", path.string());
             auto defaultIt = bucket.find(DEFAULT_ASSET_ID);
             KITA_ENGINE_ASSERT(defaultIt != bucket.end(), "[AssetBuilder] Default asset not found");
-            return *defaultIt->second;
+            return static_cast<T&>(*defaultIt->second);
         }
 
         template <std::derived_from<Asset> T>
@@ -113,7 +120,7 @@ namespace Kita {
             const auto& bucket = getBucket<T>();
 
             if (auto it = bucket.find(ID); it != bucket.end()) {
-                return *it->second;
+                return static_cast<T&>(*it->second);
             }
 
             // return default if asset for key isn't found
@@ -124,7 +131,7 @@ namespace Kita {
             }
             auto it = bucket.find(DEFAULT_ASSET_ID);
             KITA_ENGINE_ASSERT(it != bucket.end(), "[AssetBuilder] Default asset not found");
-            return *it->second;
+            return static_cast<T&>(*it->second);
         }
 
         template <std::derived_from<Asset> T, typename... Args>
@@ -165,7 +172,7 @@ namespace Kita {
             // try to find the asset first
             if (!options.replace) {
                 if (auto foundIt = bucket.find(ID.value()); foundIt != bucket.end()) {
-                    return AssetResult<T>{.id = ID.value(), .asset = *foundIt->second};
+                    return AssetResult<T>{.id = ID.value(), .asset = static_cast<T&>(*foundIt->second)};
                 }
             }
 
@@ -173,7 +180,7 @@ namespace Kita {
             if (ID.has_value()) {
                 if (auto asset = buildAsset<T>(path, std::forward<Args>(args)...); asset != nullptr) {
                     auto [insertedIt, _] = bucket.insert_or_assign(ID.value(), std::move(asset));
-                    return AssetResult<T>{.id = ID.value(), .asset = *insertedIt->second};
+                    return AssetResult<T>{.id = ID.value(), .asset = static_cast<T&>(*insertedIt->second)};
                 }
             } else {
                 KITA_ENGINE_ERROR("[AssetBuilder] Trying to replace invalid ID for {}", pathString);
@@ -182,7 +189,7 @@ namespace Kita {
             // if the built asset is invalid return the default one
             auto defaultIt = bucket.find(DEFAULT_ASSET_ID);
             KITA_ENGINE_ASSERT(defaultIt != bucket.end(), "[AssetBuilder] Default asset not found");
-            return AssetResult<T>{.id = DEFAULT_ASSET_ID, .asset = *defaultIt->second};
+            return AssetResult<T>{.id = DEFAULT_ASSET_ID, .asset = static_cast<T&>(*defaultIt->second)};
         }
 
         template <std::derived_from<Asset> T, typename... Args>
@@ -236,12 +243,13 @@ namespace Kita {
             return AssetBuilder<T>::build(std::move(path), std::forward<Args>(args)...);
         }
 
+
         template <std::derived_from<Asset> T>
-        static std::unordered_map<AssetID, std::unique_ptr<T>>& getBucket() {
-            static std::unordered_map<AssetID, std::unique_ptr<T>> bucket;
-            return bucket;
+        std::unordered_map<AssetID, std::unique_ptr<Asset>>& getBucket() const {
+            return m_buckets[std::type_index(typeid(T))];
         }
 
+        mutable std::unordered_map<std::type_index, std::unordered_map<AssetID, std::unique_ptr<Asset>>> m_buckets;
 
         friend class Engine;
         void addDefaultAssets();

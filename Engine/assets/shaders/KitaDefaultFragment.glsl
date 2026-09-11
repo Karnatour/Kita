@@ -1,14 +1,14 @@
 #version 460 core
 
-const uint ALBEDO             = 1u << 0;
+const uint ALBEDO = 1u << 0;
 const uint METALLIC_ROUGHNESS = 1u << 1;
-const uint CUBEMAP            = 1u << 2;
-const uint COLOR              = 1u << 3;
-const uint DEPTH              = 1u << 4;
-const uint STENCIL            = 1u << 5;
-const uint SKYBOX             = 1u << 6;
-const uint NORMAL             = 1u << 7;
-const uint DEPTH_ARRAY        = 1u << 8;
+const uint CUBEMAP = 1u << 2;
+const uint COLOR = 1u << 3;
+const uint DEPTH = 1u << 4;
+const uint STENCIL = 1u << 5;
+const uint SKYBOX = 1u << 6;
+const uint NORMAL = 1u << 7;
+const uint DEPTH_ARRAY = 1u << 8;
 
 struct Light {
     vec4 position;
@@ -54,6 +54,7 @@ uniform samplerCube cubemapTex;
 uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
 
 uniform float iblIntensity;
+uniform float meshID;
 
 in vec4 vertexColor;
 in vec2 texCoord;
@@ -74,6 +75,8 @@ float GeometrySmith(float normalDotViewDir, float normalDotLightDir, float rough
 float calculateShadow(vec3 normal, vec3 lightDir);
 bool hasTexture(uint flag);
 PBRProperties getPBRProperties();
+float random(vec2 p);
+vec3 randomColor(vec2 p);
 
 const float PI = 3.14159265359;
 
@@ -175,7 +178,7 @@ vec3 calculateOutgoingRadiance(vec3 normal, vec3 viewDir, vec3 lightDir, float a
     vec3 F = fresnelSchlick(halfwayDotViewDir, F0);
 
     vec3 numerator = NDF * G * F;
-    float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0)  + 0.0001;
+    float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0) + 0.0001;
     vec3 specular = numerator / denominator;
 
     vec3 kS = F;
@@ -211,7 +214,7 @@ float DistributionGGX(float normalDotHalfway, float roughness) {
 
 float GeometrySchlickGGX(float normalDot, float roughness) {
     float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float k = (r * r) / 8.0;
 
     float numerator = normalDot;
     float denominator = normalDot * (1.0 - k) + k;
@@ -228,10 +231,21 @@ float GeometrySmith(float normalDotViewDir, float normalDotLightDir, float rough
 
 PBRProperties getPBRProperties() {
     PBRProperties PBRData;
-    PBRData.albedo = texture(albedoTex, texCoord).rgb;
-    vec4 metallicRoughness = texture(metallicRoughnessTex, texCoord);
-    PBRData.roughness = metallicRoughness.g;
-    PBRData.metallic  = metallicRoughness.b;
+    if (hasTexture(ALBEDO)){
+        PBRData.albedo = texture(albedoTex, texCoord).rgb;
+    }
+    else {
+        PBRData.albedo = randomColor(vec2(6.7f, meshID));
+    }
+    if (hasTexture(METALLIC_ROUGHNESS)){
+        vec4 metallicRoughness = texture(metallicRoughnessTex, texCoord);
+        PBRData.roughness = metallicRoughness.g;
+        PBRData.metallic = metallicRoughness.b;
+    }
+    else {
+        PBRData.roughness = 1.0f;
+        PBRData.metallic = 0.0f;
+    }
     return PBRData;
 }
 
@@ -273,4 +287,12 @@ float calculateShadow(vec3 normal, vec3 lightDir){
 
 bool hasTexture(uint flag){
     return (textureState & flag) != 0u;
+}
+
+float random(vec2 p){
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec3 randomColor(vec2 p) {
+    return vec3(random(p), random(p + 1.0), random(p + 2.0));
 }

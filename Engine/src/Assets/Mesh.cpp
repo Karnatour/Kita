@@ -6,7 +6,7 @@ namespace Kita {
         create(std::move(vertices), std::move(indices));
     }
 
-    Mesh::Mesh(Geometry::MeshData data) {
+    Mesh::Mesh(MeshData data) {
         create(std::move(data.vertices), std::move(data.indices));
     }
 

@@ -11,6 +11,7 @@
 #include "../../../../Events/PhysicsManagerEvents.h"
 #include "../../../../Input/Input.h"
 #include "../../../Util/PhysicsUtil.h"
+#include "../../../Util/TransformationUtil.h"
 #include "../Components/Components.h"
 
 namespace Kita {
@@ -41,15 +42,22 @@ namespace Kita {
         const auto& physicsManager = Engine::getEngine()->getPhysicsManager();
 
         for (auto [entityID, physics, transformation] : m_scene.view<PhysicsComponent, TransformationComponent>().each()) {
+            if (physics.bodyID.IsInvalid()) {
+                continue;
+            }
             const glm::mat4 physicsModelMatrix = physicsManager.getModelMatrix(physics.bodyID);
 
-            transformation.worldModel = physicsModelMatrix;
+            const glm::vec3 scale = TransformationUtil::decompose(transformation.worldModel).scale;
+            const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), scale);
+
+            transformation.worldModel = physicsModelMatrix * scaleMatrix;
+
             Entity entity = Entity(&m_scene, entityID);
             if (entity.hasAllComponents<ChildrenComponent>()) {
                 for (const auto child : entity.getComponent<ChildrenComponent>().children) {
                     auto childEntity = Entity(&m_scene, child);
                     if (childEntity.hasAllComponents<TransformationComponent>()) {
-                        syncTransformation(childEntity, physicsModelMatrix);
+                        syncTransformation(childEntity, transformation.worldModel);
                     }
                 }
             }
@@ -74,7 +82,7 @@ namespace Kita {
             settings->mShape = p.standingShape;
             settings->mInnerBodyShape = p.innerStandingShape;
             settings->mInnerBodyLayer = PhysicsLayers::MOVING;
-            settings->mEnhancedInternalEdgeRemoval = true;
+            settings->mEnhancedInternalEdgeRemoval = false;
             settings->mMass = p.mass;
             settings->mMaxStrength = p.maxStrength;
             settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -p.radiusStanding);
@@ -86,25 +94,31 @@ namespace Kita {
     void PhysicsSystem::handlePlayerCharacterInput() {
         for (auto [entityID, playerCharacter] : m_scene.view<PlayerCharacterComponent, ActiveCamera>().each()) {
             PlayerCharacterProperties& p = playerCharacter.properties;
+            glm::vec3 direction(0.0f);
 
-            p.isCurrentlyJumping = false;
-            p.isSwitchingStance = false;
-            p.controlInput = JPH::Vec3::sZero();
-            if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_A)) {
-                p.controlInput.SetZ(-1);
-            }
-            if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_D)) {
-                p.controlInput.SetZ(1);
-            }
             if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_W)) {
-                p.controlInput.SetX(1);
+                direction += glm::vec3(1.0f, 0.0f, 0.0f);
+            }
+            if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_A)) {
+                direction += glm::vec3(0.0f, 0.0f, -1.0f);
             }
             if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_S)) {
-                p.controlInput.SetX(-1);
+                direction += glm::vec3(-1.0f, 0.0f, 0.0f);
             }
+            if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_D)) {
+                direction += glm::vec3(0.0f, 0.0f, 1.0f);
+            }
+            const glm::vec3 normalizedDirection = (glm::length2(direction) > 0.0f) ? glm::normalize(direction) : glm::vec3(0.0f);
+            p.controlInput = PhysicsUtil::GLMToJPHVec3(normalizedDirection);
 
             p.isCurrentlyJumping = Input::isKeyPressed(InputKeys::KeyboardKey::KEY_SPACE);
-            p.isSwitchingStance = Input::isKeyPressed(InputKeys::KeyboardKey::KEY_LEFT_CONTROL);
+            bool switchStanceKeyDown = Input::isKeyPressed(InputKeys::KeyboardKey::KEY_LEFT_CONTROL);
+            if (switchStanceKeyDown && !p.wasSwitchingStance) {
+                p.isSwitchingStance = true;
+            }
+            p.wasSwitchingStance = switchStanceKeyDown;
+
+            p.isCurrentlySprinting = Input::isKeyPressed(InputKeys::KeyboardKey::KEY_LEFT_SHIFT);
         }
     }
 
@@ -129,7 +143,12 @@ namespace Kita {
                 {},
                 Engine::getEngine()->getPhysicsManager().getTempAllocator());
 
-            p.position = PhysicsUtil::JPHToGLMVec3(p.character->GetPosition());
+            bool isStanding = p.character->GetShape() == p.standingShape;
+            float currentHeight = isStanding ? p.heightStanding : p.heightCrouching;
+            float currentRadius = isStanding ? p.radiusStanding : p.radiusCrouching;
+            float eyeY = currentHeight + 2.0f * currentRadius - p.eyeOffset;
+
+            p.position = PhysicsUtil::JPHToGLMVec3(p.character->GetPosition() + JPH::Vec3(0.0f, eyeY, 0.0f));
             camera.properties.position = p.position;
 
             if (p.controlInput != JPH::Vec3::sZero()) {
@@ -142,8 +161,9 @@ namespace Kita {
             JPH::Quat rotation = JPH::Quat::sFromTo(JPH::Vec3::sAxisX(), front);
             p.controlInput = rotation * p.controlInput;
 
+            float speed = p.isCurrentlySprinting ? p.speed * 2.0f : p.speed;
             if (p.allowControlWhileInAir) {
-                p.desiredVelocity = 0.25f * p.controlInput * p.speed + 0.75f * p.desiredVelocity;
+                p.desiredVelocity = 0.25f * p.controlInput * speed + 0.75f * p.desiredVelocity;
 
                 p.allowSliding = !p.controlInput.IsNearZero();
             }
@@ -179,6 +199,7 @@ namespace Kita {
             p.character->SetLinearVelocity(newVelocity);
 
             if (p.isSwitchingStance) {
+                p.isSwitchingStance = false;
                 bool isStanding = p.character->GetShape() == p.standingShape;
                 const JPH::Shape* shape = isStanding ? p.crouchingShape : p.standingShape;
                 if (p.character->SetShape(

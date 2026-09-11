@@ -24,6 +24,7 @@
 #include <expected>
 #include <span>
 #include <thread>
+#include <typeindex>
 
 #include <glm/glm.hpp>
 #include <magic_enum/magic_enum.hpp>

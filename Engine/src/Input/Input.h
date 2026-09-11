@@ -37,6 +37,7 @@ namespace Kita {
 
         static bool wasMouseScrolled();
         static MouseScroll getMouseScroll();
+
     private:
         friend class Engine;
 

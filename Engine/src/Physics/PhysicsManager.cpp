@@ -40,7 +40,20 @@ namespace Kita {
 
         const auto decomposedRoot = TransformationUtil::decompose(rootWorldMatrix);
 
-        const auto creationSettings = JPH::BodyCreationSettings(result.Get(), PhysicsUtil::GLMToJPHRVec3(decomposedRoot.position), PhysicsUtil::GLMToJPHQuat(decomposedRoot.rotation), motionType, layer);
+        JPH::ShapeRefC finalShape = result.Get();
+
+        constexpr float kScaleEpsilon = 1e-4f;
+        if (glm::any(glm::greaterThan(glm::abs(decomposedRoot.scale - glm::vec3(1.0f)), glm::vec3(kScaleEpsilon)))) {
+            JPH::ScaledShapeSettings scaledSettings(finalShape, PhysicsUtil::GLMToJPHVec3(decomposedRoot.scale));
+            const auto scaledResult = scaledSettings.Create();
+            if (scaledResult.HasError()) {
+                KITA_ENGINE_ERROR("[PhysicsManager] Failed to scale root shape: {}", scaledResult.GetError());
+                return JPH::BodyID(JPH::BodyID::cInvalidBodyID);
+            }
+            finalShape = scaledResult.Get();
+        }
+
+        const auto creationSettings = JPH::BodyCreationSettings(finalShape, PhysicsUtil::GLMToJPHRVec3(decomposedRoot.position), PhysicsUtil::GLMToJPHQuat(decomposedRoot.rotation), motionType, layer);
 
         return createBody(creationSettings, activate);
     }
@@ -120,7 +133,7 @@ namespace Kita {
 
         JPH::RegisterTypes();
 
-        m_tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+        m_tempAllocator = std::make_unique<JPH::TempAllocatorImpl>(32 * 1024 * 1024);
         m_jobSystemThreadPool = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
         m_broadPhaseLayer = std::make_unique<BroadPhaseLayer>();
         m_objectVsBroadPhaseLayerFilter = std::make_unique<ObjectLayerVsBroadPhaseLayerFilter>();

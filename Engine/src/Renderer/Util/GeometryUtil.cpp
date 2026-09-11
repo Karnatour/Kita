@@ -1,8 +1,8 @@
 #include "../../kitapch.h"
 #include "GeometryUtil.h"
 
-namespace Kita::Geometry {
-    MeshData getCubeData() {
+namespace Kita {
+    MeshData Geometry::getCubeData() {
         return MeshData{
             .vertices = {
                 // Front face
@@ -64,7 +64,7 @@ namespace Kita::Geometry {
         };
     }
 
-    MeshData getQuadData() {
+    MeshData Geometry::getQuadData() {
         return MeshData{
             .vertices = {
                 {glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
@@ -79,7 +79,7 @@ namespace Kita::Geometry {
         };
     }
 
-    MeshData getTriangleData() {
+    MeshData Geometry::getTriangleData() {
         return MeshData{
             .vertices = {
                 {glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec2(0.5f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},

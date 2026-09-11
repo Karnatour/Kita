@@ -11,7 +11,7 @@ namespace Kita {
     }
 
     void CameraSystem::update(Scene& scene) {
-        for (auto [entity,camera] : scene.view<CameraComponent>().each()) {
+        for (auto [entity,camera] : scene.view<CameraComponent, ActiveCamera>().each()) {
             CameraProperties& properties = camera.properties;
 
             if (!properties.ignorePosition) {

@@ -22,7 +22,7 @@ namespace Kita {
         std::ranges::sort(modifiers);
 
         for (const auto& [m_key, m_keyboardModifiers] : m_keyboardPressedKeys) {
-            if (m_key == key && m_keyboardModifiers == modifiers) {
+            if ((m_key == key && (m_keyboardModifiers == modifiers || modifiers.empty()))) {
                 return true;
             }
         }
@@ -78,7 +78,7 @@ namespace Kita {
 
         m_mouseScroll.scrolled = true;
     }
-
+    
     bool Input::wasMouseScrolled() {
         return m_mouseScroll.scrolled;
     }

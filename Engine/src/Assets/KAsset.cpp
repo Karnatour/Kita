@@ -6,6 +6,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include "../Renderer/Scene/ECS/EntityBuilder.h"
+
 namespace Kita {
     std::expected<Entity, AssetImporter::ImportError> KAsset::loadFromFile(const std::filesystem::path& path, Scene& scene) {
         std::filesystem::path KAssetPath = BAKED_PREFIX / path;
@@ -44,12 +46,8 @@ namespace Kita {
 
                 const glm::mat4 parentWorld = (i == 0) ? glm::mat4(1.0f) : entities.at(nodeHeader.parentIndex).getComponent<TransformationComponent>().worldModel;
 
-                Entity nodeEntity = scene.createEntity();
-                nodeEntity.addComponent<ChildrenComponent>();
-                nodeEntity.addComponent<TransformationComponent>(readTransformation(nodeHeader.transformationData, parentWorld));
-                nodeEntity.addComponent<RenderInShadowPass>();
-                nodeEntity.addComponent<RenderInMainPass>();
-                
+                Entity nodeEntity = EntityBuilder::createNodeRenderEntity(scene, nodeHeader.name);
+
                 entities.insert({nodeHeader.nodeIndex, nodeEntity});
                 if (i == 0) {
                     rootEntity = nodeEntity;

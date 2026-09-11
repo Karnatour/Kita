@@ -7,19 +7,32 @@
 void Sandbox::onInit() {
     m_scene = std::make_unique<Kita::Scene>();
     m_scene->addDefaultSystems();
-    Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene).value();
+
+    Kita::TransformationComponent scaledTransform;
+    glm::mat4 groundMatrix = glm::mat4(1.0f);
+    groundMatrix = Kita::TransformationUtil::scaleWorld(groundMatrix, glm::vec3(100.0f, 1.0f, 100.0f));
+    groundMatrix = Kita::TransformationUtil::translateWorld(groundMatrix, glm::vec3(0.0f, -5.0f, 0.0f));
+    scaledTransform.localModel = groundMatrix;
+    scaledTransform.worldModel = groundMatrix;
+    Kita::Entity rootEntity = Kita::EntityBuilder::createNodeRenderEntity(*m_scene, "Ground", scaledTransform);
+    Kita::Entity cubeEntity = Kita::EntityBuilder::createChildRenderEntity(*m_scene, Kita::Engine::getEngine()->getAssetManager().createAsset<Kita::Mesh>(Kita::Geometry::getCubeData()), Kita::AssetManager::DEFAULT_ASSET_ID);
+    rootEntity.getComponent<Kita::ChildrenComponent>().children.emplace_back(cubeEntity);
+    Kita::EntityBuilder::finalizeStaticBody(rootEntity, Kita::PhysicsLayers::STATIC, JPH::EActivation::Activate);
+
+
+    //Kita::AssetImporter::importModel("main_sponza/NewSponza_Main_glTF_003.gltf", *m_scene).value();
     //Kita::AssetImporter::importModel("pkg_a_curtains/NewSponza_Curtains_glTF.gltf", *m_scene).value();
-    //m_sphere = Kita::AssetImporter::importModel("sphere-gltf-example/scene.gltf", *m_scene).value();
-    //auto sphereBodyID = m_sphere.getComponent<Kita::PhysicsComponent>().bodyID;
+    m_sphere = Kita::AssetImporter::importModel("sphere-gltf-example/scene.gltf", *m_scene).value();
+    auto sphereBodyID = m_sphere.getComponent<Kita::PhysicsComponent>().bodyID;
 
-    //auto& sphereTransform = m_sphere.getComponent<Kita::TransformationComponent>();
-    //sphereTransform.localModel = Kita::TransformationUtil::translateWorld(sphereTransform.localModel, glm::vec3(0.0f, 100.0f, 0.0f));
-    //sphereTransform.worldModel = sphereTransform.localModel;
+    auto& sphereTransform = m_sphere.getComponent<Kita::TransformationComponent>();
+    sphereTransform.localModel = Kita::TransformationUtil::translateWorld(sphereTransform.localModel, glm::vec3(0.0f, 10.0f, 0.0f));
+    sphereTransform.worldModel = sphereTransform.localModel;
 
-    //sphereBodyID = Kita::Engine::getEngine()->getPhysicsManager().changeMotionType(m_sphere, sphereBodyID, JPH::EMotionType::Dynamic, Kita::PhysicsLayers::MOVING, JPH::EActivation::Activate);
-    //m_sphere.getComponent<Kita::PhysicsComponent>().bodyID = sphereBodyID;
+    sphereBodyID = Kita::Engine::getEngine()->getPhysicsManager().changeMotionType(m_sphere, sphereBodyID, JPH::EMotionType::Dynamic, Kita::PhysicsLayers::MOVING, JPH::EActivation::Activate);
+    m_sphere.getComponent<Kita::PhysicsComponent>().bodyID = sphereBodyID;
 
-    m_player = Kita::EntityBuilder::createPlayerCharacter(*m_scene, "Player", glm::vec3(1.0f,10.0f,0.0f));
+    m_player = Kita::EntityBuilder::createPlayerCharacter(*m_scene, "Player", glm::vec3(1.0f, 10.0f, 0.0f));
     auto lightEntity = Kita::EntityBuilder::createDirectionalLight(*m_scene);
     Kita::EventManager::listenToEvent<Kita::KeyPressed>([this](const Kita::KeyPressed& event) {
         onKeyPressed(event);
@@ -49,6 +62,11 @@ void Sandbox::onKeyPressed(const Kita::KeyPressed& event) {
         } else {
             auto sceneCamera = Kita::Entity(m_scene.get(), m_scene->getCameraEntity());
             sceneCamera.getComponent<Kita::CameraComponent>().properties.position = m_player.getComponent<Kita::PlayerCharacterComponent>().properties.position;
+            sceneCamera.getComponent<Kita::CameraComponent>().properties.pitch = m_player.getComponent<Kita::CameraComponent>().properties.pitch;
+            sceneCamera.getComponent<Kita::CameraComponent>().properties.yaw = m_player.getComponent<Kita::CameraComponent>().properties.yaw;
+            sceneCamera.getComponent<Kita::CameraComponent>().properties.front = m_player.getComponent<Kita::CameraComponent>().properties.front;
+            sceneCamera.getComponent<Kita::CameraComponent>().properties.right = m_player.getComponent<Kita::CameraComponent>().properties.right;
+            sceneCamera.getComponent<Kita::CameraComponent>().properties.up = m_player.getComponent<Kita::CameraComponent>().properties.up;
             Kita::CameraUtil::markCameraAsActive(sceneCamera);
         }
     }

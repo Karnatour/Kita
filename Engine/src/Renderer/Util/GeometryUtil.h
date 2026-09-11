@@ -1,14 +1,17 @@
 #pragma once
+#include "../../Core/DllTemplate.h"
 #include <vector>
 #include "../Properties/VertexProperties.h"
 
-namespace Kita::Geometry {
+namespace Kita {
     struct MeshData {
         std::vector<VertexProperties> vertices;
         std::vector<unsigned int> indices;
     };
 
-    MeshData getCubeData();
-    MeshData getQuadData();
-    MeshData getTriangleData();
+    struct KITAENGINE_API Geometry {
+        static MeshData getCubeData();
+        static MeshData getQuadData();
+        static MeshData getTriangleData();
+    };
 }

@@ -7,7 +7,6 @@
 
 namespace Kita {
     struct KITAENGINE_API TransformationUtil {
-
         struct DecomposedTransform {
             glm::vec3 position;
             glm::quat rotation;
@@ -18,6 +17,7 @@ namespace Kita {
         static glm::mat4 translateWorld(const glm::mat4& matrix, glm::vec3 moveVec);
         static glm::mat4 rotate(const glm::mat4& matrix, float angleDegree, glm::vec3 rotateVec);
         static glm::mat4 rotateWorld(const glm::mat4& matrix, float angleDegree, glm::vec3 rotateVec);
+        static glm::mat4 scaleWorld(const glm::mat4& matrix, glm::vec3 scaleVec);
         static glm::mat4 scale(const glm::mat4& matrix, glm::vec3 scaleVec);
         static glm::vec3 getPosition(const glm::mat4& matrix);
         static glm::quat getRotation(const glm::mat4& matrix);

@@ -9,14 +9,16 @@ namespace Kita {
 
         //Physical Properties
         float mass = 70.0f; // Kg
-        float maxStrength = 100.0f; // N
+        float maxStrength = 100000.0f; // N
 
         //Movement
         bool allowControlWhileInAir = true;
         float speed = 6.0f;
         float jumpSpeed = 4.0f;
+        bool isCurrentlySprinting = false;
         bool isCurrentlyJumping = false;
         bool isSwitchingStance = false;
+        bool wasSwitchingStance = false;
 
         //Size
         float heightStanding = 1.35f;
@@ -24,6 +26,9 @@ namespace Kita {
         float heightCrouching = 0.8f;
         float radiusCrouching = 0.3f;
         float innerShapeFraction = 0.9f;
+
+        //Camera
+        float eyeOffset = 0.1f;
 
         //JPH Internal shouldn't be used by user
         JPH::Vec3 desiredVelocity = JPH::Vec3::sZero();

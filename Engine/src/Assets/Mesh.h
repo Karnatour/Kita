@@ -13,7 +13,7 @@ namespace Kita {
     class KITAENGINE_API Mesh : public Asset {
     public:
         Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);
-        explicit Mesh(Geometry::MeshData data);
+        explicit Mesh(MeshData data);
         VertexArray& getVertexArray() const;
         VertexBuffer& getVertexBuffer() const;
         IndexBuffer* getIndexBuffer() const;

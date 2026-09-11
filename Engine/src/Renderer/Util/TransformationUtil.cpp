@@ -21,6 +21,10 @@ namespace Kita {
         return glm::rotate(glm::mat4(1.0f), glm::radians(angleDegree), rotateVec) * matrix;
     }
 
+    glm::mat4 TransformationUtil::scaleWorld(const glm::mat4& matrix, const glm::vec3 scaleVec) {
+        return glm::scale(glm::mat4(1.0f), scaleVec) * matrix;
+    }
+
     glm::mat4 TransformationUtil::scale(const glm::mat4& matrix, const glm::vec3 scaleVec) {
         return glm::scale(matrix, scaleVec);
     }
