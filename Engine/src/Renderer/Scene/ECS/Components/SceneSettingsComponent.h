@@ -2,7 +2,7 @@
 #include "../../../Properties/SceneProperties.h"
 
 namespace Kita {
-    struct SceneComponent {
+    struct SceneSettingsComponent {
         SceneProperties properties;
     };
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Event.h"
 #include "../Input/InputKeys.h"
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API KeyPressed final : public Event {

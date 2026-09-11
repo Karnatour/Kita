@@ -16,6 +16,7 @@ namespace Kita {
         float speed = 6.0f;
         float jumpSpeed = 4.0f;
         bool isCurrentlyJumping = false;
+        bool isSwitchingStance = false;
 
         //Size
         float heightStanding = 1.35f;
@@ -26,6 +27,8 @@ namespace Kita {
 
         //JPH Internal shouldn't be used by user
         JPH::Vec3 desiredVelocity = JPH::Vec3::sZero();
+        JPH::Vec3 controlInput = JPH::Vec3::sZero();
+        bool allowSliding = false;
         JPH::Ref<JPH::CharacterVirtual> character;
         JPH::Ref<JPH::Shape> currentShape;
 

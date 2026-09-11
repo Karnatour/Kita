@@ -15,7 +15,6 @@
 #include "../Renderer/Scene/ECS/Entity.h"
 
 namespace Kita {
-
     class KITAENGINE_API PhysicsManager {
     public:
         JPH::BodyID createBody(const JPH::BodyCreationSettings& creationSettings, JPH::EActivation activate);
@@ -30,6 +29,7 @@ namespace Kita {
         void activateBody(JPH::BodyID id);
         void deactivateBody(JPH::BodyID id);
         JPH::PhysicsSystem& getPhysicsSystem();
+        JPH::TempAllocatorImpl& getTempAllocator();
 
     private:
         friend class Engine;
@@ -58,10 +58,10 @@ namespace Kita {
         static constexpr JPH::uint MAX_BODY_PAIRS = 1024;
         static constexpr JPH::uint MAX_CONTACT_CONSTRAINS = 1024;
 
-        static constexpr float FIXED_DELTA_TIME = 1.0f / 60.0f;
+        static constexpr double FIXED_DELTA_TIME = 1.0f / 60.0f;
         static constexpr int COLLISION_STEPS = 1;
-        static constexpr float MAX_ACCOMULATED_TIME = 0.25f;
+        static constexpr double MAX_ACCOMULATED_TIME = 0.25f;
 
-        float m_accomulator = 0.0f;
+        double m_accomulator = 0.0f;
     };
 } // Kita

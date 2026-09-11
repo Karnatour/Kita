@@ -16,8 +16,10 @@ public:
     void onExit() override;
     Kita::Scene& getScene();
 private:
+    void onKeyPressed(const Kita::KeyPressed& event);
     std::unique_ptr<Kita::Scene> m_scene;
     Kita::Entity m_sphere;
+    Kita::Entity m_player;
 };
 
 extern "C" SANDBOX_API Kita::IGameInstance* createGameInstance();

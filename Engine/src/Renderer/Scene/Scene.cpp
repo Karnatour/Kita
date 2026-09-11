@@ -1,10 +1,9 @@
-#include "../../kitapch.h"
 #include "Scene.h"
 
 #include "../../Core/Engine.h"
-#include "ECS/Components/CameraComponent.h"
+#include "ECS/EntityBuilder.h"
 #include "ECS/Components/PostProcessingComponent.h"
-#include "ECS/Components/SceneComponent.h"
+#include "ECS/Components/SceneSettingsComponent.h"
 #include "ECS/Components/SkyboxComponent.h"
 #include "ECS/Systems/CameraSystem.h"
 #include "ECS/Systems/GeometrySystem.h"
@@ -16,23 +15,21 @@
 namespace Kita {
     void Scene::addDefaultSystems() {
         m_systems.emplace_back(std::make_unique<CameraSystem>());
-        m_systems.emplace_back(std::make_unique<PhysicsSystem>());
+        m_systems.emplace_back(std::make_unique<PhysicsSystem>(*this));
         m_systems.emplace_back(std::make_unique<LightShadowSystem>());
         m_systems.emplace_back(std::make_unique<GeometrySystem>());
         m_systems.emplace_back(std::make_unique<SkyboxSystem>());
         m_systems.emplace_back(std::make_unique<PostProcessingSystem>());
 
-        Entity camera = createEntity();
-        camera.addComponent<CameraComponent>();
-        camera.addComponent<ActiveCamera>();
+        m_camera = EntityBuilder::createActiveCamera(*this).getEnttEntityID();
         Entity skybox = createEntity();
         skybox.addComponent<SkyboxComponent>(SkyboxComponent{
             .skyboxID = Engine::getEngine()->getAssetManager().createAsset<Texture>("DefaultSkybox.hdr", {}, Texture::TextureType::SKYBOX, std::nullopt)
         });
         Entity postProcessing = createEntity();
         postProcessing.addComponent<PostProcessingComponent>();
-        Entity scene = createEntity();
-        scene.addComponent<SceneComponent>();
+        Entity sceneSettings = createEntity();
+        sceneSettings.addComponent<SceneSettingsComponent>();
     }
 
     void Scene::update() {
@@ -56,5 +53,9 @@ namespace Kita {
 
     Entity Scene::createEntity() {
         return Entity(this);
+    }
+
+    entt::entity Scene::getCameraEntity() const {
+        return m_camera;
     }
 } // Kita

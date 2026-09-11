@@ -91,10 +91,10 @@ void Editor::onRender() {
     ImGui::Begin("Debug Properties");
     Kita::Entity light = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::LightComponent>().front());
     Kita::Entity postProcess = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::PostProcessingComponent>().front());
-    Kita::Entity scene = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::SceneComponent>().front());
+    Kita::Entity scene = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::SceneSettingsComponent>().front());
     auto& lightComponent = light.getComponent<Kita::LightComponent>();
     auto& postProcessComponent = postProcess.getComponent<Kita::PostProcessingComponent>();
-    auto& sceneComponent = scene.getComponent<Kita::SceneComponent>();
+    auto& sceneComponent = scene.getComponent<Kita::SceneSettingsComponent>();
     ImGui::DragFloat3("Direction", glm::value_ptr(lightComponent.properties.direction), 0.01f, -1.0f, 1.0f);
     ImGui::DragFloat3("Diffuse", glm::value_ptr(lightComponent.properties.diffuse), 0.05f, 0.0f, 20.0f);
     ImGui::DragFloat("PostProcess Exposure", &postProcessComponent.properties.exposure, 0.01f, 0.0f, 10.0f);

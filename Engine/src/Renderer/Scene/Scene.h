@@ -24,6 +24,9 @@ namespace Kita {
             return m_registry.view<Components...>();
         }
 
+        //Stored as entt entity, so we don't get circular dependency
+        entt::entity getCameraEntity() const;
+
     private:
         friend class Entity;
 
@@ -36,5 +39,6 @@ namespace Kita {
          *  LightsSSBO = 0
         */
         std::vector<std::unique_ptr<System>> m_systems;
+        entt::entity m_camera;
     };
 } // Kita

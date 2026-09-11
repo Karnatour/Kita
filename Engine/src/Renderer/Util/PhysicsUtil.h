@@ -1,5 +1,5 @@
 #pragma once
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <Jolt/Jolt.h>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>

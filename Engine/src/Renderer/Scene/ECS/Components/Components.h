@@ -12,7 +12,7 @@
 #include "PostProcessingComponent.h"
 #include "RelationshipComponents.h"
 #include "RenderTags.h"
-#include "SceneComponent.h"
+#include "SceneSettingsComponent.h"
 #include "SkyboxComponent.h"
 #include "TransformationComponent.h"
 #include "UpdateTags.h"

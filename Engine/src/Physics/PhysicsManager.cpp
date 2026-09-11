@@ -16,6 +16,8 @@
 
 #include "../Core/Engine.h"
 #include "../Core/Time.h"
+#include "../Events/EventManager.h"
+#include "../Events/PhysicsManagerEvents.h"
 #include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
 #include "../Renderer/Util/MeshUtil.h"
 #include "../Renderer/Util/PhysicsUtil.h"
@@ -104,6 +106,10 @@ namespace Kita {
         return *m_physicsSystem;
     }
 
+    JPH::TempAllocatorImpl& PhysicsManager::getTempAllocator() {
+        return *m_tempAllocator;
+    }
+
     void PhysicsManager::init() {
         JPH::RegisterDefaultAllocator();
 
@@ -135,11 +141,19 @@ namespace Kita {
             m_physicsSystem->OptimizeBroadPhase();
         }
 
-        m_accomulator = m_accomulator + static_cast<float>(Time::getDeltaTime());
-        m_accomulator = std::min(m_accomulator, MAX_ACCOMULATED_TIME);
+        double frameDelta = Time::getDeltaTime();
+        frameDelta = std::min(frameDelta, MAX_ACCOMULATED_TIME);
+        m_accomulator += frameDelta;
 
         while (m_accomulator >= FIXED_DELTA_TIME) {
-            m_physicsSystem->Update(m_accomulator, COLLISION_STEPS, m_tempAllocator.get(), m_jobSystemThreadPool.get());
+            PreUpdateEvent preUpdateEvent(FIXED_DELTA_TIME);
+            EventManager::triggerEvent(preUpdateEvent);
+
+            m_physicsSystem->Update(FIXED_DELTA_TIME, COLLISION_STEPS, m_tempAllocator.get(), m_jobSystemThreadPool.get());
+
+            PostUpdateEvent postUpdateEvent(FIXED_DELTA_TIME);
+            EventManager::triggerEvent(postUpdateEvent);
+
             m_accomulator = m_accomulator - FIXED_DELTA_TIME;
         }
     }

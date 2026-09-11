@@ -1,7 +1,7 @@
 #pragma once
-#include "../Scene.h"
 #include "entt/entt.hpp"
 #include "../../../Core/DllTemplate.h"
+#include "../Scene.h"
 
 namespace Kita {
     class KITAENGINE_API Entity {
@@ -35,7 +35,7 @@ namespace Kita {
         }
 
         template <typename T>
-        void removeComponent() const {
+        void removeComponent() {
             m_scene->m_registry.remove<T>(m_enttEntity);
         }
 
@@ -57,7 +57,7 @@ namespace Kita {
             return m_enttEntity != entt::null;
         }
 
-        explicit operator bool() const{
+        explicit operator bool() const {
             return m_enttEntity != entt::null;
         }
 

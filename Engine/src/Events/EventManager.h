@@ -4,6 +4,7 @@
 #include <vector>
 #include <functional>
 #include "Event.h"
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API EventManager {

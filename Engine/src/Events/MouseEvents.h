@@ -2,6 +2,7 @@
 #include "Event.h"
 #include <utility>
 #include "../Input/InputKeys.h"
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
     class KITAENGINE_API MousePressed final : public Event {

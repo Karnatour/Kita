@@ -137,7 +137,7 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/Systems/PostProcessingSystem.h
         src/Renderer/Scene/ECS/Components/PostProcessingComponent.h
         src/Renderer/Properties/PostProcessingProperties.h
-        src/Renderer/Scene/ECS/Components/SceneComponent.h
+        src/Renderer/Scene/ECS/Components/SceneSettingsComponent.h
         src/Renderer/Properties/SceneProperties.h
         src/Renderer/Scene/ECS/Components/NameComponent.h
         src/Core/Profiler.h
@@ -165,6 +165,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Properties/PlayerCharacterProperties.h
         src/Renderer/Util/PhysicsUtil.cpp
         src/Renderer/Util/PhysicsUtil.h
+        src/Renderer/Scene/ECS/EntityBuilder.cpp
+        src/Renderer/Scene/ECS/EntityBuilder.h
+        src/Events/PhysicsManagerEvents.cpp
+        src/Events/PhysicsManagerEvents.h
 )
 
 #Multithreaded compilation
@@ -200,12 +204,11 @@ target_link_libraries(KitaEngine PUBLIC xxHash::xxhash)
 
 find_package(Tracy CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC Tracy::TracyClient)
-#Tracy vcpkg automatically defines TRACY_ENABLE so we must define KITA_TRACY_ENABLE if we want to disable it
+#Tracy vcpkg automatically defines TRACY_ENABLE so we must define KITA_TRACY_ENABLE if we want to enable it
 #target_compile_definitions(KitaEngine PUBLIC KITA_TRACY_ENABLE)
 
 find_package(Jolt CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC Jolt::Jolt)
-target_compile_definitions(KitaEngine PUBLIC JPH_DOUBLE_PRECISION)
 
 #Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
 add_custom_command(TARGET KitaEngine POST_BUILD

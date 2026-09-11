@@ -1,7 +1,10 @@
 #pragma once
 
+#include "../../src/Assets/Mesh.h"
 #include "../src/Assets/AssetImporter.h"
 #include "../src/Assets/KAsset.h"
+#include "../src/Assets/Shader.h"
+#include "../src/Assets/Texture.h"
 #include "../src/Core/Engine.h"
 #include "../src/Core/Logger.h"
 #include "../src/Core/Profiler.h"
@@ -24,16 +27,14 @@
 #include "../src/Renderer/Buffers/UniformBuffer.h"
 #include "../src/Renderer/Buffers/VertexArray.h"
 #include "../src/Renderer/Buffers/VertexBuffer.h"
+#include "../src/Renderer/Properties/VertexProperties.h"
+#include "../src/Renderer/Scene/Scene.h"
+#include "../src/Renderer/Scene/ECS/Entity.h"
+#include "../src/Renderer/Scene/ECS/EntityBuilder.h"
 #include "../src/Renderer/Scene/ECS/Components/Components.h"
 #include "../src/Renderer/Util/CameraUtil.h"
-#include "../src/Renderer/Scene/ECS/Entity.h"
-#include "../src/Renderer/Scene/Scene.h"
-#include "../src/Renderer/Util/LightUtil.h"
-#include "../../src/Assets/Mesh.h"
-#include "../src/Assets/Shader.h"
 #include "../src/Renderer/Util/GeometryUtil.h"
-#include "../src/Renderer/Properties/VertexProperties.h"
-#include "../src/Assets/Texture.h"
+#include "../src/Renderer/Util/LightUtil.h"
 #include "../src/Window/Window.h"
 
 
