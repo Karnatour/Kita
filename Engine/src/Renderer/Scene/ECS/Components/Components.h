@@ -16,3 +16,4 @@
 #include "SkyboxComponent.h"
 #include "TransformationComponent.h"
 #include "UpdateTags.h"
+#include "VehicleComponent.h"

@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "GLVertexArray.h"
 #include "../../../Properties/VertexProperties.h"
 #include <glad/glad.h>

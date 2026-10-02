@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "../Assets/Texture.h"
 
 #include "../Renderer/Renderer.h"

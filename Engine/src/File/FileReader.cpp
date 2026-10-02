@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "../File/FileReader.h"
 
 namespace Kita {

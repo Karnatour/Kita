@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "CameraUtil.h"
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -20,6 +19,17 @@ namespace Kita {
 
     glm::mat4 CameraUtil::getProjectionMatrix(const float fov, const std::pair<int, int> viewport, const float zNear, const float zFar) {
         return glm::perspective(glm::radians(fov), static_cast<float>(viewport.first) / static_cast<float>(viewport.second), zNear, zFar);
+    }
+
+    void CameraUtil::updateOrientationVectors(CameraProperties& properties) {
+        glm::vec3 newFront;
+        newFront.x = cos(glm::radians(properties.yaw)) * cos(glm::radians(properties.pitch));
+        newFront.y = sin(glm::radians(properties.pitch));
+        newFront.z = sin(glm::radians(properties.yaw)) * cos(glm::radians(properties.pitch));
+        properties.front = glm::normalize(newFront);
+
+        properties.right = glm::normalize(glm::cross(properties.front, properties.worldUp));
+        properties.up = glm::normalize(glm::cross(properties.right, properties.front));
     }
 
     void CameraUtil::deactivateCameras(Scene& scene) {

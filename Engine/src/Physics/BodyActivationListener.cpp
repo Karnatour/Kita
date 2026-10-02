@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "BodyActivationListener.h"
 
 namespace Kita {

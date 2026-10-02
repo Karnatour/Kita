@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "SkyboxSystem.h"
 #include "../../../../Core/Engine.h"
 #include "../../../Util/CubemapUtil.h"

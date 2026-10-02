@@ -41,6 +41,7 @@ namespace Kita {
 
         template <typename T>
         T& getComponent() const {
+            KITA_ENGINE_ASSERT(m_scene->m_registry.all_of<T>(m_enttEntity), std::format("GetComponent: Entity is missing component {}", typeid(T).name()));
             return m_scene->m_registry.get<T>(m_enttEntity);
         }
 

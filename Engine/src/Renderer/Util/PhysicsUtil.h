@@ -14,5 +14,6 @@ namespace Kita {
         static JPH::Quat GLMToJPHQuat(glm::quat quat);
         static glm::vec4 JPHToGLMVec4(JPH::Vec4 vec);
         static glm::vec3 JPHToGLMVec3(const JPH::RVec3& vec);
+        static glm::mat4 JPHToGLMMat4(const JPH::Mat44& mat);
     };
 } // Kita

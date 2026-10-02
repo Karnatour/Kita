@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "PhysicsManagerEvents.h"
 
 namespace Kita {

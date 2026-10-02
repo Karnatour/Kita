@@ -18,7 +18,7 @@ namespace Kita {
         };
 
         static inline const std::filesystem::path MODELS_PREFIX = "../assets/models";
-        static std::expected<Entity, ImportError> importModel(const std::filesystem::path& path, Scene& scene);
+        static std::expected<Entity, ImportError> importModel(const std::filesystem::path& path, Scene& scene, bool skipPhysics = false);
 
     private:
         struct Material {

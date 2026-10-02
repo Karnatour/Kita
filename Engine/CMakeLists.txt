@@ -169,6 +169,10 @@ add_library(KitaEngine SHARED
         src/Renderer/Scene/ECS/EntityBuilder.h
         src/Events/PhysicsManagerEvents.cpp
         src/Events/PhysicsManagerEvents.h
+        src/Renderer/Scene/ECS/Components/VehicleComponent.h
+        src/Renderer/Properties/VehicleProperties.h
+        src/Renderer/Util/PlayerUtil.cpp
+        src/Renderer/Util/PlayerUtil.h
 )
 
 #Multithreaded compilation

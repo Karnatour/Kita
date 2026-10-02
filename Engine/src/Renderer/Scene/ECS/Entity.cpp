@@ -1,4 +1,3 @@
-#include "../../../kitapch.h"
 #include "Entity.h"
 
 namespace Kita {

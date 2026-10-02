@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "ObjectLayerVsBroadPhaseLayerFilter.h"
 
 #include "BroadPhaseLayer.h"

@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "../../../../Core/Time.h"
 #include "../../../../Core/Engine.h"
 #include "../../../../Input/Input.h"
@@ -17,7 +16,9 @@ namespace Kita {
             if (!properties.ignorePosition) {
                 updatePosition(properties);
             }
-            updateEulerAngles(properties);
+            if (!properties.ignoreEulerAnglesUpdate) {
+                updateEulerAngles(properties);
+            }
             updateZoom(properties);
         }
     }
@@ -40,17 +41,6 @@ namespace Kita {
 
         m_cameraUBO->bind(0);
         m_cameraUBO->upload(sizeof(CameraUBOLayout), &m_activeCameraData);
-    }
-
-    void CameraSystem::updateOrientationVectors(CameraProperties& properties) {
-        glm::vec3 newFront;
-        newFront.x = cos(glm::radians(properties.yaw)) * cos(glm::radians(properties.pitch));
-        newFront.y = sin(glm::radians(properties.pitch));
-        newFront.z = sin(glm::radians(properties.yaw)) * cos(glm::radians(properties.pitch));
-        properties.front = glm::normalize(newFront);
-
-        properties.right = glm::normalize(glm::cross(properties.front, properties.worldUp));
-        properties.up = glm::normalize(glm::cross(properties.right, properties.front));
     }
 
     void CameraSystem::updatePosition(CameraProperties& properties) {
@@ -101,7 +91,7 @@ namespace Kita {
 
                 properties.pitch = std::clamp(properties.pitch, -89.0f, 89.0f);
 
-                updateOrientationVectors(properties);
+                CameraUtil::updateOrientationVectors(properties);
             }
         } else {
             engineWindow.setCursorMode(CursorMode::SHOWN);

@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "AssetImporter.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -11,8 +10,8 @@
 #include "../Renderer/Util/MeshUtil.h"
 
 namespace Kita {
-    std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene) {
-        std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene);
+    std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene, const bool skipPhysics) {
+        std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene, skipPhysics);
         if (result) {
             return result;
         }
@@ -26,6 +25,7 @@ namespace Kita {
 
 
         if (!std::filesystem::exists(filePath)) {
+            KITA_ENGINE_ERROR("[AssetImporter] File is not existing {}", filePath.string());
             return std::unexpected(ImportError::FILE);
         }
 
@@ -59,7 +59,9 @@ namespace Kita {
 
         processNode(aiScene, aiScene->mRootNode, scene, rootEntity, materials, aiMatrix4x4());
 
-        rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
+        if (!skipPhysics) {
+            rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
+        }
 
         KAsset::saveToFile(rootEntity, path);
         rootEntity.addComponent<PathComponent>(path);
@@ -233,12 +235,12 @@ namespace Kita {
 
     std::optional<AssetManager::AssetID> AssetImporter::importTexture(const aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path) {
         if (aiMaterial.GetTextureCount(textureType) == 0) {
-            KITA_ENGINE_WARN("[AssetImporter] Material {} has no textures for this texture type {}", path.string(), magic_enum::enum_name(textureType));
+            KITA_ENGINE_WARN("[AssetImporter] Material {} has no textures for this texture type {}", aiMaterial.GetName().C_Str(), magic_enum::enum_name(textureType));
             return std::nullopt;
         }
 
         if (aiMaterial.GetTextureCount(textureType) > 1) {
-            KITA_ENGINE_WARN("[AssetImporter] Material {} has more than one texture for texture type {}", path.string(), magic_enum::enum_name(textureType));
+            KITA_ENGINE_WARN("[AssetImporter] Material {} has more than one texture for texture type {}", aiMaterial.GetName().C_Str(), magic_enum::enum_name(textureType));
         }
 
         aiString aiStr;

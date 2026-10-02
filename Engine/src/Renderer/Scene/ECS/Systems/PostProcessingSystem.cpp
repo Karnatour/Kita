@@ -1,5 +1,3 @@
-#include "../../../../kitapch.h"
-
 #include "PostProcessingSystem.h"
 #include "../../../../Core/Engine.h"
 #include "../Components/PostProcessingComponent.h"

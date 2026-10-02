@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "GLIndexBuffer.h"
 
 #include <glad/glad.h>

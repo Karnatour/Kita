@@ -1,5 +1,3 @@
-#include "../kitapch.h"
-
 #include "KAsset.h"
 #include "../Core/Engine.h"
 #include "../Renderer/Scene/ECS/Components/Components.h"
@@ -9,7 +7,7 @@
 #include "../Renderer/Scene/ECS/EntityBuilder.h"
 
 namespace Kita {
-    std::expected<Entity, AssetImporter::ImportError> KAsset::loadFromFile(const std::filesystem::path& path, Scene& scene) {
+    std::expected<Entity, AssetImporter::ImportError> KAsset::loadFromFile(const std::filesystem::path& path, Scene& scene, const bool skipPhysics) {
         std::filesystem::path KAssetPath = BAKED_PREFIX / path;
         KAssetPath.replace_extension("kasset");
 
@@ -47,6 +45,8 @@ namespace Kita {
                 const glm::mat4 parentWorld = (i == 0) ? glm::mat4(1.0f) : entities.at(nodeHeader.parentIndex).getComponent<TransformationComponent>().worldModel;
 
                 Entity nodeEntity = EntityBuilder::createNodeRenderEntity(scene, nodeHeader.name);
+                auto& transform = nodeEntity.getComponent<TransformationComponent>();
+                transform = readTransformation(nodeHeader.transformationData, parentWorld);
 
                 entities.insert({nodeHeader.nodeIndex, nodeEntity});
                 if (i == 0) {
@@ -69,8 +69,9 @@ namespace Kita {
                 }
             }
 
-            rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
-
+            if (!skipPhysics) {
+                rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
+            }
             return rootEntity;
         }
         catch (const std::out_of_range& e) {

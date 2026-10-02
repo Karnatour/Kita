@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "GLFrameBuffer.h"
 
 #include <magic_enum/magic_enum.hpp>

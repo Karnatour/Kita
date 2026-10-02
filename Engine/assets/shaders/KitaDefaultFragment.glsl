@@ -235,7 +235,7 @@ PBRProperties getPBRProperties() {
         PBRData.albedo = texture(albedoTex, texCoord).rgb;
     }
     else {
-        PBRData.albedo = randomColor(vec2(6.7f, meshID));
+        PBRData.albedo = vec3(0.0f);
     }
     if (hasTexture(METALLIC_ROUGHNESS)){
         vec4 metallicRoughness = texture(metallicRoughnessTex, texCoord);

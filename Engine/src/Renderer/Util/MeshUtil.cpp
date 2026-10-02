@@ -1,5 +1,3 @@
-#include "../../kitapch.h"
-
 #include "MeshUtil.h"
 
 #include "../../Core/Engine.h"

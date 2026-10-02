@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "BroadPhaseLayer.h"
 
 #include "PhysicsBroadPhaseLayers.h"

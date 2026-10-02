@@ -67,7 +67,7 @@ namespace Kita {
             char shaderPaths[MAX_MATERIAL_SHADER_PATH_COUNT][MAX_PATH_LENGTH]; //vertex, fragment
         };
 
-        static std::expected<Entity, AssetImporter::ImportError> loadFromFile(const std::filesystem::path& path, Scene& scene);
+        static std::expected<Entity, AssetImporter::ImportError> loadFromFile(const std::filesystem::path& path, Scene& scene, bool skipPhysics = false);
         static bool saveToFile(Entity rootEntity, const std::filesystem::path& path);
 
     private:

@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "PhysicsManager.h"
 
 #include <Jolt/RegisterTypes.h>
@@ -75,8 +74,11 @@ namespace Kita {
         return newBodyID;
     }
 
-    void PhysicsManager::changePosition(const JPH::BodyID id, const glm::vec3 position) {
+    void PhysicsManager::setPosition(const JPH::BodyID id, const glm::vec3 position, const bool zeroVelocity) {
         m_physicsSystem->GetBodyInterface().SetPosition(id, PhysicsUtil::GLMToJPHRVec3(position), JPH::EActivation::Activate);
+        if (zeroVelocity) {
+            m_physicsSystem->GetBodyInterface().SetLinearAndAngularVelocity(id, JPH::Vec3::sZero(), JPH::Vec3::sZero());
+        }
     }
 
     glm::vec3 PhysicsManager::getPosition(const JPH::BodyID id) const {
@@ -85,14 +87,7 @@ namespace Kita {
     }
 
     glm::mat4 PhysicsManager::getModelMatrix(const JPH::BodyID id) const {
-        const JPH::RMat44 joltMat = m_physicsSystem->GetBodyInterface().GetWorldTransform(id);
-
-        glm::mat4 model;
-        for (int col = 0; col < 4; ++col) {
-            model[col] = PhysicsUtil::JPHToGLMVec4(joltMat.GetColumn4(col));
-        }
-
-        return model;
+        return PhysicsUtil::JPHToGLMMat4(m_physicsSystem->GetBodyInterface().GetWorldTransform(id));
     }
 
     void PhysicsManager::removeBody(const JPH::BodyID id) {

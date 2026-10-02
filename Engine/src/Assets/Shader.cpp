@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "Shader.h"
 
 #include "../Renderer/Renderer.h"

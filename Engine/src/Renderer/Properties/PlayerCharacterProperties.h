@@ -9,7 +9,7 @@ namespace Kita {
 
         //Physical Properties
         float mass = 70.0f; // Kg
-        float maxStrength = 100000.0f; // N
+        float maxStrength = 650.0f; // N
 
         //Movement
         bool allowControlWhileInAir = true;
@@ -30,7 +30,7 @@ namespace Kita {
         //Camera
         float eyeOffset = 0.1f;
 
-        //JPH Internal shouldn't be used by user
+        //JPH Internal shouldn't be changed by user
         JPH::Vec3 desiredVelocity = JPH::Vec3::sZero();
         JPH::Vec3 controlInput = JPH::Vec3::sZero();
         bool allowSliding = false;

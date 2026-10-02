@@ -21,5 +21,6 @@ namespace Kita {
 
         // For example Jolt's player provide position so we skip our calculation
         bool ignorePosition = false;
+        bool ignoreEulerAnglesUpdate = false;
     };
 }

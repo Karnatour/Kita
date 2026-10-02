@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "ObjectLayerPairFilter.h"
 
 #include "PhysicsManager.h"

@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "Window.h"
 
 #define GLFW_EXPOSE_NATIVE_WIN32

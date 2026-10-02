@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "RendererAPI.h"
 
 #include "../Core/Engine.h"

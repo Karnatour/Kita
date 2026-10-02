@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "GeometrySystem.h"
 
 #include "../../Scene.h"

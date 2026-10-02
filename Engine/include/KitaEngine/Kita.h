@@ -35,6 +35,8 @@
 #include "../src/Renderer/Util/CameraUtil.h"
 #include "../src/Renderer/Util/GeometryUtil.h"
 #include "../src/Renderer/Util/LightUtil.h"
+#include "../src/Renderer/Util/PlayerUtil.h"
+#include "../src/Renderer/Util/TransformationUtil.h"
 #include "../src/Window/Window.h"
 
 

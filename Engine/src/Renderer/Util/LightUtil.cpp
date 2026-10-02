@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "LightUtil.h"
 
 #include <glm/ext/matrix_clip_space.hpp>

@@ -20,7 +20,7 @@ namespace Kita {
         JPH::BodyID createBody(const JPH::BodyCreationSettings& creationSettings, JPH::EActivation activate);
         JPH::BodyID createBody(Entity rootEntity, JPH::EMotionType motionType, PhysicsLayers::Layers layer, JPH::EActivation activate);
         JPH::BodyID changeMotionType(Entity rootEntity, JPH::BodyID bodyID, JPH::EMotionType motionType, PhysicsLayers::Layers layer, JPH::EActivation activate);
-        void changePosition(JPH::BodyID id, glm::vec3 position);
+        void setPosition(JPH::BodyID id, glm::vec3 position, bool zeroVelocity = true);
         glm::vec3 getPosition(JPH::BodyID id) const;
         glm::mat4 getModelMatrix(JPH::BodyID id) const;
         void removeBody(JPH::BodyID id);

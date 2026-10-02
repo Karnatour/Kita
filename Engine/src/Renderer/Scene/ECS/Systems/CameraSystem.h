@@ -30,7 +30,6 @@ namespace Kita {
 
         void updateActiveCameraData(const CameraProperties& properties);
         void updatePosition(CameraProperties&);
-        void updateOrientationVectors(CameraProperties& properties);
         void updateEulerAngles(CameraProperties& properties);
         void updateZoom(CameraProperties& properties);
 

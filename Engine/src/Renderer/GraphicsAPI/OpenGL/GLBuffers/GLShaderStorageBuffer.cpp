@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "GLShaderStorageBuffer.h"
 
 #include <glad/glad.h>

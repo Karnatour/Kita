@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "CubemapUtil.h"
 
 #include <glm/ext/matrix_clip_space.hpp>

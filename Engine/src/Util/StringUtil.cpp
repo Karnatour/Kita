@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "StringUtil.h"
 
 namespace Kita {

@@ -1,4 +1,3 @@
-#include "../../../../kitapch.h"
 #include "GLShader.h"
 
 #include "../../../../Assets/AssetManager.h"

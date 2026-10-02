@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "GeometryUtil.h"
 
 namespace Kita {

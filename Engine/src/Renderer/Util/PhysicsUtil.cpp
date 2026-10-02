@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "PhysicsUtil.h"
 
 namespace Kita {
@@ -24,6 +23,14 @@ namespace Kita {
 
     glm::vec3 PhysicsUtil::JPHToGLMVec3(const JPH::RVec3& vec) {
         return {vec.GetX(), vec.GetY(), vec.GetZ()};
+    }
 
+    glm::mat4 PhysicsUtil::JPHToGLMMat4(const JPH::Mat44& mat) {
+        glm::mat4 out;
+        for (int c = 0; c < 4; ++c) {
+            JPH::Vec4 col = mat.GetColumn4(c);
+            out[c] = glm::vec4(col.GetX(), col.GetY(), col.GetZ(), col.GetW());
+        }
+        return out;
     }
 } // Kita

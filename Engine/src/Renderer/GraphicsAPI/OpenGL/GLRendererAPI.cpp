@@ -1,4 +1,3 @@
-#include "../../../kitapch.h"
 #include "GLRendererAPI.h"
 #include "../../Scene/ECS/Entity.h"
 #include <glad/glad.h>

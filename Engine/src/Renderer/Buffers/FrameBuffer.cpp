@@ -1,4 +1,3 @@
-#include "../../kitapch.h"
 #include "FrameBuffer.h"
 
 #include "../Renderer.h"

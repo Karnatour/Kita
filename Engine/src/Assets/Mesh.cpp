@@ -1,4 +1,3 @@
-#include "../kitapch.h"
 #include "../Assets/Mesh.h"
 
 namespace Kita {
