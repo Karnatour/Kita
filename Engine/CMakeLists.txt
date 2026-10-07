@@ -214,6 +214,10 @@ target_link_libraries(KitaEngine PUBLIC Tracy::TracyClient)
 find_package(Jolt CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC Jolt::Jolt)
 
+set(FASTNOISE2_NOISETOOL OFF CACHE BOOL "Build Noise Tool" FORCE)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../deps/FastNoise2" "${CMAKE_CURRENT_BINARY_DIR}/FastNoise2")
+target_link_libraries(KitaEngine PUBLIC FastNoise ...)
+
 #Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
 add_custom_command(TARGET KitaEngine POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
