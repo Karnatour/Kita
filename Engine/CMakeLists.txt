@@ -173,6 +173,14 @@ add_library(KitaEngine SHARED
         src/Renderer/Properties/VehicleProperties.h
         src/Renderer/Util/PlayerUtil.cpp
         src/Renderer/Util/PlayerUtil.h
+        src/World/Generation/Noise.cpp
+        src/World/Generation/Noise.h
+        src/World/Generation/WorldGenerator.cpp
+        src/World/Generation/WorldGenerator.h
+        src/World/Chunk.cpp
+        src/World/Chunk.h
+        src/World/ChunkPos.cpp
+        src/World/ChunkPos.h
 )
 
 #Multithreaded compilation
