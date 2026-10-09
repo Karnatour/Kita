@@ -11,6 +11,7 @@
 #include "ECS/Systems/PhysicsSystem.h"
 #include "ECS/Systems/PostProcessingSystem.h"
 #include "ECS/Systems/SkyboxSystem.h"
+#include "ECS/Systems/TerrainSystem.h"
 
 namespace Kita {
     void Scene::addDefaultSystems() {
@@ -20,6 +21,7 @@ namespace Kita {
         m_systems.emplace_back(std::make_unique<GeometrySystem>());
         m_systems.emplace_back(std::make_unique<SkyboxSystem>());
         m_systems.emplace_back(std::make_unique<PostProcessingSystem>());
+        m_systems.emplace_back(std::make_unique<TerrainSystem>());
 
         m_camera = EntityBuilder::createActiveCamera(*this).getEnttEntityID();
         Entity skybox = createEntity();

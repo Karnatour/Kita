@@ -8,6 +8,7 @@
 
 #include "../Assets/AssetManager.h"
 #include "../Physics/PhysicsManager.h"
+#include "../Threading/ThreadPool.h"
 
 
 namespace Kita {
@@ -30,6 +31,7 @@ namespace Kita {
         Renderer& getRenderer() const;
         AssetManager& getAssetManager() const;
         PhysicsManager& getPhysicsManager() const;
+        ThreadPool& getThreadPool() const;
     private:
         void render();
         void update();
@@ -43,6 +45,7 @@ namespace Kita {
         std::unique_ptr<Renderer> m_renderer;
         std::unique_ptr<AssetManager> m_assetManager;
         std::unique_ptr<PhysicsManager> m_physicsManager;
+        std::unique_ptr<ThreadPool> m_threadPool;
         std::shared_ptr<IGameInstance> m_game;
         std::chrono::time_point<std::chrono::steady_clock> m_currentFrameTime;
     };

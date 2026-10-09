@@ -16,18 +16,20 @@ namespace Kita {
         };
 
         m_engineInstance = std::make_shared<spdlog::logger>("Engine", engineSinks.begin(), engineSinks.end());
+        m_engineInstance->flush_on(spdlog::level::err);
 #ifdef KITA_BUILD_DEBUG
         m_engineInstance->set_level(spdlog::level::debug);
-        m_engineInstance->flush_on(spdlog::level::debug);
 #endif
-        m_engineInstance->set_pattern("[%n|%H:%M:%S] %^%v%$");
+        m_engineInstance->set_pattern("[%n|%H:%M:%S|%t] %^%v%$");
+
 
         m_userInstance = std::make_shared<spdlog::logger>("User", userSinks.begin(), userSinks.end());
+        m_userInstance->flush_on(spdlog::level::err);
 #ifdef KITA_BUILD_DEBUG
         m_userInstance->set_level(spdlog::level::debug);
-        m_engineInstance->flush_on(spdlog::level::debug);
+        m_userInstance->flush_on(spdlog::level::debug);
 #endif
-        m_userInstance->set_pattern("[%n|%H:%M:%S] %^%v%$");
+        m_userInstance->set_pattern("[%n|%H:%M:%S|%t] %^%v%$");
 
         spdlog::register_logger(m_engineInstance);
         spdlog::register_logger(m_userInstance);

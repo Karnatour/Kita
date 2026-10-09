@@ -114,7 +114,7 @@ void Editor::onRender() {
     auto& cameraComponent = activeCamera.getComponent<Kita::CameraComponent>();
     ImGui::Text("Frame time: %.3f ms | FPS: %.0f", displayedDt * 1000.0, 1.0 / displayedDt);
     ImGui::Text("Position: %.2f %.2f %.2f", cameraComponent.properties.position.x, cameraComponent.properties.position.y, cameraComponent.properties.position.z);
-    ImGui::Text("Mesh count: %d", static_cast<int>(m_sandbox->getScene().view<Kita::MeshComponent>().size()));
+    ImGui::Text("Mesh count: %d", static_cast<int>(Kita::Engine::getEngine()->getAssetManager().getTotalNumberOfAssetsForBucket<Kita::Mesh>()));
     ImGui::End();
 
     /*

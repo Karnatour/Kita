@@ -108,6 +108,10 @@ namespace Kita {
         return *m_physicsManager;
     }
 
+    ThreadPool& Engine::getThreadPool() const {
+        return *m_threadPool;
+    }
+
     void Engine::update() {
         KITA_ENGINE_PROFILE("Update");
         m_currentFrameTime = std::chrono::steady_clock::now();

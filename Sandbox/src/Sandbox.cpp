@@ -9,7 +9,7 @@ void Sandbox::onInit() {
     m_scene = std::make_unique<Kita::Scene>();
     m_scene->addDefaultSystems();
 
-    Kita::TransformationComponent scaledTransform;
+    /*Kita::TransformationComponent scaledTransform;
     glm::mat4 groundMatrix = glm::mat4(1.0f);
     groundMatrix = Kita::TransformationUtil::scaleWorld(groundMatrix, glm::vec3(100.0f, 2.0f, 100.0f));
     groundMatrix = Kita::TransformationUtil::translateWorld(groundMatrix, glm::vec3(0.0f, -5.0f, 0.0f));
@@ -27,11 +27,11 @@ void Sandbox::onInit() {
     auto sphereBodyID = m_sphere.getComponent<Kita::PhysicsComponent>().bodyID;
     sphereBodyID = Kita::Engine::getEngine()->getPhysicsManager().changeMotionType(m_sphere, sphereBodyID, JPH::EMotionType::Dynamic, Kita::PhysicsLayers::MOVING, JPH::EActivation::Activate);
     m_sphere.getComponent<Kita::PhysicsComponent>().bodyID = sphereBodyID;
-    Kita::TransformationUtil::setWorldPosition(m_sphere, glm::vec3(5.0f, 10.0f, 5.0f));
+    Kita::TransformationUtil::setWorldPosition(m_sphere, glm::vec3(5.0f, 10.0f, 5.0f));*/
 
-    m_player = Kita::EntityBuilder::createPlayerCharacter(*m_scene, "Player", glm::vec3(1.0f, 5.0f, 0.0f));
+    m_player = Kita::EntityBuilder::createPlayerCharacter(*m_scene, "Player", glm::vec3(1.0f, 1.0f, 0.0f));
 
-    m_vehicle = Kita::EntityBuilder::createVehicle(*m_scene, "911final/911f.gltf", glm::vec3(0.0f, 10.0f, 0.0f));
+    //m_vehicle = Kita::EntityBuilder::createVehicle(*m_scene, "911final/911f.gltf", glm::vec3(0.0f, 10.0f, 0.0f));
 
     Kita::EntityBuilder::createDirectionalLight(*m_scene);
 

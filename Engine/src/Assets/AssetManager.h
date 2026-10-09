@@ -134,6 +134,14 @@ namespace Kita {
             return static_cast<T&>(*it->second);
         }
 
+        template <std::derived_from<Asset> T>
+        size_t getTotalNumberOfAssetsForBucket() const {
+            // get unordered_map of correct type
+            const auto& bucket = getBucket<T>();
+
+            return bucket.size();
+        }
+
         template <std::derived_from<Asset> T, typename... Args>
         AssetResult<T> getOrCreateAsset(Args&&... args) {
             return getOrCreateAssetImpl<T>(std::nullopt, false, std::forward<Args>(args)...);

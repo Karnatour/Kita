@@ -4,6 +4,6 @@
 
 namespace Kita {
     struct KITAENGINE_API Noise {
-        static FastNoise::SmartNode<FastNoise::FractalFBm> getTerrainNoise(int octaveCount, int gain, int lacunarity);
+        static FastNoise::SmartNode<FastNoise::FractalFBm> getTerrainNoise(int octaveCount, float gain, float lacunarity);
     };
 } // Kita

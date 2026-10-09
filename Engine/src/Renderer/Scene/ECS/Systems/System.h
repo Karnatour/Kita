@@ -8,6 +8,7 @@ namespace Kita {
     public:
         struct Order {
             static constexpr int CAMERA = 0;
+            static constexpr int TERRAIN = 50;
             static constexpr int PHYSICS = 100;
             static constexpr int LIGHTSHADOW = 200;
             static constexpr int GEOMETRY = 300;

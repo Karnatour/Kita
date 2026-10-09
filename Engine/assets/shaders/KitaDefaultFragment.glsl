@@ -54,7 +54,6 @@ uniform samplerCube cubemapTex;
 uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
 
 uniform float iblIntensity;
-uniform float meshID;
 
 in vec4 vertexColor;
 in vec2 texCoord;

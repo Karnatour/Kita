@@ -181,6 +181,14 @@ add_library(KitaEngine SHARED
         src/World/Chunk.h
         src/World/ChunkPos.cpp
         src/World/ChunkPos.h
+        src/Renderer/Scene/ECS/Systems/TerrainSystem.cpp
+        src/Renderer/Scene/ECS/Systems/TerrainSystem.h
+        src/Threading/ThreadPool.cpp
+        src/Threading/ThreadPool.h
+        src/Threading/Task.cpp
+        src/Threading/Task.h
+        src/World/Generation/ChunkMeshData.h
+        src/World/Generation/ChunkMeshData.cpp
 )
 
 #Multithreaded compilation
@@ -224,7 +232,7 @@ target_link_libraries(KitaEngine PUBLIC Jolt::Jolt)
 
 set(FASTNOISE2_NOISETOOL OFF CACHE BOOL "Build Noise Tool" FORCE)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../deps/FastNoise2" "${CMAKE_CURRENT_BINARY_DIR}/FastNoise2")
-target_link_libraries(KitaEngine PUBLIC FastNoise ...)
+target_link_libraries(KitaEngine PUBLIC FastNoise)
 
 #Workaround for vcpkg bug https://github.com/microsoft/vcpkg/issues/52343
 add_custom_command(TARGET KitaEngine POST_BUILD

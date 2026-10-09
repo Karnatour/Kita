@@ -17,7 +17,7 @@ namespace Kita {
 
         float fov = 45.0f;
         float zNear = 0.1f;
-        float zFar = 150.0f;
+        float zFar = 1500.0f;
 
         // For example Jolt's player provide position so we skip our calculation
         bool ignorePosition = false;
