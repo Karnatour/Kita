@@ -1,7 +1,8 @@
 #include "Task.h"
 
 namespace Kita {
-    Task::Task(const Priority priority, const size_t taskID) : m_priority(priority), m_taskID(taskID) {
+    Task::Task(const Priority priority, const size_t taskID, std::move_only_function<void()> workFunction) :
+        m_priority(priority), m_taskID(taskID), m_workFunction(std::move(workFunction)) {
     }
 
     Task::Priority Task::getPriority() const {

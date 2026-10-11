@@ -30,6 +30,8 @@ namespace Kita {
         m_physicsManager = std::make_unique<PhysicsManager>();
         m_physicsManager->init();
 
+        m_threadPool = std::make_unique<ThreadPool>();
+
         Input::init();
         EventManager::listenToEvent<WindowClosed>(onWindowClosed);
 

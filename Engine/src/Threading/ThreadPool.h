@@ -21,7 +21,7 @@ namespace Kita {
                 std::bind_front(
                     std::forward<Function>(function),
                     std::forward<Args>(arg)...)
-            );
+                );
 
             std::future<std::invoke_result_t<Function, Args...>> result = task.get_future();
             {
@@ -29,8 +29,16 @@ namespace Kita {
                 if (m_stopRequested) {
                     throw std::runtime_error("[ThreadPool] Tried to submit task after stop was requested");
                 }
-                m_tasks.emplace_back(priority, m_nextTaskID++);
-                reorderTasks();
+
+                KITA_ENGINE_DEBUG("[ThreadPool] Submitted task with priority {}", magic_enum::enum_name(priority));
+
+                //Wrap work inside function
+                std::move_only_function<void()> work = [t = std::move(task)]() mutable {
+                    t();
+                };
+                m_tasks.emplace_back(priority, m_nextTaskID++, std::move(work));
+
+                std::ranges::push_heap(m_tasks, taskCompare);
             }
 
             m_condition.notify_one();
@@ -39,8 +47,7 @@ namespace Kita {
 
     private:
         void workerLoop(const std::stop_token& stopToken);
-        void reorderTasks();
-
+        static bool taskCompare(const Task& a, const Task& b);
         std::mutex m_tasksVectorMutex;
         std::condition_variable_any m_condition;
         std::vector<Task> m_tasks;

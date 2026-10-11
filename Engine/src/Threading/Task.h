@@ -1,6 +1,5 @@
 #pragma once
-#include <compare>
-#include "ThreadPool.h"
+#include <functional>
 #include "../Core/DllTemplate.h"
 
 namespace Kita {
@@ -13,14 +12,15 @@ namespace Kita {
         };
 
         Task() = default;
-        Task(Priority priority, size_t taskID);
+        Task(Priority priority, size_t taskID, std::move_only_function<void()> workFunction);
 
         Priority getPriority() const;
         size_t getTaskID() const;
         std::move_only_function<void()>& getWorkFunction();
+
     private:
-        Priority m_priority;
-        size_t m_taskID;
+        Priority m_priority = Priority::NORMAL;
+        size_t m_taskID = 0;
         std::move_only_function<void()> m_workFunction;
     };
 } // Kita

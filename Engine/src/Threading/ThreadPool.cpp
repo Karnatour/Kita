@@ -1,15 +1,23 @@
 #include "ThreadPool.h"
 
 namespace Kita {
+
+    namespace {
+        thread_local int t_workerIndex = -1;
+    }
+
     ThreadPool::ThreadPool() {
-        int threadCount = std::thread::hardware_concurrency() - 1;
+        int threadCount = static_cast<int>(std::thread::hardware_concurrency()) - 1;
         if (threadCount <= 0) {
             threadCount = 1;
         }
 
         m_workers.reserve(threadCount);
         for (int i = 0; i < threadCount; ++i) {
-            m_workers.emplace_back([this](const std::stop_token& stopToken) {
+            m_workers.emplace_back([this, i](const std::stop_token& stopToken) {
+                t_workerIndex = i;
+                const std::wstring name = L"Kita Worker " + std::to_wstring(i);
+                SetThreadDescription(GetCurrentThread(), name.c_str());
                 workerLoop(stopToken);
             });
         }
@@ -27,15 +35,6 @@ namespace Kita {
         }
     }
 
-    void ThreadPool::reorderTasks() {
-        std::ranges::push_heap(m_tasks, [](const Task& a, const Task& b) {
-            if (a.getPriority() == b.getPriority()) {
-                return a.getTaskID() > b.getTaskID();
-            }
-            return a.getPriority() < b.getPriority();
-        });
-    }
-
     void ThreadPool::workerLoop(const std::stop_token& stopToken) {
         while (true) {
             Task task;
@@ -50,12 +49,21 @@ namespace Kita {
                     return;
                 }
 
+                std::ranges::pop_heap(m_tasks, taskCompare);
                 task = std::move(m_tasks.back());
                 m_tasks.pop_back();
             }
             std::move_only_function<void()>& workFunction = task.getWorkFunction();
+            KITA_ENGINE_DEBUG("[ThreadPool] Worker {} running task with ID: {}", t_workerIndex, task.getTaskID());
             //Execute the function
             workFunction();
         }
+    }
+
+    bool ThreadPool::taskCompare(const Task& a, const Task& b) {
+        if (a.getPriority() == b.getPriority()) {
+            return a.getTaskID() > b.getTaskID();
+        }
+        return a.getPriority() < b.getPriority();
     }
 } // Kita

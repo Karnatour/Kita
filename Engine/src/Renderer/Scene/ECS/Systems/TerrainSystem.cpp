@@ -15,10 +15,29 @@ namespace Kita {
         const auto& position = cameraEntity.getComponent<CameraComponent>().properties.position;
 
         const int chunkX = static_cast<int>(std::floor(position.x / static_cast<float>(Chunk::CHUNK_SIZE)));
-
         const int chunkZ = static_cast<int>(std::floor(position.z / static_cast<float>(Chunk::CHUNK_SIZE)));
 
         const ChunkPos newChunkPos(chunkX, chunkZ);
+
+        int processedChunks = 0;
+        for (auto it = m_pendingChunkMeshData.begin(); it != m_pendingChunkMeshData.end();) {
+            // ALLOWED_CHUNKS_PER_FRAME Prevents stuttering
+            if (processedChunks < ALLOWED_CHUNKS_PER_FRAME && it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+                auto meshData = it->get();
+
+                Chunk chunk = m_worldGenerator.generateChunk(meshData);
+                auto chunkPos = meshData.getChunkPos();
+
+                m_chunkMap.try_emplace(chunkPos, std::move(chunk));
+
+                m_pendingChunkPos.erase(chunkPos);
+                it = m_pendingChunkMeshData.erase(it);
+                processedChunks = processedChunks + 1;
+            } else {
+                ++it;
+            }
+        }
+
         if (newChunkPos == m_cameraChunkPos && !Engine::getEngine()->isFirstFrame()) {
             return;
         }
@@ -27,22 +46,12 @@ namespace Kita {
             for (int z = newChunkPos.getChunkZ() - m_renderDistance; z <= newChunkPos.getChunkZ() + m_renderDistance; ++z) {
                 ChunkPos chunkPos(x, z);
 
-
                 auto it = m_chunkMap.find(chunkPos);
-                if (it == m_chunkMap.end() || m_pendingChunkPos.contains(chunkPos)) {
+                if (it == m_chunkMap.end() && !m_pendingChunkPos.contains(chunkPos)) {
                     m_pendingChunkPos.emplace(chunkPos);
                     m_pendingChunkMeshData.emplace_back(Engine::getEngine()->getThreadPool().submit(Task::Priority::NORMAL, [this, chunkPos] { return m_worldGenerator.generateChunkMeshData(chunkPos); }));
                 }
             }
-        }
-
-        for (auto it = m_pendingChunkMeshData.begin(); it != m_pendingChunkMeshData.end();) {
-            if (it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-                auto meshData = it->get();
-                Chunk chunk = m_worldGenerator.generateChunk(meshData);
-                m_chunkMap.try_emplace(meshData.getChunkPos(), std::move(chunk));
-                it = m_pendingChunkMeshData.erase(it);
-            } else ++it;
         }
 
         m_cameraChunkPos = newChunkPos;
@@ -83,7 +92,7 @@ namespace Kita {
                 auto it = m_chunkMap.find(chunkPos);
                 if (it == m_chunkMap.end()) {
                     // The chunks is still generating
-                    return;
+                    continue;
                 }
 
                 auto& chunk = it->second;
