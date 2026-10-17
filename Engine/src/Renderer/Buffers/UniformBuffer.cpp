@@ -3,10 +3,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLUniformBuffer.h"
 
 namespace Kita {
-    unsigned int UniformBuffer::getUBO() const {
-        return m_ubo;
-    }
-
     std::unique_ptr<UniformBuffer> UniformBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -16,5 +12,9 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int UniformBuffer::getUBO() const {
+        return m_ubo;
     }
 } // Kita

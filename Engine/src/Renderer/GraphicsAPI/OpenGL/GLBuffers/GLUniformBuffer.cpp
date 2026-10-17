@@ -4,7 +4,10 @@
 
 namespace Kita {
     GLUniformBuffer::~GLUniformBuffer() {
-        glDeleteBuffers(1, &m_ubo);
+        if (m_ubo != 0) {
+            glDeleteBuffers(1, &m_ubo);
+            m_ubo = 0;
+        }
     }
 
     void GLUniformBuffer::bind(const unsigned int position) {
@@ -14,8 +17,7 @@ namespace Kita {
     void GLUniformBuffer::upload(const unsigned int size, const void* data) {
         if (size == m_size) {
             glNamedBufferSubData(m_ubo, 0, size, data);
-        }
-        else {
+        } else {
             KITA_ENGINE_WARN("Input size doesn't match with uniform buffer size Before:{} New:{}", m_size, size);
         }
     }

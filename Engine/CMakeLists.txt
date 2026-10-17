@@ -187,12 +187,27 @@ add_library(KitaEngine SHARED
         src/Threading/ThreadPool.h
         src/Threading/Task.cpp
         src/Threading/Task.h
-        src/World/Generation/ChunkMeshData.h
-        src/World/Generation/ChunkMeshData.cpp
+        src/World/Generation/ChunkData.h
+        src/World/Generation/ChunkData.cpp
+        src/Physics/PlayerContactListener.cpp
+        src/Physics/PlayerContactListener.h
+        src/Renderer/Buffers/DrawCommandBuffer.cpp
+        src/Renderer/Buffers/DrawCommandBuffer.h
+        src/Renderer/Properties/DrawCommandProperties.h
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLDrawCommandBuffer.cpp
+        src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLDrawCommandBuffer.h
+        src/World/Render/ChunkRenderPool.cpp
+        src/World/Render/ChunkRenderPool.h
 )
 
 #Multithreaded compilation
-target_compile_options(KitaEngine PRIVATE /MP)
+target_compile_options(KitaEngine PRIVATE
+        /MP
+        /W4
+        /permissive-
+        /external:anglebrackets /external:W0
+        /utf-8
+)
 
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(KitaEngine PUBLIC spdlog::spdlog)

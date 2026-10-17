@@ -3,21 +3,17 @@
 #include "Noise.h"
 #include "../../Core/Engine.h"
 #include "../../Renderer/Properties/VertexProperties.h"
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
 
 namespace Kita {
     WorldGenerator::WorldGenerator(const int octaveCount, const float gain, const float lacunarity) : m_octaveCount(octaveCount), m_gain(gain), m_lacunarity(lacunarity) {
         m_noise = Noise::getTerrainNoise(octaveCount, gain, lacunarity);
     }
 
-    ChunkMeshData WorldGenerator::generateChunkMeshData(const ChunkPos& chunkPos) {
-        constexpr int QUADS_PER_EDGE = Chunk::CHUNK_SIZE;
-        constexpr int VERTICES_PER_EDGE = QUADS_PER_EDGE + 1; // +1 -> One more vertex than quads because N quads need N+1 vertices
-        constexpr int SAMPLES_PER_EDGE = VERTICES_PER_EDGE + 2; //  +2 -> Normals need neighbours, so we need one extra sample on each side
-
-        constexpr float HEIGHT_SCALE = 250.0f; // Used for converting noise values (-1,1) to meters
-        constexpr float NOISE_FREQUENCY = 1.0f / 64.0f; // Lower = bigger hills. This needs to be power of two otherwise will cause white dots
-        constexpr int SEED = 69420; // TODO move
-
+    ChunkData WorldGenerator::generateChunkData(const ChunkPos& chunkPos) {
         std::array<float, SAMPLES_PER_EDGE * SAMPLES_PER_EDGE> heightmap;
         //X and Y Offset -1 so we have border data also
         const float startX = static_cast<float>(chunkPos.getVertexX(0) - 1) * NOISE_FREQUENCY;
@@ -54,34 +50,33 @@ namespace Kita {
             }
         }
 
-        std::vector<unsigned int> indices;
-        indices.reserve(QUADS_PER_EDGE * QUADS_PER_EDGE * 6);
-        for (int z = 0; z < QUADS_PER_EDGE; ++z) {
-            for (int x = 0; x < QUADS_PER_EDGE; ++x) {
-                const unsigned int topLeft = z * VERTICES_PER_EDGE + x;
-                const unsigned int topRight = topLeft + 1;
-                const unsigned int bottomLeft = topLeft + VERTICES_PER_EDGE;
-                const unsigned int bottomRight = bottomLeft + 1;
-
-                // Triangle left
-                indices.push_back(topLeft);
-                indices.push_back(bottomLeft);
-                indices.push_back(topRight);
-
-                // Triangle right
-                indices.push_back(topRight);
-                indices.push_back(bottomLeft);
-                indices.push_back(bottomRight);
+        std::vector<float> physicsHeights;
+        physicsHeights.resize(PHYSICS_SAMPLES * PHYSICS_SAMPLES);
+        for (int z = 0; z < PHYSICS_SAMPLES; ++z) {
+            for (int x = 0; x < PHYSICS_SAMPLES; ++x) {
+                const bool padding = x >= VERTICES_PER_EDGE || z >= VERTICES_PER_EDGE;
+                physicsHeights[z * PHYSICS_SAMPLES + x] = padding ? JPH::HeightFieldShapeConstants::cNoCollisionValue : heightAt(x, z);
             }
         }
 
-        ChunkMeshData chunkMeshData(chunkPos, std::move(vertices), std::move(indices));
+        JPH::HeightFieldShapeSettings heightFieldSettings(physicsHeights.data(), JPH::Vec3::sZero(), JPH::Vec3(1.0f, 1.0f, 1.0f), PHYSICS_SAMPLES);
+        JPH::Shape::ShapeResult shapeResult = heightFieldSettings.Create();
+        if (shapeResult.HasError()) {
+            KITA_ENGINE_DEBUG("[WorldGenerator] Heightfield error: {}", shapeResult.GetError().c_str());
+        }
+
+        ChunkData chunkMeshData(chunkPos, std::move(vertices), std::move(heightmap), shapeResult.Get());
         return chunkMeshData;
     }
 
-    Chunk WorldGenerator::generateChunk(ChunkMeshData chunkMeshData) {
-        const auto chunkPos = chunkMeshData.getChunkPos();
-        Chunk chunk(chunkPos, Engine::getEngine()->getAssetManager().createAsset<Mesh>(std::move(chunkMeshData.getVertices()), std::move(chunkMeshData.getIndices())));
+    Chunk WorldGenerator::generateChunk(ChunkData chunkData) {
+        const auto chunkPos = chunkData.getChunkPos();
+
+        const JPH::RVec3 bodyPos(static_cast<float>(chunkPos.getVertexX(0)), 0.0f, static_cast<float>(chunkPos.getVertexZ(0)));
+        const JPH::BodyCreationSettings bodySettings(chunkData.getCollisionShape(), bodyPos, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::Layers::STATIC);
+        Engine::getEngine()->getPhysicsManager().createBody(bodySettings, JPH::EActivation::Activate);
+
+        Chunk chunk(std::move(chunkData));
         KITA_ENGINE_DEBUG("[WorldGenerator] Generated chunk at X:{} Z:{}", chunkPos.getChunkX(), chunkPos.getChunkZ());
         return chunk;
     }

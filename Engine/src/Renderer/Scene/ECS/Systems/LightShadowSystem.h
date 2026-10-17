@@ -12,6 +12,10 @@
 namespace Kita {
     class KITAENGINE_API LightShadowSystem final : public System {
     public:
+        explicit LightShadowSystem(Scene& scene)
+            : System(scene) {
+        }
+
         int getOrder() override;
         void update(Scene& scene) override;
         void render(Scene& scene) override;

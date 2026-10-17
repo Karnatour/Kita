@@ -4,10 +4,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLFrameBuffer.h"
 
 namespace Kita {
-    unsigned int FrameBuffer::getFBO() const {
-        return m_fbo;
-    }
-
     std::unique_ptr<FrameBuffer> FrameBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -17,6 +13,10 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int FrameBuffer::getFBO() const {
+        return m_fbo;
     }
 
     std::pair<int, int> FrameBuffer::getResolution() const {

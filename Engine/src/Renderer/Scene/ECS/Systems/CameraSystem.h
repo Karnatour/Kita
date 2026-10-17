@@ -9,6 +9,10 @@ namespace Kita {
 
     class KITAENGINE_API CameraSystem final : public System {
     public:
+        explicit CameraSystem(Scene& scene)
+            : System(scene) {
+        }
+
         int getOrder() override;
         void update(Scene& scene) override;
         void render(Scene& scene) override;

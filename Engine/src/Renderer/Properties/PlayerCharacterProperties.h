@@ -2,6 +2,7 @@
 #include <glm/vec3.hpp>
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/Character/CharacterVirtual.h>
+#include "../../../../Physics/PlayerContactListener.h"
 
 namespace Kita {
     struct PlayerCharacterProperties {
@@ -41,5 +42,7 @@ namespace Kita {
         JPH::RefConst<JPH::Shape> crouchingShape;
         JPH::RefConst<JPH::Shape> innerCrouchingShape;
         JPH::RefConst<JPH::Shape> innerStandingShape;
+
+        std::unique_ptr<PlayerContactListener> contactListener;
     };
 } // Kita

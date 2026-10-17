@@ -3,10 +3,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h"
 
 namespace Kita {
-    unsigned int IndexBuffer::getIBO() const {
-        return m_ibo;
-    }
-
     std::unique_ptr<IndexBuffer> IndexBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -16,6 +12,10 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int IndexBuffer::getIBO() const {
+        return m_ibo;
     }
 
     const std::vector<unsigned int>& IndexBuffer::getIndices() {

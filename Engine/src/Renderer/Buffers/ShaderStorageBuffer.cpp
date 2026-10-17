@@ -4,10 +4,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLShaderStorageBuffer.h"
 
 namespace Kita {
-    unsigned int ShaderStorageBuffer::getSSBO() const {
-        return m_ssbo;
-    }
-
     std::unique_ptr<ShaderStorageBuffer> ShaderStorageBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -17,5 +13,9 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int ShaderStorageBuffer::getSSBO() const {
+        return m_ssbo;
     }
 } // Kita

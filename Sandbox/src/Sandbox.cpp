@@ -2,6 +2,8 @@
 #include <magic_enum/magic_enum.hpp>
 
 #include "../../Engine/src/Renderer/Scene/ECS/EntityBuilder.h"
+#include "../../Engine/src/Renderer/Scene/ECS/Systems/TerrainSystem.h"
+#include "../../Engine/src/Renderer/Util/PhysicsUtil.h"
 #include "../../Engine/src/Renderer/Util/PlayerUtil.h"
 #include "../../Engine/src/Renderer/Util/TransformationUtil.h"
 
@@ -31,7 +33,7 @@ void Sandbox::onInit() {
 
     m_player = Kita::EntityBuilder::createPlayerCharacter(*m_scene, "Player", glm::vec3(1.0f, 1.0f, 0.0f));
 
-    //m_vehicle = Kita::EntityBuilder::createVehicle(*m_scene, "911final/911f.gltf", glm::vec3(0.0f, 10.0f, 0.0f));
+    m_vehicle = Kita::EntityBuilder::createVehicle(*m_scene, "911final/911f.gltf", glm::vec3(0.0f, 10.0f, 0.0f));
 
     Kita::EntityBuilder::createDirectionalLight(*m_scene);
 
@@ -42,6 +44,15 @@ void Sandbox::onInit() {
 
 void Sandbox::onUpdate() {
     m_scene->update();
+    if (m_cameraPosChanged == false) {
+        if (m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk() == nullptr) {
+            return;
+        }
+        m_player.getComponent<Kita::PlayerCharacterComponent>().properties.character->SetPosition(Kita::PhysicsUtil::GLMToJPHVec3(glm::vec3(0.0f, m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk()->getWorldHeightForVertexPos(8, 8) + 10, 0.0f)));
+        Kita::TransformationUtil::setWorldPosition(m_vehicle, glm::vec3(0.0f, m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk()->getWorldHeightForVertexPos(8, 8) + 10, 0.0f));
+        Kita::CameraUtil::markCameraAsActive(m_player);
+        m_cameraPosChanged = true;
+    }
 }
 
 void Sandbox::onRender() {

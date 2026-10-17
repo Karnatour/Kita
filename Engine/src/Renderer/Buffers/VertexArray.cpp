@@ -4,10 +4,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h"
 
 namespace Kita {
-    unsigned int VertexArray::getVAO() const {
-        return m_vao;
-    }
-
     std::unique_ptr<VertexArray> VertexArray::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -17,5 +13,9 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int VertexArray::getVAO() const {
+        return m_vao;
     }
 } // Kita

@@ -5,6 +5,8 @@
 #include <memory>
 #include "../Events/WindowEvents.h"
 #include "RendererAPI.h"
+#include "../Assets/AssetManager.h"
+#include "Buffers/DrawCommandBuffer.h"
 #include "Buffers/FrameBuffer.h"
 
 namespace Kita {
@@ -18,9 +20,13 @@ namespace Kita {
         static RenderingAPI getAPI();
 
         std::pair<int, int> getViewport() const;
-        void renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, std::span<Texture* const> textures = {}, bool skipSetMaterial = false);
         void setViewport(std::pair<int, int> resolution, bool rewriteStoredPair);
         void restoreViewport();
+
+        void renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, std::span<Texture* const> textures = {}, bool skipSetMaterial = false);
+        void drawTerrain(const Mesh& mesh, const std::unique_ptr<DrawCommandBuffer>& drawCommandBuffer, size_t count);
+
+        void setMaterialInShader(Shader& shader, std::span<Texture* const> textures);
 
         void clearColor(float red, float green, float blue, float alpha);
         void clearBit(std::span<const ClearBit> bits);
@@ -33,19 +39,18 @@ namespace Kita {
 
         FrameBuffer& getOutputFramebuffer() const;
         FrameBuffer& getMainFramebuffer() const;
+
     private:
-        void setMaterialInShader(Shader& shader, std::span<Texture* const> textures);
         void setTexturesInShader(Shader& shader, std::span<Texture* const> textures);
         void resetTextureState(Shader& shader);
-
         static void onFrameBufferResize(const FrameBufferResized& event);
         std::unique_ptr<FrameBuffer> m_mainFramebuffer;
         std::unique_ptr<FrameBuffer> m_outputFramebuffer; // post process FBO, used by editor
-        std::pair<int,int > m_viewport = std::make_pair(1600, 900);
+        std::pair<int, int> m_viewport = std::make_pair(1600, 900);
 
         Texture::TextureFlags m_textureFlags = Texture::TextureFlags::NONE;
 
-        static inline RenderingAPI m_api = RenderingAPI::NONE;
+        static inline auto m_api = RenderingAPI::NONE;
         std::unique_ptr<RendererAPI> m_rendererAPI;
     };
 } // Kita

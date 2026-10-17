@@ -5,12 +5,21 @@
 namespace Kita {
     class KITAENGINE_API ShaderStorageBuffer {
     public:
+        ShaderStorageBuffer() = default;
+        ShaderStorageBuffer(const ShaderStorageBuffer&) = delete;
+        ShaderStorageBuffer& operator=(const ShaderStorageBuffer&) = delete;
+        ShaderStorageBuffer(ShaderStorageBuffer&&) = delete;
+        ShaderStorageBuffer& operator=(ShaderStorageBuffer&&) = delete;
         virtual ~ShaderStorageBuffer() = default;
+
+        static std::unique_ptr<ShaderStorageBuffer> createPtr();
+
         virtual void createBuffer(unsigned int size, const void* data) = 0;
-        unsigned int getSSBO() const;
         virtual void bind(unsigned int position) = 0;
         virtual void upload(unsigned int size, const void* data) = 0;
-        static std::unique_ptr<ShaderStorageBuffer> createPtr();
+
+        unsigned int getSSBO() const;
+
     protected:
         unsigned int m_ssbo = 0;
         unsigned int m_size = 0;

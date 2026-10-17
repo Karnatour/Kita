@@ -32,6 +32,17 @@ namespace Kita {
         return m_viewport;
     }
 
+    void Renderer::setViewport(const std::pair<int, int> resolution, const bool rewriteStoredPair) {
+        if (rewriteStoredPair) {
+            m_viewport = resolution;
+        }
+        m_rendererAPI->setViewport(resolution);
+    }
+
+    void Renderer::restoreViewport() {
+        m_rendererAPI->setViewport(m_viewport);
+    }
+
     void Renderer::renderMesh(const Mesh& mesh, Shader& shader, const glm::mat4& modelMatrix, const std::span<Texture* const> textures, const bool skipSetMaterial) {
         KITA_ENGINE_PROFILE("Render mesh");
 
@@ -44,27 +55,34 @@ namespace Kita {
 
         mesh.getVertexArray().bind();
         if (mesh.getIndexBuffer()) {
-            m_rendererAPI->drawElements(mesh.getIndexBuffer()->getIndices().size());
+            m_rendererAPI->drawElements(DrawMode::TRIANGLES, mesh.getIndexBuffer()->getIndices().size());
         } else {
-            m_rendererAPI->drawArrays(mesh.getVertexBuffer().getVertices().size());
+            m_rendererAPI->drawArrays(DrawMode::TRIANGLES, mesh.getVertexBuffer().getVertices().size());
         }
     }
 
-    void Renderer::onFrameBufferResize(const FrameBufferResized& event) {
-        Engine::getEngine()->getRenderer().setViewport(event.getSize(), true);
-        Engine::getEngine()->getRenderer().m_mainFramebuffer->resize(event.getSize());
-        Engine::getEngine()->getRenderer().m_outputFramebuffer->resize(event.getSize());
-    }
+    void Renderer::drawTerrain(const Mesh& mesh, const std::unique_ptr<DrawCommandBuffer>& drawCommandBuffer, const size_t count) {
+        KITA_ENGINE_PROFILE("Render terrain");
 
-    void Renderer::setViewport(const std::pair<int, int> resolution, const bool rewriteStoredPair) {
-        if (rewriteStoredPair) {
-            m_viewport = resolution;
+        mesh.getVertexArray().bind();
+        drawCommandBuffer->bind();
+
+        switch (drawCommandBuffer->getType()) {
+            case DrawCommandBuffer::Type::ARRAYS:
+                m_rendererAPI->multiDrawArraysIndirect(DrawMode::TRIANGLES, count);
+                break;
+            case DrawCommandBuffer::Type::ELEMENTS:
+                m_rendererAPI->multiDrawElementsIndirect(DrawMode::TRIANGLES, count);
+                break;
         }
-        m_rendererAPI->setViewport(resolution);
     }
 
-    void Renderer::restoreViewport() {
-        m_rendererAPI->setViewport(m_viewport);
+    void Renderer::setMaterialInShader(Shader& shader, const std::span<Texture* const> textures) {
+        KITA_ENGINE_PROFILE("Set material in shader");
+
+        resetTextureState(shader);
+        setTexturesInShader(shader, textures);
+        shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
     }
 
     void Renderer::clearColor(const float red, const float green, const float blue, const float alpha) {
@@ -105,22 +123,6 @@ namespace Kita {
 
     FrameBuffer& Renderer::getMainFramebuffer() const {
         return *m_mainFramebuffer;
-    }
-
-    void Renderer::setMaterialInShader(Shader& shader, const std::span<Texture* const> textures) {
-        KITA_ENGINE_PROFILE("Set material in shader");
-
-        resetTextureState(shader);
-        setTexturesInShader(shader, textures);
-        shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
-    }
-
-    void Renderer::resetTextureState(Shader& shader) {
-        KITA_ENGINE_PROFILE("Reset texture state");
-
-        // depthArray | normal | skybox | stencil | depth | color | cubemap | metallic roughness | albedo
-        m_textureFlags = Texture::TextureFlags::NONE;
-        shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
     }
 
     void Renderer::setTexturesInShader(Shader& shader, const std::span<Texture* const> textures) {
@@ -174,5 +176,19 @@ namespace Kita {
                     break;
             }
         }
+    }
+
+    void Renderer::resetTextureState(Shader& shader) {
+        KITA_ENGINE_PROFILE("Reset texture state");
+
+        // depthArray | normal | skybox | stencil | depth | color | cubemap | metallic roughness | albedo
+        m_textureFlags = Texture::TextureFlags::NONE;
+        shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
+    }
+
+    void Renderer::onFrameBufferResize(const FrameBufferResized& event) {
+        Engine::getEngine()->getRenderer().setViewport(event.getSize(), true);
+        Engine::getEngine()->getRenderer().m_mainFramebuffer->resize(event.getSize());
+        Engine::getEngine()->getRenderer().m_outputFramebuffer->resize(event.getSize());
     }
 } // Kita

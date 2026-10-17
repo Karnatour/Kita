@@ -16,14 +16,22 @@ namespace Kita {
             AttachType attachmentType;
         };
 
+        FrameBuffer() = default;
+        FrameBuffer(const FrameBuffer&) = delete;
+        FrameBuffer& operator=(const FrameBuffer&) = delete;
+        FrameBuffer(FrameBuffer&&) = delete;
+        FrameBuffer& operator=(FrameBuffer&&) = delete;
         virtual ~FrameBuffer() = default;
+
+        static std::unique_ptr<FrameBuffer> createPtr();
+
         virtual void createBuffer(const std::pair<int, int>& resolution, std::span<const AttachInfo> attachments, bool highPrecision, int layers) = 0;
         virtual void attachCubemapFace(unsigned int cubemapTexture, int faceIndex) = 0;
-        unsigned int getFBO() const;
         virtual void bind() = 0;
         virtual void unbind() = 0;
         virtual void resize(const std::pair<int,int>& newResolution) = 0;
-        static std::unique_ptr<FrameBuffer> createPtr();
+
+        unsigned int getFBO() const;
         std::pair<int, int> getResolution() const;
 
         Texture* getColorTexture() const;

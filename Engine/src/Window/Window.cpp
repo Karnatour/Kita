@@ -50,7 +50,7 @@ namespace Kita {
             return;
         }
 
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
 
         glfwGetFramebufferSize(m_window, &m_frameBufferResolution.first, &m_frameBufferResolution.second);
 

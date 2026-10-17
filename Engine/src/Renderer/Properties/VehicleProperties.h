@@ -44,6 +44,9 @@ namespace Kita {
         float rearSuspensionFrequency = 1.5f;
         float rearSuspensionDamping = 0.5f;
 
+        glm::vec3 cameraForward = glm::vec3(0.0f, 0.0f, 1.0f);
+        float cameraPitchInRadians = 0.0f;
+
         //Wheels are stored also in this order in JPH
         entt::entity frontLeftWheelEnttID;
         entt::entity frontRightWheelEnttID;

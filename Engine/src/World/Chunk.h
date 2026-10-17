@@ -1,18 +1,25 @@
 #pragma once
 #include "../Core/DllTemplate.h"
-#include "ChunkPos.h"
-#include "../Assets/AssetManager.h"
+#include "Generation/ChunkData.h"
+#include "Render/ChunkRenderPool.h"
 
 namespace Kita {
     class KITAENGINE_API Chunk {
     public:
-        static constexpr int CHUNK_SIZE = 16;
-        Chunk(const ChunkPos& chunkPos, AssetManager::AssetID meshAssetID);
-        ChunkPos getChunkPos() const;
-        AssetManager::AssetID getMeshAssetID() const;
+        explicit Chunk(ChunkData chunkData);
+
+        float getWorldHeightForVertexPos(int vertexX, int vertexZ) const;
+        float getWorldHeightForVertexPos(std::pair<int, int> pos) const;
+
+        const ChunkData& getChunkData() const;
+        void setSlot(unsigned int slot);
+        unsigned int getSlot() const;
+
+        bool hasValidSlot() const;
+        void clearSlot();
 
     private:
-        ChunkPos m_chunkPos;
-        AssetManager::AssetID m_meshAssetID;
+        unsigned int m_chunkRenderPoolSlot = ChunkRenderPool::INVALID_SLOT;
+        ChunkData m_chunkData;
     };
 } // Kita

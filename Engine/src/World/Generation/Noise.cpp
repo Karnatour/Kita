@@ -1,8 +1,8 @@
 #include "Noise.h"
 
 namespace Kita {
-    FastNoise::SmartNode<FastNoise::FractalFBm> Noise::getTerrainNoise(const int octaveCount, const float gain, const float lacunarity) {
-        auto fbm = FastNoise::New<FastNoise::FractalFBm>();
+    FastNoise::SmartNode<> Noise::getTerrainNoise(const int octaveCount, const float gain, const float lacunarity) {
+        auto fbm = FastNoise::New<FastNoise::FractalRidged>();
         fbm->SetSource(FastNoise::New<FastNoise::SuperSimplex>());
         fbm->SetOctaveCount(octaveCount);
         fbm->SetGain(gain);

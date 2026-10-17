@@ -4,10 +4,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers/GLRenderBuffer.h"
 
 namespace Kita {
-    unsigned int RenderBuffer::getRBO() const {
-        return m_rbo;
-    }
-
     std::unique_ptr<RenderBuffer> RenderBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -17,6 +13,10 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int RenderBuffer::getRBO() const {
+        return m_rbo;
     }
 
     std::pair<int, int> RenderBuffer::getResolution() const {

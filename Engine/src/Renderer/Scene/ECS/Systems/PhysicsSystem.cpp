@@ -18,10 +18,6 @@
 #include "../Components/Components.h"
 
 namespace Kita {
-    PhysicsSystem::PhysicsSystem(Scene& scene) :
-        m_scene(scene) {
-    }
-
     int PhysicsSystem::getOrder() {
         return Order::PHYSICS;
     }
@@ -66,8 +62,10 @@ namespace Kita {
             settings->mMass = p.mass;
             settings->mMaxStrength = p.maxStrength;
             settings->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -p.radiusStanding);
-
             p.character = new JPH::CharacterVirtual(settings, PhysicsUtil::GLMToJPHRVec3(p.position), JPH::Quat::sIdentity(), 0, &physicsManager.getPhysicsSystem());
+
+            p.contactListener = std::make_unique<PlayerContactListener>(p.allowSliding);
+            p.character->SetListener(p.contactListener.get());
         }
     }
 
@@ -149,7 +147,6 @@ namespace Kita {
 
             if (p.isSwitchingStance) {
                 p.isSwitchingStance = false;
-                bool isStanding = p.character->GetShape() == p.standingShape;
                 const JPH::Shape* shape = isStanding ? p.crouchingShape : p.standingShape;
                 if (p.character->SetShape(
                     shape,
@@ -383,10 +380,45 @@ namespace Kita {
                 forward = JPH::Vec3::sAxisZ();
             }
 
-            const glm::vec3 carPos = PhysicsUtil::JPHToGLMVec3(p.vehicleConstraint->GetVehicleBody()->GetPosition());
-            camera.properties.position = carPos - PhysicsUtil::JPHToGLMVec3(forward * 6.25f) + glm::vec3(0.0f, 2.5f, 0.0f);
+            const float deltaTime = static_cast<float>(event.getFixedDeltaTime());
+            const JPH::Vec3 linearVelocity = p.vehicleConstraint->GetVehicleBody()->GetLinearVelocity();
+            const float speedMetersPerSecond = linearVelocity.Length();
+            // 0 represents 0 m/s, 1 represents 40 m/s
+            const float speedNormalized = glm::clamp(speedMetersPerSecond / 40.0f, 0.0f, 1.0f);
 
-            const glm::vec3 front = glm::normalize(carPos - camera.properties.position);
+            // Camera smoothing
+            const glm::vec3 carForward = PhysicsUtil::JPHToGLMVec3(forward);
+            const float t = 1.0f - std::exp(-4.0f * deltaTime);
+            glm::vec3 smoothed = glm::mix( //glm::mix does interpolation between two values
+                p.cameraForward, // Current camera angle
+                carForward, t); // Angle where car is heading
+            // Prevent NaN values
+            if (glm::length2(smoothed) > 0.0001f) {
+                p.cameraForward = glm::normalize(smoothed);
+            }
+
+            // Correct camera angle when driving up hill
+            const JPH::Vec3 fullForward = p.vehicleConstraint->GetVehicleBody()->GetRotation().RotateAxisZ();
+            const float carPitch = std::asin(glm::clamp(fullForward.GetY(), -1.0f, 1.0f));
+            const float pitchFollow = 1.0f - std::exp(-3.0f * deltaTime);
+            p.cameraPitchInRadians = glm::mix(p.cameraPitchInRadians, carPitch * 0.85f, pitchFollow);
+
+            const glm::vec3 camDir = glm::normalize(glm::vec3(
+                p.cameraForward.x * std::cos(p.cameraPitchInRadians),
+                std::sin(p.cameraPitchInRadians),
+                p.cameraForward.z * std::cos(p.cameraPitchInRadians)));
+
+            // Params
+            const float distance = glm::mix(5.5f, 7.5f, speedNormalized);
+            const float height   = glm::mix(2.0f, 2.6f, speedNormalized);
+            const float lookAhead = glm::mix(6.0f, 12.0f, speedNormalized);
+
+            // Finalize camera update
+            const glm::vec3 carPos = PhysicsUtil::JPHToGLMVec3(p.vehicleConstraint->GetVehicleBody()->GetPosition());
+            camera.properties.position = carPos - camDir * distance + glm::vec3(0.0f, height, 0.0f);
+
+            const glm::vec3 lookTarget = carPos + camDir * lookAhead + glm::vec3(0.0f, 0.8f, 0.0f);
+            const glm::vec3 front = glm::normalize(lookTarget - camera.properties.position);
             camera.properties.pitch = glm::degrees(std::asin(front.y));
             camera.properties.yaw = glm::degrees(std::atan2(front.z, front.x));
             CameraUtil::updateOrientationVectors(camera.properties);

@@ -172,5 +172,6 @@ namespace Kita {
                 return GL_GEOMETRY_SHADER;
         }
         KITA_ENGINE_ASSERT(false, "Trying to convert invalid ShaderType");
+        return GL_NONE;
     }
 } // Kita

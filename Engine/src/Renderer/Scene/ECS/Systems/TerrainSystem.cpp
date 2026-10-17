@@ -10,51 +10,29 @@ namespace Kita {
     }
 
     void TerrainSystem::update(Scene& scene) {
+        if (Engine::getEngine()->isFirstFrame()) {
+            m_chunkRenderPool = std::make_unique<ChunkRenderPool>(m_renderDistance);
+        }
+
         Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
 
         const auto& position = cameraEntity.getComponent<CameraComponent>().properties.position;
 
-        const int chunkX = static_cast<int>(std::floor(position.x / static_cast<float>(Chunk::CHUNK_SIZE)));
-        const int chunkZ = static_cast<int>(std::floor(position.z / static_cast<float>(Chunk::CHUNK_SIZE)));
+        const int chunkX = static_cast<int>(std::floor(position.x / static_cast<float>(ChunkData::CHUNK_SIZE)));
+        const int chunkZ = static_cast<int>(std::floor(position.z / static_cast<float>(ChunkData::CHUNK_SIZE)));
 
         const ChunkPos newChunkPos(chunkX, chunkZ);
-
-        int processedChunks = 0;
-        for (auto it = m_pendingChunkMeshData.begin(); it != m_pendingChunkMeshData.end();) {
-            // ALLOWED_CHUNKS_PER_FRAME Prevents stuttering
-            if (processedChunks < ALLOWED_CHUNKS_PER_FRAME && it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-                auto meshData = it->get();
-
-                Chunk chunk = m_worldGenerator.generateChunk(meshData);
-                auto chunkPos = meshData.getChunkPos();
-
-                m_chunkMap.try_emplace(chunkPos, std::move(chunk));
-
-                m_pendingChunkPos.erase(chunkPos);
-                it = m_pendingChunkMeshData.erase(it);
-                processedChunks = processedChunks + 1;
-            } else {
-                ++it;
-            }
-        }
+        processGeneratedChunkMeshData();
 
         if (newChunkPos == m_cameraChunkPos && !Engine::getEngine()->isFirstFrame()) {
             return;
         }
 
-        for (int x = newChunkPos.getChunkX() - m_renderDistance; x <= newChunkPos.getChunkX() + m_renderDistance; ++x) {
-            for (int z = newChunkPos.getChunkZ() - m_renderDistance; z <= newChunkPos.getChunkZ() + m_renderDistance; ++z) {
-                ChunkPos chunkPos(x, z);
-
-                auto it = m_chunkMap.find(chunkPos);
-                if (it == m_chunkMap.end() && !m_pendingChunkPos.contains(chunkPos)) {
-                    m_pendingChunkPos.emplace(chunkPos);
-                    m_pendingChunkMeshData.emplace_back(Engine::getEngine()->getThreadPool().submit(Task::Priority::NORMAL, [this, chunkPos] { return m_worldGenerator.generateChunkMeshData(chunkPos); }));
-                }
-            }
-        }
-
         m_cameraChunkPos = newChunkPos;
+
+        removeOutOfRangeChunks();
+        addInRangeChunks();
+        generateChunkMeshData();
     }
 
     void TerrainSystem::render(Scene& scene) {
@@ -85,23 +63,10 @@ namespace Kita {
             textures[4] = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties.texture;
         }
 
-        for (int x = m_cameraChunkPos.getChunkX() - m_renderDistance; x <= m_cameraChunkPos.getChunkX() + m_renderDistance; ++x) {
-            for (int z = m_cameraChunkPos.getChunkZ() - m_renderDistance; z <= m_cameraChunkPos.getChunkZ() + m_renderDistance; ++z) {
-                ChunkPos chunkPos(x, z);
-
-                auto it = m_chunkMap.find(chunkPos);
-                if (it == m_chunkMap.end()) {
-                    // The chunks is still generating
-                    continue;
-                }
-
-                auto& chunk = it->second;
-                Mesh& mesh = assetManager.getAsset<Mesh>(chunk.getMeshAssetID());
-
-                shader.setUniformFloat("iblIntensity", Entity(&scene, scene.view<SceneSettingsComponent>().front()).getComponent<SceneSettingsComponent>().properties.iblIntensity); //TODO Move to UBO ?
-                renderer.renderMesh(mesh, shader, glm::mat4(1.0f), textures);
-            }
-        }
+        renderer.setMaterialInShader(shader, textures);
+        shader.setUniformFloat("iblIntensity", Entity(&scene, scene.view<SceneSettingsComponent>().front()).getComponent<SceneSettingsComponent>().properties.iblIntensity); //TODO Move to UBO ?
+        shader.setUniformMat4("model", glm::mat4(1.0f));
+        m_chunkRenderPool->render();
 
         renderer.getMainFramebuffer().unbind();
     }
@@ -110,7 +75,108 @@ namespace Kita {
         m_renderDistance = renderDistance;
     }
 
-    int TerrainSystem::getRenderDistance() {
+    int TerrainSystem::getRenderDistance() const {
         return m_renderDistance;
+    }
+
+    const Chunk* TerrainSystem::getChunkForPos(const ChunkPos& chunkPos) const {
+        const auto it = m_chunkMap.find(chunkPos);
+
+        if (it == m_chunkMap.end()) {
+            return nullptr;
+        }
+
+        return &it->second;
+    }
+
+    const Chunk* TerrainSystem::getCameraChunk() const {
+        return getChunkForPos(m_cameraChunkPos);
+    }
+
+    ChunkPos TerrainSystem::getCameraChunkPos() const {
+        return m_cameraChunkPos;
+    }
+
+    void TerrainSystem::generateChunkMeshData() {
+        const int centerX = m_cameraChunkPos.getChunkX();
+        const int centerZ = m_cameraChunkPos.getChunkZ();
+
+        struct Candidate {
+            ChunkPos pos;
+            int distSq;
+        };
+
+        std::vector<Candidate> candidates;
+        candidates.reserve((2 * m_renderDistance + 1) * (2 * m_renderDistance + 1));
+
+        for (int x = centerX - m_renderDistance; x <= centerX + m_renderDistance; ++x) {
+            for (int z = centerZ - m_renderDistance; z <= centerZ + m_renderDistance; ++z) {
+                ChunkPos chunkPos(x, z);
+
+                if (m_chunkMap.contains(chunkPos) || m_pendingChunkPos.contains(chunkPos)) {
+                    continue;
+                }
+
+                const int dx = x - centerX;
+                const int dz = z - centerZ;
+                candidates.emplace_back(chunkPos, dx * dx + dz * dz);
+            }
+        }
+
+        // Closest to the center chunk first
+        std::ranges::sort(candidates, [](const Candidate& a, const Candidate& b) { return a.distSq < b.distSq; });
+
+        for (const auto& [pos, distSq] : candidates) {
+            const ChunkPos chunkPos = pos;
+            m_pendingChunkPos.emplace(chunkPos);
+            m_pendingChunkMeshData.emplace_back(Engine::getEngine()->getThreadPool().submit(Task::Priority::NORMAL, [this, chunkPos] { return m_worldGenerator.generateChunkData(chunkPos); }));
+        }
+    }
+
+    void TerrainSystem::processGeneratedChunkMeshData() {
+        int processedChunks = 0;
+        for (auto it = m_pendingChunkMeshData.begin(); it != m_pendingChunkMeshData.end();) {
+            // ALLOWED_CHUNKS_PER_FRAME Prevents stuttering
+            if (processedChunks < ALLOWED_CHUNKS_PER_FRAME && it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+                auto chunkData = it->get();
+
+                Chunk chunk = m_worldGenerator.generateChunk(chunkData);
+                auto chunkPos = chunkData.getChunkPos();
+                if (chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
+                    chunk.setSlot(m_chunkRenderPool->addChunk(chunk.getChunkData().getVertices()));
+                }
+
+                m_chunkMap.try_emplace(chunkPos, std::move(chunk));
+
+                m_pendingChunkPos.erase(chunkPos);
+                it = m_pendingChunkMeshData.erase(it);
+                processedChunks = processedChunks + 1;
+            } else {
+                ++it;
+            }
+        }
+    }
+
+    void TerrainSystem::removeOutOfRangeChunks() {
+        KITA_ENGINE_PROFILE("Remove out of range chunks");
+        for (auto& [chunkPos, chunk] : m_chunkMap) {
+            if (!chunk.hasValidSlot()) {
+                continue; // Not currently in the render pool
+            }
+
+            if (!chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
+                m_chunkRenderPool->release(chunk.getSlot());
+                chunk.clearSlot();
+            }
+        }
+    }
+
+    void TerrainSystem::addInRangeChunks() {
+        KITA_ENGINE_PROFILE("Add in range chunks");
+        for (auto& [chunkPos, chunk] : m_chunkMap) {
+            if (!chunk.hasValidSlot() && chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
+                chunk.setSlot(m_chunkRenderPool->addChunk(chunk.getChunkData().getVertices()));
+            }
+        }
     }
 } // Kita

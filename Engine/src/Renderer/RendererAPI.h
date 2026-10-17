@@ -27,8 +27,11 @@ namespace Kita {
         virtual void setDepthFunc(DepthFunction function) = 0;
         virtual void setCullMode(CullMode mode) = 0;
 
-        virtual void drawArrays(size_t verticesCount) = 0;
-        virtual void drawElements(size_t indicesCount) = 0;
+        virtual void drawArrays(DrawMode mode, size_t verticesCount) = 0;
+        virtual void multiDrawArraysIndirect(DrawMode mode, size_t drawCount) = 0;
+
+        virtual void drawElements(DrawMode mode, size_t indicesCount) = 0;
+        virtual void multiDrawElementsIndirect(DrawMode mode, size_t drawCount) = 0;
 
         virtual void setViewport(std::pair<int, int> resolution) = 0;
     };

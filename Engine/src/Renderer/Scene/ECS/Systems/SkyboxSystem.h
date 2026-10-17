@@ -8,6 +8,10 @@
 namespace Kita {
     class KITAENGINE_API SkyboxSystem : public System{
     public:
+        explicit SkyboxSystem(Scene& scene)
+            : System(scene) {
+        }
+
         int getOrder() override;
         void update(Scene& scene) override;
         void render(Scene& scene) override;

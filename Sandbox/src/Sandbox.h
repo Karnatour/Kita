@@ -21,6 +21,7 @@ private:
     Kita::Entity m_sphere;
     Kita::Entity m_player;
     Kita::Entity m_vehicle;
+    bool m_cameraPosChanged = false;
 };
 
 extern "C" SANDBOX_API Kita::IGameInstance* createGameInstance();

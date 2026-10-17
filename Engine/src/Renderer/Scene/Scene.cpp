@@ -15,13 +15,13 @@
 
 namespace Kita {
     void Scene::addDefaultSystems() {
-        m_systems.emplace_back(std::make_unique<CameraSystem>());
-        m_systems.emplace_back(std::make_unique<PhysicsSystem>(*this));
-        m_systems.emplace_back(std::make_unique<LightShadowSystem>());
-        m_systems.emplace_back(std::make_unique<GeometrySystem>());
-        m_systems.emplace_back(std::make_unique<SkyboxSystem>());
-        m_systems.emplace_back(std::make_unique<PostProcessingSystem>());
-        m_systems.emplace_back(std::make_unique<TerrainSystem>());
+        addSystem<CameraSystem>();
+        addSystem<PhysicsSystem>();
+        addSystem<LightShadowSystem>();
+        addSystem<GeometrySystem>();
+        addSystem<SkyboxSystem>();
+        addSystem<PostProcessingSystem>();
+        addSystem<TerrainSystem>();
 
         m_camera = EntityBuilder::createActiveCamera(*this).getEnttEntityID();
         Entity skybox = createEntity();

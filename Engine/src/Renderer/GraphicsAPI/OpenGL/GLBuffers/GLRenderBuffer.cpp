@@ -6,6 +6,7 @@ namespace Kita {
     GLRenderBuffer::~GLRenderBuffer() {
         if (m_rbo != 0) {
             glDeleteRenderbuffers(1, &m_rbo);
+            m_rbo = 0;
         }
     }
 

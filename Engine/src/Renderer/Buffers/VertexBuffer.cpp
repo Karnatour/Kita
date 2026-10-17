@@ -4,10 +4,6 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers//GLVertexBuffer.h"
 
 namespace Kita {
-    unsigned int VertexBuffer::getVBO() const {
-        return m_vbo;
-    }
-
     std::unique_ptr<VertexBuffer> VertexBuffer::createPtr() {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
@@ -17,6 +13,10 @@ namespace Kita {
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown or unsupported RenderingAPI");
         }
+    }
+
+    unsigned int VertexBuffer::getVBO() const {
+        return m_vbo;
     }
 
     const std::vector<VertexProperties>& VertexBuffer::getVertices() {

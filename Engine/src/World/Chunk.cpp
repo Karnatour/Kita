@@ -1,14 +1,36 @@
 #include "Chunk.h"
 
+#include "Generation/WorldGenerator.h"
+
 namespace Kita {
-    Chunk::Chunk(const ChunkPos& chunkPos, const AssetManager::AssetID meshAssetID) : m_chunkPos(chunkPos), m_meshAssetID(meshAssetID) {
+    Chunk::Chunk(ChunkData chunkData) : m_chunkData(std::move(chunkData)) {
     }
 
-    ChunkPos Chunk::getChunkPos() const {
-        return m_chunkPos;
+    float Chunk::getWorldHeightForVertexPos(const int vertexX, const int vertexZ) const {
+        return m_chunkData.getHeightmap()[(vertexZ + 1) * ChunkData::HEIGHTMAP_EDGE + (vertexX + 1)] * WorldGenerator::HEIGHT_SCALE;
     }
 
-    AssetManager::AssetID Chunk::getMeshAssetID() const {
-        return m_meshAssetID;
+    float Chunk::getWorldHeightForVertexPos(const std::pair<int, int> pos) const {
+        return getWorldHeightForVertexPos(pos.first, pos.second);
+    }
+
+    const ChunkData& Chunk::getChunkData() const {
+        return m_chunkData;
+    }
+
+    void Chunk::setSlot(const unsigned int slot) {
+        m_chunkRenderPoolSlot = slot;
+    }
+
+    bool Chunk::hasValidSlot() const {
+        return m_chunkRenderPoolSlot != ChunkRenderPool::INVALID_SLOT;
+    }
+
+    unsigned int Chunk::getSlot() const {
+        return m_chunkRenderPoolSlot;
+    }
+
+    void Chunk::clearSlot() {
+        m_chunkRenderPoolSlot = ChunkRenderPool::INVALID_SLOT;
     }
 } // Kita

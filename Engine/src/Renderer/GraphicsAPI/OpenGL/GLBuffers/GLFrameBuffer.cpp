@@ -7,10 +7,13 @@
 
 namespace Kita {
     GLFrameBuffer::~GLFrameBuffer() {
-        glDeleteFramebuffers(1, &m_fbo);
+        if (m_fbo != 0) {
+            glDeleteFramebuffers(1, &m_fbo);
+            m_fbo = 0;
+        }
     }
 
-    void GLFrameBuffer::createBuffer(const std::pair<int, int>& resolution,const std::span<const AttachInfo> attachments, const bool highPrecision, const int layers) {
+    void GLFrameBuffer::createBuffer(const std::pair<int, int>& resolution, const std::span<const AttachInfo> attachments, const bool highPrecision, const int layers) {
         m_resolution = resolution;
         m_attachments = std::ranges::to<std::vector>(attachments);
         m_highPrecision = highPrecision;

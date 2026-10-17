@@ -13,6 +13,7 @@ namespace Kita {
         int getVertexX(int localX) const;
         int getVertexZ(int localZ) const;
         std::pair<int, int> getChunkPos() const;
+        bool isChunkInRadius(const ChunkPos& middleChunkPos, int renderDistance) const;
 
         bool operator==(const ChunkPos& other) const = default;
 

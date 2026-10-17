@@ -4,7 +4,10 @@
 
 namespace Kita {
     GLShaderStorageBuffer::~GLShaderStorageBuffer() {
-        glDeleteBuffers(1, &m_ssbo);
+        if (m_ssbo != 0) {
+            glDeleteBuffers(1, &m_ssbo);
+            m_ssbo = 0;
+        }
     }
 
     void GLShaderStorageBuffer::bind(const unsigned position) {
@@ -17,8 +20,7 @@ namespace Kita {
             m_size = std::max(m_size * 2, size);
             KITA_ENGINE_DEBUG("SSBO is too small, reallocating, newSize:{}", m_size);
             glNamedBufferData(m_ssbo, m_size, data, GL_DYNAMIC_DRAW);
-        }
-        else {
+        } else {
             glNamedBufferSubData(m_ssbo, 0, size, data);
         }
     }

@@ -4,11 +4,65 @@
 #include <magic_enum/magic_enum.hpp>
 
 namespace Kita {
+    GLenum GLRendererAPI::convertBufferTypeToInternalFormat(const BufferType buffer) {
+        switch (buffer) {
+            case BufferType::COLOR:
+                return GL_RGBA8;
+            case BufferType::DEPTH:
+                return GL_DEPTH_COMPONENT24;
+            case BufferType::DEPTH_STENCIL:
+                return GL_DEPTH24_STENCIL8;
+            default:
+                KITA_ENGINE_ERROR("Unknown bufferType when trying to convert BufferType to GL Internal format");
+                return GL_NONE;
+        }
+    }
+
+    GLenum GLRendererAPI::convertCapabilityToGL(const Capability capability) {
+        switch (capability) {
+            case Capability::DEPTH_TEST:
+                return GL_DEPTH_TEST;
+            case Capability::CULL_FACE:
+                return GL_CULL_FACE;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
+                return GL_NONE;
+        }
+    }
+
+    GLenum GLRendererAPI::convertDrawModeToGL(const DrawMode drawMode) {
+        switch (drawMode) {
+            case DrawMode::POINTS:
+                return GL_POINTS;
+            case DrawMode::LINES:
+                return GL_LINES;
+            case DrawMode::TRIANGLES:
+                return GL_TRIANGLES;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(drawMode));
+                return GL_NONE;
+        }
+    }
+
+    GLbitfield GLRendererAPI::convertBitToGL(const ClearBit bit) {
+        switch (bit) {
+            case ClearBit::COLOR:
+                return GL_COLOR_BUFFER_BIT;
+            case ClearBit::DEPTH:
+                return GL_DEPTH_BUFFER_BIT;
+            case ClearBit::STENCIL:
+                return GL_STENCIL_BUFFER_BIT;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(bit));
+                return GL_NONE;
+        }
+    }
+
     void GLRendererAPI::setupDebug() {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(debugCallback, nullptr);
-        KITA_ENGINE_DEBUG("OpenGL Debug callback funtion is set");
+        KITA_ENGINE_DEBUG("OpenGL Debug callback function has been set");
     }
 
     void GLRendererAPI::setViewport(const std::pair<int, int> resolution) {
@@ -114,48 +168,33 @@ namespace Kita {
                 glCullFace(GL_FRONT_AND_BACK);
                 break;
         }
-
     }
 
-    void GLRendererAPI::drawArrays(const size_t verticesCount) {
-        KITA_ENGINE_PROFILE("Draw arrays");
+    void GLRendererAPI::drawArrays(const DrawMode mode, const size_t verticesCount) {
+        KITA_ENGINE_PROFILE("Draw Arrays");
 
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(verticesCount));
+        glDrawArrays(convertDrawModeToGL(mode), 0, static_cast<GLsizei>(verticesCount));
     }
 
-    void GLRendererAPI::drawElements(const size_t indicesCount) {
-        KITA_ENGINE_PROFILE("Draw elements");
+    void GLRendererAPI::multiDrawArraysIndirect(const DrawMode mode, const size_t drawCount) {
+        KITA_ENGINE_PROFILE("Multi Draw Arrays Indirect");
 
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indicesCount),GL_UNSIGNED_INT, nullptr);
+        glMultiDrawArraysIndirect(convertDrawModeToGL(mode), nullptr, drawCount, 0);
     }
 
-    GLenum GLRendererAPI::convertCapabilityToGL(const Capability capability) {
-        switch (capability) {
-            case Capability::DEPTH_TEST:
-                return GL_DEPTH_TEST;
-            case Capability::CULL_FACE:
-                return GL_CULL_FACE;
-            default:
-                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
-                return GL_NONE;
-        }
+    void GLRendererAPI::drawElements(const DrawMode mode, const size_t indicesCount) {
+        KITA_ENGINE_PROFILE("Draw Elements");
+
+        glDrawElements(convertDrawModeToGL(mode), static_cast<GLsizei>(indicesCount),GL_UNSIGNED_INT, nullptr);
     }
 
-    GLbitfield GLRendererAPI::convertBitToGL(const ClearBit bit) {
-        switch (bit) {
-            case ClearBit::COLOR:
-                return GL_COLOR_BUFFER_BIT;
-            case ClearBit::DEPTH:
-                return GL_DEPTH_BUFFER_BIT;
-            case ClearBit::STENCIL:
-                return GL_STENCIL_BUFFER_BIT;
-            default:
-                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(bit));
-                return GL_NONE;
-        }
+    void GLRendererAPI::multiDrawElementsIndirect(const DrawMode mode, const size_t drawCount) {
+        KITA_ENGINE_PROFILE("Multi Draw Elements Indirect");
+
+        glMultiDrawElementsIndirect(convertDrawModeToGL(mode),GL_UNSIGNED_INT, nullptr, drawCount, 0);
     }
 
-    void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param) {
+    void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, const GLenum severity, GLsizei length, GLchar const* message, void const* user_param) {
         auto const srcMsg = [source]() {
             switch (source) {
                 case GL_DEBUG_SOURCE_API:
@@ -210,24 +249,11 @@ namespace Kita {
                 break;
             case GL_DEBUG_SEVERITY_HIGH:
                 KITA_ENGINE_ERROR("{} {} {} {}", srcMsg, typeMsg, id, message);
+                KITA_ENGINE_ASSERT(false, "OpenGL High severiy error");
                 break;
             default:
                 KITA_ENGINE_WARN("Undefined OpenGL debug severity");
                 break;
-        }
-    }
-
-    GLenum GLRendererAPI::convertBufferTypeToInternalFormat(const BufferType buffer) {
-        switch (buffer) {
-            case BufferType::COLOR:
-                return GL_RGBA8;
-            case BufferType::DEPTH:
-                return GL_DEPTH_COMPONENT24;
-            case BufferType::DEPTH_STENCIL:
-                return GL_DEPTH24_STENCIL8;
-            default:
-                KITA_ENGINE_ERROR("Unknown bufferType when trying to convert BufferType to GL Internal format");
-                return GL_NONE;
         }
     }
 } // Kita

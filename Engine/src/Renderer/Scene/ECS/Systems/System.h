@@ -16,6 +16,9 @@ namespace Kita {
             static constexpr int POST = 500;
         };
 
+        explicit System(Scene& scene) : m_scene(scene) {
+        }
+
         virtual ~System() = default;
 
         virtual int getOrder() = 0;
@@ -23,5 +26,8 @@ namespace Kita {
         virtual void update(Scene& scene) = 0;
 
         virtual void render(Scene& scene) = 0;
+
+    protected:
+        Scene& m_scene;
     };
 } // Kita

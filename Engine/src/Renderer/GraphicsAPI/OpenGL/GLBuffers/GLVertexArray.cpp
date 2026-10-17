@@ -4,14 +4,19 @@
 
 namespace Kita {
     GLVertexArray::~GLVertexArray() {
-        glDeleteVertexArrays(1, &m_vao);
+        if (m_vao != 0) {
+            glDeleteVertexArrays(1, &m_vao);
+            m_vao = 0;
+        }
     }
 
     void GLVertexArray::createBuffer(const std::unique_ptr<VertexBuffer>& vbo, const std::unique_ptr<IndexBuffer>& ibo) {
         glCreateVertexArrays(1, &m_vao);
 
-        glVertexArrayVertexBuffer(m_vao, 0, vbo->getVBO(), 0, sizeof(VertexProperties));
-        if (ibo != nullptr) {
+        if (vbo != nullptr && vbo->getVBO() != 0) {
+            glVertexArrayVertexBuffer(m_vao, 0, vbo->getVBO(), 0, sizeof(VertexProperties));
+        }
+        if (ibo != nullptr && ibo->getIBO() != 0) {
             glVertexArrayElementBuffer(m_vao, ibo->getIBO());
         }
 
@@ -44,6 +49,22 @@ namespace Kita {
         glEnableVertexArrayAttrib(m_vao, 5);
         glVertexArrayAttribFormat(m_vao, 5, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, bitangent));
         glVertexArrayAttribBinding(m_vao, 5, 0);
+    }
+
+    void GLVertexArray::attachVBO(const VertexBuffer& vbo) {
+        if (vbo.getVBO() != 0) {
+            glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, sizeof(VertexProperties));
+            return;
+        }
+        KITA_ENGINE_ERROR("[GLVertexArray] Unable to attach VertexBuffer");
+    }
+
+    void GLVertexArray::attachIBO(const IndexBuffer& ibo) {
+        if (ibo.getIBO() != 0) {
+            glVertexArrayElementBuffer(m_vao, ibo.getIBO());
+            return;
+        }
+        KITA_ENGINE_ERROR("[GLVertexArray] Unable to attach IndexBuffer");
     }
 
     void GLVertexArray::bind() {

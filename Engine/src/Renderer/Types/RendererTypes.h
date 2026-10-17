@@ -35,4 +35,10 @@ namespace Kita {
         BACK,
         FRONT_BACK
     };
+
+    enum class DrawMode {
+        POINTS,
+        LINES,
+        TRIANGLES
+    };
 }
