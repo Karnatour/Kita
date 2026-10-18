@@ -22,8 +22,8 @@ namespace Kita {
         Chunk generateChunk(ChunkData chunkData);
     private:
         int m_octaveCount;
-        int m_gain;
-        int m_lacunarity;
+        float m_gain;
+        float m_lacunarity;
         FastNoise::SmartNode<> m_noise;
     };
 } // Kita

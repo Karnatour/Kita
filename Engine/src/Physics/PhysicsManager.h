@@ -53,10 +53,10 @@ namespace Kita {
         std::unique_ptr<BodyActivationListener> m_bodyActivationListener;
         std::unique_ptr<ContactListener> m_contactListener;
 
-        static constexpr JPH::uint MAX_BODIES = 4096;
+        static constexpr JPH::uint MAX_BODIES = 16384;
         static constexpr JPH::uint NUM_BODY_MUTEXES = 0;
-        static constexpr JPH::uint MAX_BODY_PAIRS = 16384;
-        static constexpr JPH::uint MAX_CONTACT_CONSTRAINS = 4096;
+        static constexpr JPH::uint MAX_BODY_PAIRS = 65536;
+        static constexpr JPH::uint MAX_CONTACT_CONSTRAINS = 20480;
 
         static constexpr double FIXED_DELTA_TIME = 1.0f / 60.0f;
         static constexpr int COLLISION_STEPS = 1;

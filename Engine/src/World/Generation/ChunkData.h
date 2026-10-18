@@ -4,7 +4,7 @@
 
 #include "../ChunkPos.h"
 #include <Jolt/Jolt.h>
-#include <Jolt/Physics/Collision/Shape/Shape.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include "../../Renderer/Properties/VertexProperties.h"
 
 namespace Kita {
@@ -15,17 +15,21 @@ namespace Kita {
         static constexpr int HEIGHTMAP_EDGE = CHUNK_QUAD_PER_EDGE + 3;
         static constexpr int HEIGHTMAP_SIZE = HEIGHTMAP_EDGE * HEIGHTMAP_EDGE;
 
-        ChunkData(const ChunkPos& chunkPos, std::vector<VertexProperties> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, JPH::ShapeRefC shape);
+        ChunkData(const ChunkPos& chunkPos, std::vector<VertexProperties> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, JPH::BodyCreationSettings bodyCreationSettings);
 
-        ChunkPos getChunkPos();
+        ChunkPos getChunkPos() const;
         const std::vector<VertexProperties>& getVertices() const;
-        const JPH::ShapeRefC& getCollisionShape() const;
+        const JPH::BodyCreationSettings& getBodyCreationSettings() const;
         const std::array<float, HEIGHTMAP_SIZE>& getHeightmap() const;
+
+        void setBodyID(JPH::BodyID bodyID);
+        JPH::BodyID getBodyID() const;
 
     private:
         ChunkPos m_chunkPos;
         std::vector<VertexProperties> m_vertices;
         std::array<float, HEIGHTMAP_SIZE> m_heightmap;
-        JPH::ShapeRefC m_collisionShape;
+        JPH::BodyCreationSettings m_bodySettings;
+        JPH::BodyID m_bodyID = JPH::BodyID(JPH::BodyID::cInvalidBodyID);
     };
 } // Kita

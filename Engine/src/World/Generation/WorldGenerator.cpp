@@ -65,17 +65,16 @@ namespace Kita {
             KITA_ENGINE_DEBUG("[WorldGenerator] Heightfield error: {}", shapeResult.GetError().c_str());
         }
 
-        ChunkData chunkMeshData(chunkPos, std::move(vertices), std::move(heightmap), shapeResult.Get());
+        const JPH::RVec3 bodyPos(static_cast<float>(chunkPos.getVertexX(0)), 0.0f, static_cast<float>(chunkPos.getVertexZ(0)));
+        JPH::BodyCreationSettings bodySettings(shapeResult.Get(), bodyPos, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::Layers::STATIC);
+
+        ChunkData chunkMeshData(chunkPos, std::move(vertices), std::move(heightmap), std::move(bodySettings));
+
         return chunkMeshData;
     }
 
     Chunk WorldGenerator::generateChunk(ChunkData chunkData) {
         const auto chunkPos = chunkData.getChunkPos();
-
-        const JPH::RVec3 bodyPos(static_cast<float>(chunkPos.getVertexX(0)), 0.0f, static_cast<float>(chunkPos.getVertexZ(0)));
-        const JPH::BodyCreationSettings bodySettings(chunkData.getCollisionShape(), bodyPos, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::Layers::STATIC);
-        Engine::getEngine()->getPhysicsManager().createBody(bodySettings, JPH::EActivation::Activate);
-
         Chunk chunk(std::move(chunkData));
         KITA_ENGINE_DEBUG("[WorldGenerator] Generated chunk at X:{} Z:{}", chunkPos.getChunkX(), chunkPos.getChunkZ());
         return chunk;

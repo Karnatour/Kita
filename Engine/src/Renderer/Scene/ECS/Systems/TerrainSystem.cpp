@@ -30,8 +30,7 @@ namespace Kita {
 
         m_cameraChunkPos = newChunkPos;
 
-        removeOutOfRangeChunks();
-        addInRangeChunks();
+        updateAllChunks();
         generateChunkMeshData();
     }
 
@@ -135,48 +134,48 @@ namespace Kita {
 
     void TerrainSystem::processGeneratedChunkMeshData() {
         int processedChunks = 0;
-        for (auto it = m_pendingChunkMeshData.begin(); it != m_pendingChunkMeshData.end();) {
+        for (auto pendingIt = m_pendingChunkMeshData.begin(); pendingIt != m_pendingChunkMeshData.end();) {
             // ALLOWED_CHUNKS_PER_FRAME Prevents stuttering
-            if (processedChunks < ALLOWED_CHUNKS_PER_FRAME && it->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-                auto chunkData = it->get();
+            if (processedChunks < ALLOWED_CHUNKS_PER_FRAME && pendingIt->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+                auto chunkData = pendingIt->get();
 
                 Chunk chunk = m_worldGenerator.generateChunk(chunkData);
                 auto chunkPos = chunkData.getChunkPos();
-                if (chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
-                    chunk.setSlot(m_chunkRenderPool->addChunk(chunk.getChunkData().getVertices()));
+
+                auto [newIt, inserted] = m_chunkMap.try_emplace(chunkPos, std::move(chunk));
+                if (inserted) {
+                    m_chunks.emplace_back(&newIt->second);
+                    updateChunkState(newIt->second);
                 }
 
-                m_chunkMap.try_emplace(chunkPos, std::move(chunk));
-
                 m_pendingChunkPos.erase(chunkPos);
-                it = m_pendingChunkMeshData.erase(it);
+                pendingIt = m_pendingChunkMeshData.erase(pendingIt);
                 processedChunks = processedChunks + 1;
             } else {
-                ++it;
+                ++pendingIt;
             }
         }
     }
 
-    void TerrainSystem::removeOutOfRangeChunks() {
-        KITA_ENGINE_PROFILE("Remove out of range chunks");
-        for (auto& [chunkPos, chunk] : m_chunkMap) {
-            if (!chunk.hasValidSlot()) {
-                continue; // Not currently in the render pool
-            }
-
-            if (!chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
-                m_chunkRenderPool->release(chunk.getSlot());
-                chunk.clearSlot();
-            }
+    void TerrainSystem::updateAllChunks() {
+        for (auto* chunk : m_chunks) {
+            updateChunkState(*chunk);
         }
     }
 
-    void TerrainSystem::addInRangeChunks() {
-        KITA_ENGINE_PROFILE("Add in range chunks");
-        for (auto& [chunkPos, chunk] : m_chunkMap) {
-            if (!chunk.hasValidSlot() && chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
-                chunk.setSlot(m_chunkRenderPool->addChunk(chunk.getChunkData().getVertices()));
-            }
+    void TerrainSystem::updateChunkState(Chunk& chunk) {
+        KITA_ENGINE_PROFILE("Update chunk state");
+        const ChunkPos chunkPos = chunk.getChunkData().getChunkPos();
+        const bool inRenderRange = chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance);
+        const bool inSimulationRange = chunkPos.isChunkInRadius(m_cameraChunkPos, m_simulationDistance);
+
+        if (inRenderRange && !chunk.hasValidSlot()) {
+            chunk.setSlot(m_chunkRenderPool->addChunk(chunk.getChunkData().getVertices()));
+        } else if (!inRenderRange && chunk.hasValidSlot()) {
+            m_chunkRenderPool->release(chunk.getSlot());
+            chunk.clearSlot();
         }
+
+        inSimulationRange ? chunk.enableSimulation() : chunk.disableSimulation();
     }
 } // Kita

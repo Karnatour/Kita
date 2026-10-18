@@ -48,7 +48,8 @@ void Sandbox::onUpdate() {
         if (m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk() == nullptr) {
             return;
         }
-        m_player.getComponent<Kita::PlayerCharacterComponent>().properties.character->SetPosition(Kita::PhysicsUtil::GLMToJPHVec3(glm::vec3(0.0f, m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk()->getWorldHeightForVertexPos(8, 8) + 10, 0.0f)));
+        m_player.getComponent<Kita::PlayerCharacterComponent>().properties.character->SetPosition(
+            Kita::PhysicsUtil::GLMToJPHVec3(glm::vec3(0.0f, m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk()->getWorldHeightForVertexPos(8, 8) + 10, 0.0f)));
         Kita::TransformationUtil::setWorldPosition(m_vehicle, glm::vec3(0.0f, m_scene->getSystem<Kita::TerrainSystem>()->getCameraChunk()->getWorldHeightForVertexPos(8, 8) + 10, 0.0f));
         Kita::CameraUtil::markCameraAsActive(m_player);
         m_cameraPosChanged = true;
@@ -87,7 +88,9 @@ void Sandbox::onKeyPressed(const Kita::KeyPressed& event) {
         if (!Kita::CameraUtil::isCameraActive(m_vehicle)) {
             Kita::CameraUtil::markCameraAsActive(m_vehicle);
         } else {
-            Kita::PlayerUtil::setPosition(m_player, Kita::TransformationUtil::getPosition(m_vehicle.getComponent<Kita::TransformationComponent>().worldModel) + glm::vec3(2.0f, 1.0f, 2.0f));
+            const auto newPos = Kita::TransformationUtil::getPosition(m_vehicle.getComponent<Kita::TransformationComponent>().worldModel) + glm::vec3(2.0f, 1.0f, 2.0f);
+            Kita::PlayerUtil::setPosition(m_player, newPos);
+            m_player.getComponent<Kita::CameraComponent>().properties.position = newPos;
             Kita::CameraUtil::markCameraAsActive(m_player);
         }
     }

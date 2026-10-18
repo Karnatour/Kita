@@ -37,11 +37,17 @@ namespace Kita {
     private:
         void generateChunkMeshData();
         void processGeneratedChunkMeshData();
-        void removeOutOfRangeChunks();
-        void addInRangeChunks();
 
-        int m_renderDistance = 2;
+        void updateAllChunks();
+        void updateChunkState(Chunk& chunk);
+
+        int m_renderDistance = 32;
+        // Used for physics simulation currently
+        int m_simulationDistance = 16;
+
         std::unordered_map<ChunkPos, Chunk> m_chunkMap = {};
+        // Used for fast iteration
+        std::vector<Chunk*> m_chunks;
 
         ChunkPos m_cameraChunkPos = ChunkPos(std::make_pair(0, 0));
         WorldGenerator m_worldGenerator = WorldGenerator(6, 0.5f, 2.0f);

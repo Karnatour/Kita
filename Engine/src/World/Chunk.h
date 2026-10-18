@@ -18,6 +18,9 @@ namespace Kita {
         bool hasValidSlot() const;
         void clearSlot();
 
+        void enableSimulation();
+        void disableSimulation();
+
     private:
         unsigned int m_chunkRenderPoolSlot = ChunkRenderPool::INVALID_SLOT;
         ChunkData m_chunkData;
