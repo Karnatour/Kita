@@ -162,6 +162,15 @@ namespace Kita {
     }
 
     void TerrainSystem::updateAllChunks() {
+        // First clear slots outside of render distance before adding new chunks to the pool
+        for (auto* chunk : m_chunks) {
+            const ChunkPos pos = chunk->getChunkData().getChunkPos();
+            if (chunk->hasValidSlot() && !pos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
+                m_chunkRenderPool->release(chunk->getSlot());
+                chunk->clearSlot();
+            }
+        }
+
         for (auto* chunk : m_chunks) {
             updateChunkState(*chunk);
         }

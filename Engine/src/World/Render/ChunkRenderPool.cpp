@@ -31,8 +31,7 @@ namespace Kita {
     }
 
     ChunkRenderPool::ChunkRenderPool(const unsigned int renderDistance) {
-        m_maxChunks = static_cast<unsigned int>(std::pow(2 * renderDistance + 1, 2)) + renderDistance * renderDistance;
-
+        m_maxChunks = static_cast<unsigned int>(std::pow(2 * renderDistance + 1, 2));
         m_freeSlots.reserve(m_maxChunks);
         for (unsigned int i = 0; i < m_maxChunks; ++i) {
             m_freeSlots.push_back(m_maxChunks - 1 - i);
@@ -66,6 +65,11 @@ namespace Kita {
     }
 
     unsigned int ChunkRenderPool::addChunk(const std::vector<VertexProperties>& vertices) {
+        if (m_freeSlots.empty()) {
+            KITA_ENGINE_ERROR("ChunkRenderPool is full this shouldn't happen");
+            return INVALID_SLOT;
+        }
+
         const unsigned int slot = m_freeSlots.back();
         m_freeSlots.pop_back();
 
