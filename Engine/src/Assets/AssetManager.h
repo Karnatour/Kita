@@ -22,7 +22,7 @@ namespace Kita {
     template <>
     struct AssetBuilder<Shader> {
         template <typename... Args>
-        static std::unique_ptr<Shader> build(const std::optional<std::filesystem::path>& ignored, Args&&... arg) {
+        static std::unique_ptr<Shader> build(const std::optional<std::filesystem::path>& /*ignored*/, Args&&... arg) {
             auto shader = Shader::createPtr();
             if (std::expected<void, Shader::ShaderError> result = shader->createShader(std::forward<Args>(arg)...); result.has_value()) {
                 KITA_ENGINE_DEBUG("[AssetBuilder] Created shader asset");
@@ -61,7 +61,7 @@ namespace Kita {
     template <>
     struct AssetBuilder<Mesh> {
         template <typename... Args>
-        static std::unique_ptr<Mesh> build(const std::optional<std::filesystem::path>& ignored, Args&&... args) {
+        static std::unique_ptr<Mesh> build(const std::optional<std::filesystem::path>& /*ignored*/, Args&&... args) {
             KITA_ENGINE_DEBUG("[AssetBuilder] Created mesh asset");
             return std::make_unique<Mesh>(std::forward<Args>(args)...);
         }

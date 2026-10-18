@@ -13,6 +13,7 @@ namespace Kita {
                 return true;
             default:
                 KITA_ENGINE_ASSERT(false, "Unknown PhysicsManager::Layers type");
+                return false;
         }
     }
 } // Kita

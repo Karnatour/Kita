@@ -7,7 +7,7 @@ namespace Kita {
         return Order::POST;
     }
 
-    void PostProcessingSystem::update(Scene& scene) {
+    void PostProcessingSystem::update([[maybe_unused]] Scene& scene) {
     }
 
     void PostProcessingSystem::render(Scene& scene) {

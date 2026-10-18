@@ -33,7 +33,7 @@ namespace Kita {
 
         importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_POINT | aiPrimitiveType_LINE);
 
-        constexpr unsigned int flags =
+        constexpr int flags =
             aiProcess_Triangulate |
             aiProcess_SortByPType |
             aiProcess_FindDegenerates |
@@ -47,7 +47,7 @@ namespace Kita {
             aiProcess_GenBoundingBoxes |
             aiProcess_ValidateDataStructure;
 
-        const aiScene* aiScene = importer.ReadFile(filePath.string(), flags);
+        const aiScene* aiScene = importer.ReadFile(filePath.string(), static_cast<unsigned int>(flags));
 
         if (!aiScene || aiScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !aiScene->mRootNode) {
             return std::unexpected(ImportError::FILE);
@@ -73,7 +73,7 @@ namespace Kita {
         std::vector<Material> materials;
         materials.resize(aiScene->mNumMaterials);
 
-        for (int materialIndex = 0; materialIndex < aiScene->mNumMaterials; ++materialIndex) {
+        for (unsigned int materialIndex = 0; materialIndex < aiScene->mNumMaterials; ++materialIndex) {
             const aiMaterial* aiMaterial = aiScene->mMaterials[materialIndex];
             KITA_ENGINE_DEBUG("[AssetImporter] Starting import of material: {}", aiMaterial->GetName().C_Str());
 
@@ -117,7 +117,7 @@ namespace Kita {
         // we must fetch the component before every addition since entt can reallocate and invalidate the reference
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
             const aiMesh* aiMesh = aiScene->mMeshes[aiNode->mMeshes[m]];
-            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials, worldTransform));
+            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials));
         }
 
         for (unsigned int i = 0; i < aiNode->mNumChildren; i++) {
@@ -127,7 +127,7 @@ namespace Kita {
         }
     }
 
-    Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const aiMatrix4x4& aiTransformMatrix) {
+    Entity AssetImporter::processMesh(const ::aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials) {
         KITA_ENGINE_DEBUG("[AssetImporter] Starting process of mesh: {}", aiMesh->mName.C_Str());
 
         Entity newEntity = scene.createEntity();

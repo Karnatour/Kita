@@ -6,7 +6,7 @@ namespace Kita {
     public:
         ~GLShaderStorageBuffer() override;
         void bind(unsigned position) override;
-        void upload(unsigned size, const void* data) override;
-        void createBuffer(unsigned size, const void* data) override;
+        void upload(size_t size, const void* data) override;
+        void createBuffer(size_t size, const void* data) override;
     };
 } // Kita

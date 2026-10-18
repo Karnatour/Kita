@@ -14,14 +14,14 @@ namespace Kita {
 
         static std::unique_ptr<ShaderStorageBuffer> createPtr();
 
-        virtual void createBuffer(unsigned int size, const void* data) = 0;
+        virtual void createBuffer(size_t size, const void* data) = 0;
         virtual void bind(unsigned int position) = 0;
-        virtual void upload(unsigned int size, const void* data) = 0;
+        virtual void upload(size_t size, const void* data) = 0;
 
         unsigned int getSSBO() const;
 
     protected:
         unsigned int m_ssbo = 0;
-        unsigned int m_size = 0;
+        size_t m_size = 0;
     };
 } // Kita

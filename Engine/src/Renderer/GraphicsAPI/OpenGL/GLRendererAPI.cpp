@@ -179,7 +179,7 @@ namespace Kita {
     void GLRendererAPI::multiDrawArraysIndirect(const DrawMode mode, const size_t drawCount) {
         KITA_ENGINE_PROFILE("Multi Draw Arrays Indirect");
 
-        glMultiDrawArraysIndirect(convertDrawModeToGL(mode), nullptr, drawCount, 0);
+        glMultiDrawArraysIndirect(convertDrawModeToGL(mode), nullptr, static_cast<GLsizei>(drawCount), 0);
     }
 
     void GLRendererAPI::drawElements(const DrawMode mode, const size_t indicesCount) {
@@ -191,10 +191,10 @@ namespace Kita {
     void GLRendererAPI::multiDrawElementsIndirect(const DrawMode mode, const size_t drawCount) {
         KITA_ENGINE_PROFILE("Multi Draw Elements Indirect");
 
-        glMultiDrawElementsIndirect(convertDrawModeToGL(mode),GL_UNSIGNED_INT, nullptr, drawCount, 0);
+        glMultiDrawElementsIndirect(convertDrawModeToGL(mode),GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(drawCount), 0);
     }
 
-    void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, const GLenum severity, GLsizei length, GLchar const* message, void const* user_param) {
+    void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, const GLenum severity, GLsizei /*length*/, GLchar const* message, void const* /*user_param*/) {
         auto const srcMsg = [source]() {
             switch (source) {
                 case GL_DEBUG_SOURCE_API:

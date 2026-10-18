@@ -1,4 +1,4 @@
-BOOL WINAPI DllMain(HMODULE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+BOOL WINAPI DllMain(HMODULE /*hinstDLL*/, const DWORD fdwReason, LPVOID /*lpvReserved*/) {
     switch (fdwReason) {
         case DLL_PROCESS_ATTACH:
 #ifdef KITA_BUILD_DEBUG

@@ -22,7 +22,7 @@ namespace Kita {
         return Order::PHYSICS;
     }
 
-    void PhysicsSystem::update(Scene& scene) {
+    void PhysicsSystem::update([[maybe_unused]] Scene& scene) {
         if (Engine::getEngine()->isFirstFrame()) {
             initPlayerCharacterComponents();
             initVehicleComponents();
@@ -37,7 +37,7 @@ namespace Kita {
         updateModelMatrices();
     }
 
-    void PhysicsSystem::render(Scene& scene) {
+    void PhysicsSystem::render([[maybe_unused]] Scene& scene) {
     }
 
     void PhysicsSystem::initPlayerCharacterComponents() {

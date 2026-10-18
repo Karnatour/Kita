@@ -8,7 +8,7 @@ namespace Kita {
         return Order::SKYBOX;
     }
 
-    void SkyboxSystem::update(Scene& scene) {
+    void SkyboxSystem::update([[maybe_unused]] Scene& scene) {
     }
 
     void SkyboxSystem::render(Scene& scene) {
@@ -36,12 +36,12 @@ namespace Kita {
                 {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH, FrameBuffer::AttachType::RENDERBUFFER}}},
                 true, 1);
             convertSkyboxTextureToCubemap(skyboxComponent); //TODO Release skybox texture
-            convertCubemapToIrradance(skyboxComponent);
+            convertCubemapToIrradiance(skyboxComponent);
         }
 
         if (m_skyboxTextureID != skyboxComponent.skyboxID) {
             convertSkyboxTextureToCubemap(skyboxComponent);
-            convertCubemapToIrradance(skyboxComponent);
+            convertCubemapToIrradiance(skyboxComponent);
         }
 
         renderer.getMainFramebuffer().bind();
@@ -93,7 +93,7 @@ namespace Kita {
         renderer.restoreViewport();
     }
 
-    void SkyboxSystem::convertCubemapToIrradance(SkyboxComponent& skyboxComponent) {
+    void SkyboxSystem::convertCubemapToIrradiance(SkyboxComponent& skyboxComponent) {
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
 

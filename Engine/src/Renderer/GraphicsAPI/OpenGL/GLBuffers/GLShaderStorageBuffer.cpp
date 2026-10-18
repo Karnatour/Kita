@@ -14,7 +14,7 @@ namespace Kita {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, position, m_ssbo);
     }
 
-    void GLShaderStorageBuffer::upload(const unsigned size, const void* data) {
+    void GLShaderStorageBuffer::upload(size_t size, const void* data) {
         if (size > m_size) {
             // Reallocate
             m_size = std::max(m_size * 2, size);
@@ -25,7 +25,7 @@ namespace Kita {
         }
     }
 
-    void GLShaderStorageBuffer::createBuffer(const unsigned size, const void* data) {
+    void GLShaderStorageBuffer::createBuffer(const size_t size, const void* data) {
         m_size = size;
         glCreateBuffers(1, &m_ssbo);
         glNamedBufferData(m_ssbo, m_size, data,GL_DYNAMIC_DRAW);

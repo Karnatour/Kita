@@ -11,7 +11,7 @@ namespace Kita {
         return Order::GEOMETRY;
     }
 
-    void GeometrySystem::update(Scene& scene) {
+    void GeometrySystem::update([[maybe_unused]] Scene& scene) {
     }
 
     void GeometrySystem::render(Scene& scene) {

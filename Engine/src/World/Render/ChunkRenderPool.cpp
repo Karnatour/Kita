@@ -31,7 +31,7 @@ namespace Kita {
     }
 
     ChunkRenderPool::ChunkRenderPool(const unsigned int renderDistance) {
-        m_maxChunks = std::pow(2 * renderDistance + 1, 2) + renderDistance * renderDistance;
+        m_maxChunks = static_cast<unsigned int>(std::pow(2 * renderDistance + 1, 2)) + renderDistance * renderDistance;
 
         m_freeSlots.reserve(m_maxChunks);
         for (unsigned int i = 0; i < m_maxChunks; ++i) {
@@ -84,7 +84,7 @@ namespace Kita {
     void ChunkRenderPool::release(const int slot) {
         // Move last command into remove slot
         const unsigned int commandToRemove = m_slotToCommand[slot];
-        const unsigned int lastCommand = m_commands.size() - 1;
+        const unsigned int lastCommand = static_cast<unsigned int>(m_commands.size() - 1);
 
         if (commandToRemove != lastCommand) {
             m_commands[commandToRemove] = m_commands[lastCommand];

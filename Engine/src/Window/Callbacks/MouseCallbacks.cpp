@@ -4,7 +4,7 @@
 #include "../../Events/MouseEvents.h"
 
 namespace Kita {
-    void mouseButtonCallbackFun(GLFWwindow* window, int button, int action, int mods) {
+    void mouseButtonCallbackFun(GLFWwindow* /*window*/, const int button, const int action, const int mods) {
         MousePressed pressedEvent(InputKeys::convertGLFWToKitaButton(button), mods);
         MouseReleased releasedEvent(InputKeys::convertGLFWToKitaButton(button));
         switch (action) {
@@ -25,17 +25,17 @@ namespace Kita {
         }
     }
 
-    void cursorPosCallbackFun(GLFWwindow* window, double xpos, double ypos) {
+    void cursorPosCallbackFun(GLFWwindow* /*window*/, const double xpos, const double ypos) {
         MouseMoved event(xpos, ypos);
         EventManager::triggerEvent(event);
     }
 
-    void cursorEnterCallbackFun(GLFWwindow* window, int entered) {
+    void cursorEnterCallbackFun(GLFWwindow* /*window*/, const int entered) {
         MouseChangedFocus event(entered);
         EventManager::triggerEvent(event);
     }
 
-    void scrollCallbackFun(GLFWwindow* window, double xoffset, double yoffset) {
+    void scrollCallbackFun(GLFWwindow* /*window*/, const double xoffset, const double yoffset) {
         MouseScrolled event(xoffset, yoffset);
         EventManager::triggerEvent(event);
     }

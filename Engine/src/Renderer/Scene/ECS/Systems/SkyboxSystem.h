@@ -20,7 +20,7 @@ namespace Kita {
         static constexpr std::pair<int,int> CUBEMAP_FACE_RES = std::make_pair(2048,2048);
         static constexpr std::pair<int,int> IRRADIANCE_RES = std::make_pair(32,32);
         void convertSkyboxTextureToCubemap(SkyboxComponent& skyboxComponent);
-        void convertCubemapToIrradance(SkyboxComponent& skyboxComponent);
+        void convertCubemapToIrradiance(SkyboxComponent& skyboxComponent);
         void createAssetsIfNotExists();
 
         std::unique_ptr<FrameBuffer> m_cubemapCaptureFBO;

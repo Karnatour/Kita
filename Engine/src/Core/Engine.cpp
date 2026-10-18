@@ -139,7 +139,7 @@ namespace Kita {
         m_window->exit();
     }
 
-    void Engine::onWindowClosed(WindowClosed& event) {
+    void Engine::onWindowClosed(WindowClosed& /*event*/) {
         Engine::getEngine()->stop();
     }
 }

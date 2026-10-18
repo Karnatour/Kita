@@ -11,7 +11,7 @@ namespace Kita {
         return Order::LIGHTSHADOW;
     }
 
-    void LightShadowSystem::update(Scene& scene) {
+    void LightShadowSystem::update([[maybe_unused]] Scene& scene) {
     }
 
     void LightShadowSystem::render(Scene& scene) {
@@ -129,17 +129,14 @@ namespace Kita {
         Entity dirLightEntity(&scene, scene.view<LightComponent, DirectionalShadowComponent>().front());
         Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
 
-        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount, shadowDistance] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
+        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount, shadowDistance, lambda] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
         DirectionalShadowUBOLayout dirLightUBOData{};
 
         const CameraProperties& cameraProperties = cameraEntity.getComponent<CameraComponent>().properties;
-        glm::vec3 lightDir = dirLightEntity.getComponent<LightComponent>().properties.direction;
+        const glm::vec3 lightDir = dirLightEntity.getComponent<LightComponent>().properties.direction;
 
         //extract
         for (int i = 0; i < m_cascadeCount; i++) {
-            // lambda = 0 will be linear distance split
-            // lambda = 1 will be logarithmic split
-            constexpr float lambda = 0.9f;
             const float p = static_cast<float>(i + 1) / static_cast<float>(m_cascadeCount);
             const float logSplit = cameraProperties.zNear * std::pow(shadowDistance / cameraProperties.zNear, p);
             const float linSplit = cameraProperties.zNear + (shadowDistance - cameraProperties.zNear) * p;

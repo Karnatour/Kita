@@ -52,7 +52,7 @@ namespace Kita {
             finalShape = scaledResult.Get();
         }
 
-        const auto creationSettings = JPH::BodyCreationSettings(finalShape, PhysicsUtil::GLMToJPHRVec3(decomposedRoot.position), PhysicsUtil::GLMToJPHQuat(decomposedRoot.rotation), motionType, layer);
+        const auto creationSettings = JPH::BodyCreationSettings(finalShape, PhysicsUtil::GLMToJPHRVec3(decomposedRoot.position), PhysicsUtil::GLMToJPHQuat(decomposedRoot.rotation), motionType, static_cast<JPH::ObjectLayer>(layer));
 
         return createBody(creationSettings, activate);
     }

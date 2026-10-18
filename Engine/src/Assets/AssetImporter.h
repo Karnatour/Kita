@@ -34,7 +34,7 @@ namespace Kita {
         static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform);
         static void addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials);
         static glm::mat4 convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix);
-        static Entity processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const aiMatrix4x4& aiTransformMatrix);
+        static Entity processMesh(const ::aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials);
         static VertexProperties importVertex(const aiMesh& aiMesh, unsigned int index);
         static Texture::TextureType assimpToKitaTextureType(const aiTextureType& ai_texture);
         static std::optional<AssetManager::AssetID> importTexture(aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path);

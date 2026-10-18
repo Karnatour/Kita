@@ -65,7 +65,7 @@ namespace Kita {
     }
 
     void Window::errorCallbackFun(int error_code, const char* description) {
-        KITA_ENGINE_ERROR("GLFW error: {}", description);
+        KITA_ENGINE_ERROR("GLFW error code: {}, error desc: {}", error_code, description);
     }
 
     void Window::setDarkMode() {

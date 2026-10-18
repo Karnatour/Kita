@@ -60,7 +60,7 @@ namespace Kita {
                     file.read(reinterpret_cast<char*>(&subNodeHeader), sizeof(subNodeHeader));
 
                     Entity chunkEntity = scene.createEntity();
-                    for (int k = 0; k < subNodeHeader.chunkCount; ++k) {
+                    for (unsigned int k = 0; k < subNodeHeader.chunkCount; ++k) {
                         ChunkHeader chunkHeader;
                         file.read(reinterpret_cast<char*>(&chunkHeader), sizeof(chunkHeader));
                         loadChunk(file, chunkHeader, chunkEntity);

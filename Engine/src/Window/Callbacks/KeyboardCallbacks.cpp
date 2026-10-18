@@ -5,7 +5,7 @@
 #include "../../Input/InputKeys.h"
 
 namespace Kita {
-    void keyboardKeyCallbackFun(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    void keyboardKeyCallbackFun(GLFWwindow* /*window*/, const int key, const int /*scancode*/, const int action, const int mods) {
         KeyPressed pressedEvent(InputKeys::convertGLFWToKitaKey(key), mods);
         KeyReleased releasedEvent(InputKeys::convertGLFWToKitaKey(key));
         switch (action) {

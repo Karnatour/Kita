@@ -23,6 +23,9 @@ namespace Kita {
         Texture* texture = nullptr;
         int cascadeCount = 4;
         float shadowDistance = 500.0f;
+        // lambda = 0 will be linear distance split
+        // lambda = 1 will be logarithmic split
+        float lambda = 0.75f;
     };
 
 
