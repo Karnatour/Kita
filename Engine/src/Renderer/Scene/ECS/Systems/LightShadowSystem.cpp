@@ -1,5 +1,6 @@
 #include "LightShadowSystem.h"
 
+#include "TerrainSystem.h"
 #include "../../Scene.h"
 #include "../../../../Core/Engine.h"
 #include "../../../Util/LightUtil.h"
@@ -71,7 +72,15 @@ namespace Kita {
         m_lightFBO->bind();
         renderer.setViewport(properties.resolution, false);
         renderer.clearBit({{ClearBit::DEPTH}});
+        // Set cull mode to front to reduce shadow artifacts
         renderer.setCullMode(CullMode::FRONT);
+
+        // Handle terrain manually since we don't store terrain data in ECS
+        if (const TerrainSystem* terrainSystem = scene.getSystem<TerrainSystem>(); terrainSystem != nullptr) {
+            shader.bind();
+            shader.setUniformMat4("model", glm::mat4(1.0f));
+            terrainSystem->getChunkRenderPool()->render();
+        }
 
         for (const auto [entity,children, transformation] : scene.view<ChildrenComponent, TransformationComponent, RenderInShadowPass>().each()) {
             for (const auto child : children.children) {
@@ -120,7 +129,7 @@ namespace Kita {
         Entity dirLightEntity(&scene, scene.view<LightComponent, DirectionalShadowComponent>().front());
         Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
 
-        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
+        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount, shadowDistance] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
         DirectionalShadowUBOLayout dirLightUBOData{};
 
         const CameraProperties& cameraProperties = cameraEntity.getComponent<CameraComponent>().properties;
@@ -128,13 +137,13 @@ namespace Kita {
 
         //extract
         for (int i = 0; i < m_cascadeCount; i++) {
-            const float p = static_cast<float>((i + 1)) / static_cast<float>(m_cascadeCount);
-
-            const float logSplit = cameraProperties.zNear * std::pow(cameraProperties.zFar / cameraProperties.zNear, p);
-            const float linSplit = cameraProperties.zNear + (cameraProperties.zFar - cameraProperties.zNear) * p;
-
-            float t = 0.5f;
-            cascadeSplitDistances[i] = glm::mix(linSplit, logSplit, t);
+            // lambda = 0 will be linear distance split
+            // lambda = 1 will be logarithmic split
+            constexpr float lambda = 0.9f;
+            const float p = static_cast<float>(i + 1) / static_cast<float>(m_cascadeCount);
+            const float logSplit = cameraProperties.zNear * std::pow(shadowDistance / cameraProperties.zNear, p);
+            const float linSplit = cameraProperties.zNear + (shadowDistance - cameraProperties.zNear) * p;
+            cascadeSplitDistances[i] = glm::mix(linSplit, logSplit, lambda);
         }
 
         //extract

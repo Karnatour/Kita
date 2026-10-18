@@ -96,6 +96,10 @@ namespace Kita {
         return m_cameraChunkPos;
     }
 
+    const std::unique_ptr<ChunkRenderPool>& TerrainSystem::getChunkRenderPool() const {
+        return m_chunkRenderPool;
+    }
+
     void TerrainSystem::generateChunkMeshData() {
         const int centerX = m_cameraChunkPos.getChunkX();
         const int centerZ = m_cameraChunkPos.getChunkZ();

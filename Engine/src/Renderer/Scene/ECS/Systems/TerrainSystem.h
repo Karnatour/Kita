@@ -34,6 +34,7 @@ namespace Kita {
         const Chunk* getCameraChunk() const;
         ChunkPos getCameraChunkPos() const;
 
+        const std::unique_ptr<ChunkRenderPool>& getChunkRenderPool() const;
     private:
         void generateChunkMeshData();
         void processGeneratedChunkMeshData();

@@ -69,7 +69,7 @@ Kita::Scene& Sandbox::getScene() {
 
 void Sandbox::onKeyPressed(const Kita::KeyPressed& event) {
     KITA_DEBUG("[Test] Key pressed {}", magic_enum::enum_name(event.getKey()));
-    if (Kita::Input::isKeyPressed(Kita::InputKeys::KeyboardKey::KEY_C)) {
+    if (Kita::Input::isKeyPressed(Kita::InputKeys::KeyboardKey::KEY_C) && !Kita::CameraUtil::isCameraActive(m_vehicle)) {
         if (!Kita::CameraUtil::isCameraActive(m_player)) {
             Kita::CameraUtil::markCameraAsActive(m_player);
         } else {

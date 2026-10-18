@@ -22,6 +22,7 @@ namespace Kita {
         std::pair<int, int> resolution = std::make_pair(4096, 4096);
         Texture* texture = nullptr;
         int cascadeCount = 4;
+        float shadowDistance = 500.0f;
     };
 
 
