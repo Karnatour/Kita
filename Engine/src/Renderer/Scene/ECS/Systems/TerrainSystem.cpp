@@ -1,7 +1,9 @@
 #include "TerrainSystem.h"
 #include "../Entity.h"
 #include "../../Scene.h"
+#include "../../../DebugScope.h"
 #include "../../../../Core/Engine.h"
+#include "../../../../Util/ColorUtil.h"
 #include "../Components/Components.h"
 
 namespace Kita {
@@ -10,6 +12,8 @@ namespace Kita {
     }
 
     void TerrainSystem::update(Scene& scene) {
+        KITA_ENGINE_PROFILE("Terrain system update");
+
         if (Engine::getEngine()->isFirstFrame()) {
             m_chunkRenderPool = std::make_unique<ChunkRenderPool>(m_renderDistance);
         }
@@ -32,9 +36,22 @@ namespace Kita {
 
         updateAllChunks();
         generateChunkMeshData();
+
+        if (auto* environment = scene.contextGet<EnvironmentComponent>()) {
+            auto& fogProperties = environment->properties.fogProperties;
+            fogProperties.fogStart = 0.85f * m_renderDistance * ChunkData::CHUNK_SIZE;
+            fogProperties.fogEnd = 1.0f * m_renderDistance * ChunkData::CHUNK_SIZE;
+            fogProperties.fogDensity = 2.5f;
+            fogProperties.fogColor = glm::vec3(0.429f, 0.185f, 0.112f);
+            fogProperties.fogMode = FogMode::EXPONENTIAL2;
+        }
     }
 
     void TerrainSystem::render(Scene& scene) {
+        KITA_ENGINE_PROFILE("Terrain system render");
+        const auto debugScope = DebugScope::createPtr();
+        debugScope->scope("Terrain pass");
+
         auto& assetManager = Engine::getEngine()->getAssetManager();
         auto& renderer = Engine::getEngine()->getRenderer();
         renderer.getMainFramebuffer().bind();
@@ -63,7 +80,7 @@ namespace Kita {
         }
 
         renderer.setMaterialInShader(shader, textures);
-        shader.setUniformFloat("iblIntensity", Entity(&scene, scene.view<SceneSettingsComponent>().front()).getComponent<SceneSettingsComponent>().properties.iblIntensity); //TODO Move to UBO ?
+        shader.setUniformFloat("iblIntensity", scene.contextGet<SceneSettingsComponent>()->properties.iblIntensity); //TODO Move to UBO ?
         shader.setUniformMat4("model", glm::mat4(1.0f));
         m_chunkRenderPool->render();
 

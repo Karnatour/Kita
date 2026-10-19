@@ -23,10 +23,12 @@ namespace Kita {
         FrameBuffer& operator=(FrameBuffer&&) = delete;
         virtual ~FrameBuffer() = default;
 
-        static std::unique_ptr<FrameBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<FrameBuffer> createPtr();
 
         virtual void createBuffer(const std::pair<int, int>& resolution, std::span<const AttachInfo> attachments, bool highPrecision, int layers) = 0;
+        virtual void createEmptyBuffer() = 0;
         virtual void attachCubemapFace(unsigned int cubemapTexture, int faceIndex) = 0;
+        virtual void attachExternalTexture(BufferType type, const Texture& texture) = 0;
         virtual void bind() = 0;
         virtual void unbind() = 0;
         virtual void resize(const std::pair<int,int>& newResolution) = 0;

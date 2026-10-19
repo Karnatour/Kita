@@ -1,4 +1,6 @@
 #include "PostProcessingSystem.h"
+
+#include "../../../DebugScope.h"
 #include "../../../../Core/Engine.h"
 #include "../Components/PostProcessingComponent.h"
 
@@ -12,6 +14,8 @@ namespace Kita {
 
     void PostProcessingSystem::render(Scene& scene) {
         KITA_ENGINE_PROFILE("Post processing system render");
+        const auto debugScope = DebugScope::createPtr();
+        debugScope->scope("Post processing pass");
 
         auto& renderer = Engine::getEngine()->getRenderer();
         auto& assetManager = Engine::getEngine()->getAssetManager();
@@ -31,7 +35,7 @@ namespace Kita {
         renderer.clearBit({{ClearBit::COLOR}});
         auto& shader = assetManager.getAsset<Shader>(m_shaderAssetID);
         shader.bind();
-        shader.setUniformFloat("exposure", Entity(&scene, scene.view<PostProcessingComponent>().front()).getComponent<PostProcessingComponent>().properties.exposure); //TOOD Move to UBO ?
+        shader.setUniformFloat("exposure", scene.contextGet<PostProcessingComponent>()->properties.exposure); //TOOD Move to UBO ?
         renderer.renderMesh(assetManager.getAsset<Mesh>(m_quadMeshAssetID), shader, glm::mat4(1.0f), {{renderer.getMainFramebuffer().getColorTexture()}});
         renderer.enableCapability(Capability::DEPTH_TEST);
 

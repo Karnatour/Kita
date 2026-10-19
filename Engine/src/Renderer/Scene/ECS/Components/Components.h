@@ -2,6 +2,7 @@
 
 /* Used for includes of specific components, so we don't spam Kita.h */
 #include "CameraComponent.h"
+#include "EnvironmentComponent.h"
 #include "LightShadowComponents.h"
 #include "MaterialComponent.h"
 #include "MeshComponent.h"

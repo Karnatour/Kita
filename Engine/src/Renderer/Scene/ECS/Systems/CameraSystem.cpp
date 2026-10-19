@@ -4,6 +4,8 @@
 #include "../Components/CameraComponent.h"
 #include "CameraSystem.h"
 
+#include "../../../DebugScope.h"
+
 namespace Kita {
     int CameraSystem::getOrder() {
         return Order::CAMERA;
@@ -25,6 +27,8 @@ namespace Kita {
 
     void CameraSystem::render(Scene& scene) {
         KITA_ENGINE_PROFILE("Camera system render");
+        const auto debugScope = DebugScope::createPtr();
+        debugScope->scope("Camera pass");
 
         // lazy creation on render thread
         if (m_cameraUBO == nullptr) {

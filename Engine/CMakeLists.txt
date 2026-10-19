@@ -198,6 +198,17 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLDrawCommandBuffer.h
         src/World/Render/ChunkRenderPool.cpp
         src/World/Render/ChunkRenderPool.h
+        src/Renderer/Scene/ECS/Systems/EnvironmentSystem.cpp
+        src/Renderer/Scene/ECS/Systems/EnvironmentSystem.h
+        src/Renderer/Scene/ECS/Components/EnvironmentComponent.h
+        src/Renderer/Properties/EnvironmentProperties.h
+        src/Renderer/DebugScope.h
+        src/Renderer/GraphicsAPI/OpenGL/GLDebugScope.h
+        src/Renderer/DebugScope.cpp
+        src/Events/RendererEvents.cpp
+        src/Events/RendererEvents.h
+        src/Util/ColorUtil.cpp
+        src/Util/ColorUtil.h
 )
 
 #Multithreaded compilation

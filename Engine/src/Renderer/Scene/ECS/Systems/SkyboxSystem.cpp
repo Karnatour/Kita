@@ -1,4 +1,6 @@
 #include "SkyboxSystem.h"
+
+#include "../../../DebugScope.h"
 #include "../../../../Core/Engine.h"
 #include "../../../Util/CubemapUtil.h"
 #include "../Components/SkyboxComponent.h"
@@ -13,6 +15,8 @@ namespace Kita {
 
     void SkyboxSystem::render(Scene& scene) {
         KITA_ENGINE_PROFILE("Skybox system render");
+        const auto debugScope = DebugScope::createPtr();
+        debugScope->scope("Skybox pass");
 
         auto entity = Entity(&scene,scene.view<SkyboxComponent>().front());
         if (!entity) {

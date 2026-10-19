@@ -1,8 +1,9 @@
 #pragma once
 #include "Event.h"
+#include "../Core/DllTemplate.h"
 
 namespace Kita {
-    class PreUpdateEvent : public Event {
+    class KITAENGINE_API PreUpdateEvent : public Event {
     public:
         explicit PreUpdateEvent(double deltaTime);
         double getFixedDeltaTime() const;
@@ -10,7 +11,7 @@ namespace Kita {
         double m_fixedDeltaTime;
     };
 
-    class PostUpdateEvent : public Event {
+    class KITAENGINE_API PostUpdateEvent : public Event {
     public:
         explicit PostUpdateEvent(double deltaTime);
         double getFixedDeltaTime() const;

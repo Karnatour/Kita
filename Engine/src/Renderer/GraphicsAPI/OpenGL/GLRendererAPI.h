@@ -8,6 +8,7 @@ namespace Kita {
         static GLenum convertBufferTypeToInternalFormat(BufferType buffer);
         static GLenum convertCapabilityToGL(Capability capability);
         static GLenum convertDrawModeToGL(DrawMode drawMode);
+        static GLenum convertBlendFuncToGL(BlendFunc function);
         static GLbitfield convertBitToGL(ClearBit bit);
 
     private:
@@ -24,6 +25,7 @@ namespace Kita {
         void disableBufferWrite(BufferType bufferType) override;
         void setDepthFunc(DepthFunction function) override;
         void setCullMode(CullMode mode) override;
+        void setBlendFunc(BlendFunc functionSrc, BlendFunc functionDst) override;
 
         void drawArrays(DrawMode mode, size_t verticesCount) override;
         void multiDrawArraysIndirect(DrawMode mode, size_t drawCount) override;

@@ -14,7 +14,7 @@ namespace Kita {
         VertexBuffer& operator=(VertexBuffer&&) = delete;
         virtual ~VertexBuffer() = default;
 
-        static std::unique_ptr<VertexBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<VertexBuffer> createPtr();
 
         virtual void createBuffer(std::vector<VertexProperties> vertices) = 0;
         virtual void createEmptyBuffer(size_t size) = 0;

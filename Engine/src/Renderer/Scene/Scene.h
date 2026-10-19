@@ -38,6 +38,20 @@ namespace Kita {
             return m_registry.view<Components...>();
         }
 
+        template <typename Component>
+        void contextAdd() {
+            if (m_registry.ctx().find<Component>()) {
+                KITA_ENGINE_ERROR("Trying to add existing component into registry context: {}", typeid(Component).name());
+                return;
+            }
+            m_registry.ctx().emplace<Component>();
+        }
+
+        template <typename Component>
+        auto* contextGet() {
+            return m_registry.ctx().find<Component>();
+        }
+
         //Stored as entt entity, so we don't get circular dependency
         entt::entity getCameraEntity() const;
 
@@ -50,6 +64,7 @@ namespace Kita {
          *  CameraUBO = 0
          *  DirLightUBO = 1
          *  PhongPropertiesUBO = 2
+         *  EnvironmentUBO = 3
          *  LightsSSBO = 0
         */
         std::vector<std::unique_ptr<System>> m_systems;

@@ -15,7 +15,7 @@ namespace Kita {
         VertexArray& operator=(VertexArray&&) = delete;
         virtual ~VertexArray() = default;
 
-        static std::unique_ptr<VertexArray> createPtr();
+        [[nodiscard]] static std::unique_ptr<VertexArray> createPtr();
 
         virtual void createBuffer(const std::unique_ptr<VertexBuffer>& vbo, const std::unique_ptr<IndexBuffer>& ibo) = 0;
         virtual void attachVBO(const VertexBuffer& vbo) = 0;

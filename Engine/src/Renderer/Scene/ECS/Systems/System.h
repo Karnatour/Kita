@@ -13,6 +13,7 @@ namespace Kita {
             static constexpr int TERRAIN = 250;
             static constexpr int GEOMETRY = 300;
             static constexpr int SKYBOX = 400;
+            static constexpr int ENVIRONMENT = 450;
             static constexpr int POST = 500;
         };
 

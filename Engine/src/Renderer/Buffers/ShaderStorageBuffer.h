@@ -12,7 +12,7 @@ namespace Kita {
         ShaderStorageBuffer& operator=(ShaderStorageBuffer&&) = delete;
         virtual ~ShaderStorageBuffer() = default;
 
-        static std::unique_ptr<ShaderStorageBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<ShaderStorageBuffer> createPtr();
 
         virtual void createBuffer(size_t size, const void* data) = 0;
         virtual void bind(unsigned int position) = 0;

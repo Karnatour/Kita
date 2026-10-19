@@ -5,8 +5,6 @@
 #include "../../../Util/CameraUtil.h"
 
 namespace Kita {
-    class Scene;
-
     class KITAENGINE_API CameraSystem final : public System {
     public:
         explicit CameraSystem(Scene& scene)

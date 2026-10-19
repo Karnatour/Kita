@@ -6,9 +6,11 @@ namespace Kita {
     public:
         ~GLFrameBuffer() override;
         void createBuffer(const std::pair<int, int>& resolution, std::span<const AttachInfo> attachments, bool highPrecision, int layers) override;
+        void createEmptyBuffer() override;
         void bind() override;
         void unbind() override;
         void attachCubemapFace(unsigned cubemapTexture, int faceIndex) override;
+        void attachExternalTexture(BufferType bufferType, const Texture& texture) override;
         void resize(const std::pair<int, int>& newResolution) override;
 
     private:

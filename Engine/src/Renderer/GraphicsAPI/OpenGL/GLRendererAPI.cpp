@@ -24,6 +24,8 @@ namespace Kita {
                 return GL_DEPTH_TEST;
             case Capability::CULL_FACE:
                 return GL_CULL_FACE;
+            case Capability::BLEND:
+                return GL_BLEND;
             default:
                 KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
                 return GL_NONE;
@@ -40,6 +42,42 @@ namespace Kita {
                 return GL_TRIANGLES;
             default:
                 KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(drawMode));
+                return GL_NONE;
+        }
+    }
+
+    GLenum GLRendererAPI::convertBlendFuncToGL(const BlendFunc function) {
+        switch (function) {
+            case BlendFunc::ZERO:
+                return GL_ZERO;
+            case BlendFunc::ONE:
+                return GL_ONE;
+            case BlendFunc::SRC_COLOR:
+                return GL_SRC_COLOR;
+            case BlendFunc::ONE_MINUS_SRC_COLOR:
+                return GL_ONE_MINUS_SRC_COLOR;
+            case BlendFunc::DST_COLOR:
+                return GL_DST_COLOR;
+            case BlendFunc::ONE_MINUS_DST_COLOR:
+                return GL_ONE_MINUS_DST_COLOR;
+            case BlendFunc::SRC_ALPHA:
+                return GL_SRC_ALPHA;
+            case BlendFunc::ONE_MINUS_SRC_ALPHA:
+                return GL_ONE_MINUS_SRC_ALPHA;
+            case BlendFunc::DST_ALPHA:
+                return GL_DST_ALPHA;
+            case BlendFunc::ONE_MINUS_DST_ALPHA:
+                return GL_ONE_MINUS_DST_ALPHA;
+            case BlendFunc::CONSTANT_COLOR:
+                return GL_CONSTANT_COLOR;
+            case BlendFunc::ONE_MINUS_CONSTANT_COLOR:
+                return GL_ONE_MINUS_CONSTANT_COLOR;
+            case BlendFunc::CONSTANT_ALPHA:
+                return GL_CONSTANT_ALPHA;
+            case BlendFunc::ONE_MINUS_CONSTANT_ALPHA:
+                return GL_ONE_MINUS_CONSTANT_ALPHA;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown blend function to GL variation {} ", magic_enum::enum_name(function));
                 return GL_NONE;
         }
     }
@@ -170,6 +208,10 @@ namespace Kita {
         }
     }
 
+    void GLRendererAPI::setBlendFunc(const BlendFunc functionSrc, const BlendFunc functionDst) {
+        glBlendFunc(convertBlendFuncToGL(functionSrc), convertBlendFuncToGL(functionDst));
+    }
+
     void GLRendererAPI::drawArrays(const DrawMode mode, const size_t verticesCount) {
         KITA_ENGINE_PROFILE("Draw Arrays");
 
@@ -195,6 +237,10 @@ namespace Kita {
     }
 
     void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, const GLenum severity, GLsizei /*length*/, GLchar const* message, void const* /*user_param*/) {
+        if (type == GL_DEBUG_TYPE_PUSH_GROUP || type == GL_DEBUG_TYPE_POP_GROUP) {
+            return;
+        }
+
         auto const srcMsg = [source]() {
             switch (source) {
                 case GL_DEBUG_SOURCE_API:

@@ -14,7 +14,7 @@ namespace Kita {
         RenderBuffer& operator=(RenderBuffer&&) = delete;
         virtual ~RenderBuffer() = default;
 
-        static std::unique_ptr<RenderBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<RenderBuffer> createPtr();
 
         virtual void createBuffer(const std::pair<int, int>& resolution, BufferType bufferType) = 0;
         virtual void bind() = 0;

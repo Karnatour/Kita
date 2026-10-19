@@ -36,6 +36,7 @@ namespace Kita {
         void disableBufferWrite(BufferType bufferType);
         void setDepthFunc(DepthFunction function);
         void setCullMode(CullMode mode);
+        void setBlendFunc(BlendFunc functionSrc, BlendFunc functionDst);
 
         FrameBuffer& getOutputFramebuffer() const;
         FrameBuffer& getMainFramebuffer() const;
@@ -43,7 +44,7 @@ namespace Kita {
     private:
         void setTexturesInShader(Shader& shader, std::span<Texture* const> textures);
         void resetTextureState(Shader& shader);
-        static void onFrameBufferResize(const FrameBufferResized& event);
+        void onFrameBufferResize(const FrameBufferResized& event);
         std::unique_ptr<FrameBuffer> m_mainFramebuffer;
         std::unique_ptr<FrameBuffer> m_outputFramebuffer; // post process FBO, used by editor
         std::pair<int, int> m_viewport = std::make_pair(1600, 900);

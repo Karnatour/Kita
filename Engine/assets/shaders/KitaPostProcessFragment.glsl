@@ -1,14 +1,14 @@
 #version 460
 
-const uint ALBEDO             = 1u << 0;
+const uint ALBEDO = 1u << 0;
 const uint METALLIC_ROUGHNESS = 1u << 1;
-const uint CUBEMAP            = 1u << 2;
-const uint COLOR              = 1u << 3;
-const uint DEPTH              = 1u << 4;
-const uint STENCIL            = 1u << 5;
-const uint SKYBOX             = 1u << 6;
-const uint NORMAL             = 1u << 7;
-const uint DEPTH_ARRAY        = 1u << 8;
+const uint CUBEMAP = 1u << 2;
+const uint COLOR = 1u << 3;
+const uint DEPTH = 1u << 4;
+const uint STENCIL = 1u << 5;
+const uint SKYBOX = 1u << 6;
+const uint NORMAL = 1u << 7;
+const uint DEPTH_ARRAY = 1u << 8;
 
 out vec4 FragColor;
 
@@ -22,7 +22,7 @@ uniform float exposure;
 
 vec3 ACESFilm(vec3 x) {
     float a = 2.51, b = 0.03, c = 2.43, d = 0.59, e = 0.14;
-    return clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0, 1.0);
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
 
 void main()

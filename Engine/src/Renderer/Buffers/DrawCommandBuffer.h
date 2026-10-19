@@ -17,7 +17,7 @@ namespace Kita {
         DrawCommandBuffer& operator=(DrawCommandBuffer&&) = delete;
         virtual ~DrawCommandBuffer() = default;
 
-        static std::unique_ptr<DrawCommandBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<DrawCommandBuffer> createPtr();
 
         virtual void createEmptyBuffer(Type type, size_t size) = 0;
         virtual void createBuffer(const std::vector<DrawArraysIndirectCommandProperties>& arraysCommands) = 0;

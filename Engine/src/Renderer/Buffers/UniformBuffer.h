@@ -12,7 +12,7 @@ namespace Kita {
         UniformBuffer& operator=(UniformBuffer&&) = delete;
         virtual ~UniformBuffer() = default;
 
-        static std::unique_ptr<UniformBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<UniformBuffer> createPtr();
 
         virtual void createBuffer(unsigned int size, const void* data) = 0;
         virtual void bind(unsigned int position) = 0;

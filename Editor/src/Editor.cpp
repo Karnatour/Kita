@@ -90,15 +90,15 @@ void Editor::onRender() {
 
     ImGui::Begin("Debug Properties");
     Kita::Entity light = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::LightComponent>().front());
-    Kita::Entity postProcess = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::PostProcessingComponent>().front());
-    Kita::Entity scene = Kita::Entity(&m_sandbox->getScene(), m_sandbox->getScene().view<Kita::SceneSettingsComponent>().front());
     auto& lightComponent = light.getComponent<Kita::LightComponent>();
-    auto& postProcessComponent = postProcess.getComponent<Kita::PostProcessingComponent>();
-    auto& sceneComponent = scene.getComponent<Kita::SceneSettingsComponent>();
+    auto* postProcessComponent = m_sandbox->getScene().contextGet<Kita::PostProcessingComponent>();
+    auto* sceneComponent = m_sandbox->getScene().contextGet<Kita::SceneSettingsComponent>();
+    auto* environment = m_sandbox->getScene().contextGet<Kita::EnvironmentComponent>();
     ImGui::DragFloat3("Direction", glm::value_ptr(lightComponent.properties.direction), 0.01f, -1.0f, 1.0f);
     ImGui::DragFloat3("Diffuse", glm::value_ptr(lightComponent.properties.diffuse), 0.05f, 0.0f, 20.0f);
-    ImGui::DragFloat("PostProcess Exposure", &postProcessComponent.properties.exposure, 0.01f, 0.0f, 10.0f);
-    ImGui::DragFloat("IBL Intensity", &sceneComponent.properties.iblIntensity, 0.01f, 0.0f, 10.0f);
+    ImGui::DragFloat("PostProcess Exposure", &postProcessComponent->properties.exposure, 0.01f, 0.0f, 10.0f);
+    ImGui::DragFloat("IBL Intensity", &sceneComponent->properties.iblIntensity, 0.01f, 0.0f, 10.0f);
+    ImGui::DragFloat3("Environmental Fog Color", glm::value_ptr(environment->properties.fogProperties.fogColor), 0.01f, 0.0f, 10.0f);
     const double dt = Kita::Time::getDeltaTime();
     static double timer = 0.0;
     static double displayedDt = 0.0;
@@ -114,7 +114,7 @@ void Editor::onRender() {
     auto& cameraComponent = activeCamera.getComponent<Kita::CameraComponent>();
     ImGui::Text("Frame time: %.3f ms | FPS: %.0f", displayedDt * 1000.0, 1.0 / displayedDt);
     ImGui::Text("Position: %.2f %.2f %.2f", cameraComponent.properties.position.x, cameraComponent.properties.position.y, cameraComponent.properties.position.z);
-    ImGui::Text("Mesh count: %d", static_cast<int>(Kita::Engine::getEngine()->getAssetManager().getTotalNumberOfAssetsForBucket<Kita::Mesh>()));
+    ImGui::Text("Mesh count: %d", static_cast<int>(Kita::Engine::getEngine()->getAssetManager().getTotalNumberOfAssetsForBucket<Kita::Mesh>() + std::pow(2 * 64 + 1, 2)));
     ImGui::End();
 
     /*

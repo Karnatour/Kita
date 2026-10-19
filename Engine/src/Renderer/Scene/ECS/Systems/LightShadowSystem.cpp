@@ -2,6 +2,7 @@
 
 #include "TerrainSystem.h"
 #include "../../Scene.h"
+#include "../../../DebugScope.h"
 #include "../../../../Core/Engine.h"
 #include "../../../Util/LightUtil.h"
 #include "../Components/Components.h"
@@ -16,6 +17,8 @@ namespace Kita {
 
     void LightShadowSystem::render(Scene& scene) {
         KITA_ENGINE_PROFILE("LightShadow system render");
+        const auto debugScope = DebugScope::createPtr();
+        debugScope->scope("LightShadow pass");
 
         m_castsShadowsCount = 0;
         createBuffersIfMissing(scene);

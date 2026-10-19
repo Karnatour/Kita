@@ -31,6 +31,10 @@ namespace Kita {
         verifyBuild();
     }
 
+    void GLFrameBuffer::createEmptyBuffer() {
+        glCreateFramebuffers(1, &m_fbo);
+    }
+
     void GLFrameBuffer::bind() {
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     }
@@ -41,6 +45,24 @@ namespace Kita {
 
     void GLFrameBuffer::attachCubemapFace(const unsigned cubemapTexture, const int faceIndex) {
         glNamedFramebufferTextureLayer(m_fbo, GL_COLOR_ATTACHMENT0, cubemapTexture, 0, faceIndex);
+    }
+
+    void GLFrameBuffer::attachExternalTexture(const BufferType bufferType, const Texture& texture) {
+        switch (bufferType) {
+            case BufferType::COLOR:
+                glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, texture.getTexture(), 0);
+                break;
+            case BufferType::DEPTH:
+                glNamedFramebufferTexture(m_fbo, GL_DEPTH_ATTACHMENT, texture.getTexture(), 0);
+                break;
+            case BufferType::DEPTH_STENCIL:
+                glNamedFramebufferTexture(m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, texture.getTexture(), 0);
+                break;
+            default:
+                KITA_ENGINE_ERROR("Trying to attach unsupported buffertype texture {}", magic_enum::enum_name(bufferType));
+                break;;
+        }
+        verifyBuild();
     }
 
     void GLFrameBuffer::resize(const std::pair<int, int>& newResolution) {

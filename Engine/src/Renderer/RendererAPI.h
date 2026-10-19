@@ -26,6 +26,7 @@ namespace Kita {
         virtual void disableBufferWrite(BufferType bufferType) = 0;
         virtual void setDepthFunc(DepthFunction function) = 0;
         virtual void setCullMode(CullMode mode) = 0;
+        virtual void setBlendFunc(BlendFunc functionSrc, BlendFunc functionDst) = 0;
 
         virtual void drawArrays(DrawMode mode, size_t verticesCount) = 0;
         virtual void multiDrawArraysIndirect(DrawMode mode, size_t drawCount) = 0;

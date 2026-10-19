@@ -2,10 +2,9 @@
 
 #include "../../Core/Engine.h"
 #include "ECS/EntityBuilder.h"
-#include "ECS/Components/PostProcessingComponent.h"
-#include "ECS/Components/SceneSettingsComponent.h"
-#include "ECS/Components/SkyboxComponent.h"
+#include "ECS/Components/Components.h"
 #include "ECS/Systems/CameraSystem.h"
+#include "ECS/Systems/EnvironmentSystem.h"
 #include "ECS/Systems/GeometrySystem.h"
 #include "ECS/Systems/LightShadowSystem.h"
 #include "ECS/Systems/PhysicsSystem.h"
@@ -22,16 +21,17 @@ namespace Kita {
         addSystem<SkyboxSystem>();
         addSystem<PostProcessingSystem>();
         addSystem<TerrainSystem>();
+        addSystem<EnvironmentSystem>();
 
         m_camera = EntityBuilder::createActiveCamera(*this).getEnttEntityID();
         Entity skybox = createEntity();
         skybox.addComponent<SkyboxComponent>(SkyboxComponent{
             .skyboxID = Engine::getEngine()->getAssetManager().createAsset<Texture>("DefaultSkybox.hdr", {}, Texture::TextureType::SKYBOX, std::nullopt)
         });
-        Entity postProcessing = createEntity();
-        postProcessing.addComponent<PostProcessingComponent>();
-        Entity sceneSettings = createEntity();
-        sceneSettings.addComponent<SceneSettingsComponent>();
+
+        contextAdd<PostProcessingComponent>();
+        contextAdd<SceneSettingsComponent>();
+        contextAdd<EnvironmentComponent>();
     }
 
     void Scene::update() {

@@ -1,6 +1,7 @@
 #include "GeometrySystem.h"
 
 #include "../../Scene.h"
+#include "../../../DebugScope.h"
 #include "../../../../Core/Engine.h"
 #include "../Components/Components.h"
 
@@ -16,6 +17,8 @@ namespace Kita {
 
     void GeometrySystem::render(Scene& scene) {
         KITA_ENGINE_PROFILE("Geometry system render");
+        const auto debugScope = DebugScope::createPtr();
+        debugScope->scope("Geometry pass");
 
         const auto& assetManager = Engine::getEngine()->getAssetManager();
         auto& renderer = Engine::getEngine()->getRenderer();
@@ -30,7 +33,7 @@ namespace Kita {
                     Shader& shader = assetManager.getAsset<Shader>(material.shaderID);
 
                     shader.bind();
-                    shader.setUniformFloat("iblIntensity", Entity(&scene, scene.view<SceneSettingsComponent>().front()).getComponent<SceneSettingsComponent>().properties.iblIntensity); //TODO Move to UBO ?
+                    shader.setUniformFloat("iblIntensity", scene.contextGet<SceneSettingsComponent>()->properties.iblIntensity); //TODO Move to UBO ?
 
                     renderer.renderMesh(mesh, shader, transformation.worldModel, fetchTextures(assetManager, material, scene));
                 }

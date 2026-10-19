@@ -3,6 +3,7 @@
 #include "../Core/Engine.h"
 #include "../Assets/Mesh.h"
 #include "../Events/EventManager.h"
+#include "../Events/RendererEvents.h"
 #include "Buffers/FrameBuffer.h"
 
 namespace Kita {
@@ -11,7 +12,7 @@ namespace Kita {
         m_rendererAPI = RendererAPI::createPtr(api);
         m_rendererAPI->init();
 
-        EventManager::listenToEvent<FrameBufferResized>(onFrameBufferResize);
+        EventManager::listenToEvent<FrameBufferResized>([this](const FrameBufferResized& event) { onFrameBufferResize(event); });
         m_mainFramebuffer = FrameBuffer::createPtr();
         m_mainFramebuffer->createBuffer(
             m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachType::TEXTURE}}},
@@ -117,6 +118,10 @@ namespace Kita {
         m_rendererAPI->setCullMode(mode);
     }
 
+    void Renderer::setBlendFunc(const BlendFunc functionSrc, const BlendFunc functionDst) {
+        m_rendererAPI->setBlendFunc(functionSrc, functionDst);
+    }
+
     FrameBuffer& Renderer::getOutputFramebuffer() const {
         return *m_outputFramebuffer;
     }
@@ -187,8 +192,11 @@ namespace Kita {
     }
 
     void Renderer::onFrameBufferResize(const FrameBufferResized& event) {
-        Engine::getEngine()->getRenderer().setViewport(event.getSize(), true);
-        Engine::getEngine()->getRenderer().m_mainFramebuffer->resize(event.getSize());
-        Engine::getEngine()->getRenderer().m_outputFramebuffer->resize(event.getSize());
+        setViewport(event.getSize(), true);
+        m_mainFramebuffer->resize(event.getSize());
+        m_outputFramebuffer->resize(event.getSize());
+
+        ViewportResized viewportResizedEvent;
+        EventManager::triggerEvent(viewportResizedEvent);
     }
 } // Kita

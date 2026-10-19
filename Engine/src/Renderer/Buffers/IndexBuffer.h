@@ -13,7 +13,7 @@ namespace Kita {
         IndexBuffer& operator=(IndexBuffer&&) = delete;
         virtual ~IndexBuffer() = default;
 
-        static std::unique_ptr<IndexBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<IndexBuffer> createPtr();
 
         virtual void createBuffer(std::vector<unsigned int> indices) = 0;
 
