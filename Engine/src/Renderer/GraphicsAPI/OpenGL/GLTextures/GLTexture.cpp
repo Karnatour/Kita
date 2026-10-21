@@ -14,10 +14,11 @@ namespace Kita {
         }
     }
 
-    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::optional<std::filesystem::path>& texturePath, const TextureType textureType,
-                                                                        const std::optional<std::pair<int, int>> resolution) {
+    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::optional<std::filesystem::path>& texturePath, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
         m_path = texturePath;
         m_textureType = textureType;
+
+        bool highPrecision = false;
 
         switch (textureType) {
             case TextureType::NONE:
@@ -35,6 +36,9 @@ namespace Kita {
                 return createSkyboxTexture();
             case TextureType::NORMAL:
                 break;
+            case TextureType::DISPLACEMENT:
+                highPrecision = true;
+                break;
             case TextureType::DEPTH_ARRAY:
                 KITA_ENGINE_ASSERT(false, "Trying to create DEPTH_ARRAY texture with createTexture() func, use createTextureBufferTypeTextureArray() instead");
         }
@@ -48,14 +52,23 @@ namespace Kita {
         }
 
         stbi_set_flip_vertically_on_load(true);
-        unsigned char* image = stbi_load((AssetManager::TEXTURE_PREFIX / texturePath.value()).string().c_str(), &m_width, &m_height, &m_channels, 0);
+        const std::string fullPath = (AssetManager::TEXTURE_PREFIX / texturePath.value()).string();
 
-        if (!image) {
+        void* pixels = nullptr;
+        if (highPrecision) {
+            pixels = stbi_load_16(fullPath.c_str(), &m_width, &m_height, &m_channels, 0);
+        } else {
+            pixels = stbi_load(fullPath.c_str(), &m_width, &m_height, &m_channels, 0);
+        }
+
+        if (!pixels) {
             KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.value().string());
             return std::unexpected(TextureError::FILE);
         }
 
         const int levels = static_cast<int>(floor(log2(std::max(m_width, m_height))) + 1);
+        const GLenum pixelType = highPrecision ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
+        const bool useSRGB = (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR);
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
@@ -68,31 +81,36 @@ namespace Kita {
         glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        const bool useSRGB = (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         switch (m_channels) {
+            case 1:
+                glTextureStorage2D(m_texture, levels, highPrecision ? GL_R16 : GL_R8, m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RED, pixelType, pixels);
+                break;
             case 2:
-                glTextureStorage2D(m_texture, levels, GL_RG8, m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, GL_UNSIGNED_BYTE, image);
+                glTextureStorage2D(m_texture, levels, highPrecision ? GL_RG16 : GL_RG8, m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, pixelType, pixels);
                 break;
             case 3:
-                glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8 : GL_RGB8, m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_UNSIGNED_BYTE, image);
+                glTextureStorage2D(m_texture, levels, highPrecision ? GL_RGB16 : (useSRGB ? GL_SRGB8 : GL_RGB8), m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, pixelType, pixels);
                 break;
             case 4:
-                glTextureStorage2D(m_texture, levels, useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8, m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, image);
+                glTextureStorage2D(m_texture, levels, highPrecision ? GL_RGBA16 : (useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8), m_width, m_height);
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, pixelType, pixels);
                 break;
             default:
+                stbi_image_free(pixels);
                 KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.value().string());
                 return std::unexpected(TextureError::UNSUPPORTED_NUM_OF_CHANNELS);
         }
 
-        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL) {
+        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL || textureType == TextureType::DISPLACEMENT) {
             glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glGenerateTextureMipmap(m_texture);
         }
 
-        stbi_image_free(image);
+        stbi_image_free(pixels);
         return {};
     }
 

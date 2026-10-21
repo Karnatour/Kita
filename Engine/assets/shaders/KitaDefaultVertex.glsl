@@ -1,5 +1,7 @@
 #version 460 core
 
+const uint DISPLACEMENT = 1u << 9;
+
 layout(std140, binding = 0) uniform Camera {
     mat4 view;
     mat4 projection;
@@ -21,10 +23,22 @@ out vec3 normalVec;
 out vec3 fragPosWorld;
 out mat3 TBNMat;
 
+uniform uint textureState;
+uniform sampler2D displacementTex;
+
 uniform mat4 model;
 
+bool hasTexture(uint flag);
+
 void main(){
-    fragPosWorld = vec3(model * vec4(aPos, 1.0));
+    vec3 displacedPos = aPos;
+
+    if (hasTexture(DISPLACEMENT)){
+        float height = textureLod(displacementTex, aTex, 0.0).r;
+        displacedPos += aNormal * (height - 1.0) * 0.20f;
+    }
+
+    fragPosWorld = vec3(model * vec4(displacedPos, 1.0));
     vertexColor = aColor;
     texCoord = aTex;
 
@@ -40,4 +54,8 @@ void main(){
     TBNMat = mat3(T, B, N);
 
     gl_Position = camera.projection * camera.view * vec4(fragPosWorld, 1.0);
+}
+
+bool hasTexture(uint flag){
+    return (textureState & flag) != 0u;
 }

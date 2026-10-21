@@ -190,6 +190,9 @@ namespace Kita {
                 case Texture::TextureType::NORMAL:
                     materialComponent.normalTextureID = textureID;
                     break;
+                case Texture::TextureType::DISPLACEMENT:
+                    materialComponent.displacementTextureID = textureID;
+                    break;
                 default:
                     KITA_ENGINE_WARN("[KAsset] Unknown texture type while reading material");
             }
@@ -330,7 +333,7 @@ namespace Kita {
 
             std::array<Texture*, 3> textures;
 
-            const auto& [shaderID, albedoTextureID, metallicRoughnessTextureID, normalTextureID] = entity.getComponent<MaterialComponent>();
+            const auto& [shaderID, albedoTextureID, metallicRoughnessTextureID, normalTextureID, displacementTextureID] = entity.getComponent<MaterialComponent>();
             auto& assetManager = Engine::getEngine()->getAssetManager();
             if (albedoTextureID != AssetManager::INVALID_ASSET_ID) {
                 textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(albedoTextureID);
@@ -340,6 +343,9 @@ namespace Kita {
             }
             if (normalTextureID != AssetManager::INVALID_ASSET_ID) {
                 textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(normalTextureID);
+            }
+            if (displacementTextureID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(displacementTextureID);
             }
 
             writeTextures(materialData, textures);

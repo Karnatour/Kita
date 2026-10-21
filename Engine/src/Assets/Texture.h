@@ -21,6 +21,7 @@ namespace Kita {
             SKYBOX = 7,
             NORMAL = 8,
             DEPTH_ARRAY = 9,
+            DISPLACEMENT = 10
         };
 
         enum class TextureFlags : uint32_t {
@@ -34,6 +35,7 @@ namespace Kita {
             SKYBOX = 1u << 6,
             NORMAL = 1u << 7,
             DEPTH_ARRAY = 1u << 8,
+            DISPLACEMENT = 1u << 9
         };
 
         enum class TextureError {

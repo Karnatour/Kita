@@ -39,8 +39,8 @@ namespace Kita {
 
         if (auto* environment = scene.contextGet<EnvironmentComponent>()) {
             auto& fogProperties = environment->properties.fogProperties;
-            fogProperties.fogStart = 0.85f * m_renderDistance * ChunkData::CHUNK_SIZE;
-            fogProperties.fogEnd = 1.0f * m_renderDistance * ChunkData::CHUNK_SIZE;
+            fogProperties.fogEnd = static_cast<float>(m_renderDistance * ChunkData::CHUNK_SIZE);
+            fogProperties.fogStart = 0.9f * fogProperties.fogEnd;
             fogProperties.fogDensity = 2.5f;
             fogProperties.fogColor = glm::vec3(0.429f, 0.185f, 0.112f);
             fogProperties.fogMode = FogMode::EXPONENTIAL2;
@@ -60,23 +60,25 @@ namespace Kita {
             m_materialComponent.albedoTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_Color.png", {}, Texture::TextureType::ALBEDO, std::nullopt);
             m_materialComponent.metallicRoughnessTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_Roughness.png", {}, Texture::TextureType::METALLIC_ROUGHNESS, std::nullopt);
             m_materialComponent.normalTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_NormalGL.png", {}, Texture::TextureType::NORMAL, std::nullopt);
+            m_materialComponent.displacementTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_Displacement.png", {}, Texture::TextureType::DISPLACEMENT, std::nullopt);
         }
 
         Shader& shader = assetManager.getAsset<Shader>(m_materialComponent.shaderID);
         shader.bind();
 
-        std::array<Texture*, 5> textures = {};
+        std::array<Texture*, 6> textures = {};
         textures[0] = &assetManager.getAsset<Texture>(m_materialComponent.albedoTextureID);
-        //textures[1] = &assetManager.getAsset<Texture>(m_materialComponent.metallicRoughnessTextureID);
+        textures[1] = &assetManager.getAsset<Texture>(m_materialComponent.metallicRoughnessTextureID);
         textures[2] = &assetManager.getAsset<Texture>(m_materialComponent.normalTextureID);
+        textures[3] = &assetManager.getAsset<Texture>(m_materialComponent.displacementTextureID);
         if (const Entity skyboxEntity(&scene, scene.view<SkyboxComponent>().front()); skyboxEntity) {
             if (const auto& skyboxCmp = skyboxEntity.getComponent<SkyboxComponent>(); skyboxCmp.irradianceCubemapID != AssetManager::INVALID_ASSET_ID) {
-                textures[3] = &assetManager.getAsset<Texture>(skyboxCmp.irradianceCubemapID);
+                textures[4] = &assetManager.getAsset<Texture>(skyboxCmp.irradianceCubemapID);
             }
         }
 
         if (const Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front()); dirShadowEntity) {
-            textures[4] = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties.texture;
+            textures[5] = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties.texture;
         }
 
         renderer.setMaterialInShader(shader, textures);

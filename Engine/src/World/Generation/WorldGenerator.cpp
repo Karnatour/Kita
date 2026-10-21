@@ -32,7 +32,7 @@ namespace Kita {
             for (int x = 0; x < VERTICES_PER_EDGE; ++x) {
                 VertexProperties properties;
                 properties.position = glm::vec3(static_cast<float>(chunkPos.getVertexX(x)), heightAt(x, z), static_cast<float>(chunkPos.getVertexZ(z)));
-                properties.texture = glm::vec2(static_cast<float>(chunkPos.getVertexX(x)), static_cast<float>(chunkPos.getVertexZ(z))) / 4.0f;
+                properties.texture = glm::vec2(static_cast<float>(chunkPos.getVertexX(x)), static_cast<float>(chunkPos.getVertexZ(z)));
 
                 const float heightLeft = heightAt(x - 1, z);
                 const float heightRight = heightAt(x + 1, z);

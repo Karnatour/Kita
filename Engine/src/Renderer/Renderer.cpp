@@ -175,6 +175,10 @@ namespace Kita {
                     texture->bind(8);
                     m_textureFlags |= Texture::TextureFlags::DEPTH_ARRAY;
                     break;
+                case Texture::TextureType::DISPLACEMENT:
+                    texture->bind(9);
+                    m_textureFlags |= Texture::TextureFlags::DISPLACEMENT;
+                    break;
                 default:
                     std::string str = texture->getPath().has_value() ? texture->getPath().value().string() : std::string("missing path");
                     KITA_ENGINE_WARN("Texture: {}, type is NONE or Unknown, unable to bind into shader", str);
@@ -186,7 +190,7 @@ namespace Kita {
     void Renderer::resetTextureState(Shader& shader) {
         KITA_ENGINE_PROFILE("Reset texture state");
 
-        // depthArray | normal | skybox | stencil | depth | color | cubemap | metallic roughness | albedo
+        // displacement | depthArray | normal | skybox | stencil | depth | color | cubemap | metallic roughness | albedo
         m_textureFlags = Texture::TextureFlags::NONE;
         shader.setUniformUnsignedInt("textureState", static_cast<uint32_t>(m_textureFlags));
     }
