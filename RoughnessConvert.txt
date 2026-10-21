@@ -1,0 +1,1 @@
+magick "name" -colorspace Gray -colorspace sRGB -channel R,B -evaluate set 0 +channel -depth 8 PNG24:output.png

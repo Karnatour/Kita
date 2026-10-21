@@ -9,6 +9,7 @@ const uint STENCIL = 1u << 5;
 const uint SKYBOX = 1u << 6;
 const uint NORMAL = 1u << 7;
 const uint DEPTH_ARRAY = 1u << 8;
+const uint DISPLACEMENT = 1u << 9;
 
 struct Light {
     vec4 position;
@@ -52,6 +53,7 @@ uniform sampler2D metallicRoughnessTex;
 uniform sampler2D normalTex;
 uniform samplerCube cubemapTex;
 uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
+uniform sampler2D displacementTex;
 
 uniform float iblIntensity;
 
@@ -61,7 +63,7 @@ in vec3 normalVec;
 in vec3 fragPosWorld;
 in mat3 TBNMat;
 
-vec3 getNormal();
+vec3 getNormal(vec2 newTexCoord);
 vec3 calculateDirectionalLight(vec3 normal, vec3 viewDir, Light light, vec3 F0, PBRProperties PBRData);
 vec3 calculatePointLight(vec3 normal, vec3 viewDir, Light light, vec3 F0, PBRProperties PBRData);
 vec3 calculateSpotLight(vec3 normal, vec3 viewDir, Light light, vec3 F0, PBRProperties PBRData);
@@ -73,17 +75,25 @@ float GeometrySchlickGGX(float normalDot, float roughness);
 float GeometrySmith(float normalDotViewDir, float normalDotLightDir, float roughness);
 float calculateShadow(vec3 normal, vec3 lightDir);
 bool hasTexture(uint flag);
-PBRProperties getPBRProperties();
+PBRProperties getPBRProperties(vec2 newTexCoord);
 float random(vec2 p);
 vec3 randomColor(vec2 p);
+vec2 parallaxOcclusionMapping(vec2 texCoord, vec3 viewDirTangentSpace, vec2 dx, vec2 dy);
 
 const float PI = 3.14159265359;
 
 void main()
 {
-    vec3 viewDir = normalize(camera.position.xyz - fragPosWorld);
-    vec3 normal = getNormal();
-    PBRProperties PBRData = getPBRProperties();
+    vec2 newTexCoord = texCoord;
+    vec3 viewDirWorld = normalize(camera.position.xyz - fragPosWorld);
+
+    if (hasTexture(DISPLACEMENT)){
+        vec3 viewDirTangentSpace = normalize(transpose(TBNMat) * viewDirWorld);
+        newTexCoord = parallaxOcclusionMapping(texCoord, viewDirTangentSpace, dFdx(texCoord), dFdy(texCoord));
+    }
+
+    vec3 normal = getNormal(newTexCoord);
+    PBRProperties PBRData = getPBRProperties(newTexCoord);
 
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, PBRData.albedo, PBRData.metallic);
@@ -93,31 +103,30 @@ void main()
         int lightType = lights.m_lights[i].params.x;
 
         if (lightType == 0) {
-            combined += calculateDirectionalLight(normal, viewDir, lights.m_lights[i], F0, PBRData);
+            combined += calculateDirectionalLight(normal, viewDirWorld, lights.m_lights[i], F0, PBRData);
         }
         else if (lightType == 1) {
-            combined += calculatePointLight(normal, viewDir, lights.m_lights[i], F0, PBRData);
+            combined += calculatePointLight(normal, viewDirWorld, lights.m_lights[i], F0, PBRData);
         }
         else if (lightType == 2) {
-            combined += calculateSpotLight(normal, viewDir, lights.m_lights[i], F0, PBRData);
+            combined += calculateSpotLight(normal, viewDirWorld, lights.m_lights[i], F0, PBRData);
         }
     }
 
-    vec3 kS = fresnelSchlickRoughness(max(dot(normal, viewDir), 0.0), F0, PBRData.roughness);
+    vec3 kS = fresnelSchlickRoughness(max(dot(normal, viewDirWorld), 0.0), F0, PBRData.roughness);
     vec3 kD = 1.0 - kS;
     vec3 irradiance = texture(cubemapTex, normal).rgb;
     vec3 diffuse = irradiance * PBRData.albedo;
     vec3 ambient = kD * diffuse * iblIntensity;// * ao
 
     vec3 finalColor = ambient + combined;
-
     FragColor = vec4(finalColor, 1.0);
 }
 
-vec3 getNormal() {
+vec3 getNormal(vec2 newTexCoord) {
     vec3 normal;
     if (hasTexture(NORMAL)){
-        normal = texture(normalTex, texCoord).rgb;
+        normal = texture(normalTex, newTexCoord).rgb;
         normal = normal * 2.0 - 1.0;
         normal = normalize(TBNMat * normal);
     }
@@ -228,16 +237,16 @@ float GeometrySmith(float normalDotViewDir, float normalDotLightDir, float rough
     return ggx1 * ggx2;
 }
 
-PBRProperties getPBRProperties() {
+PBRProperties getPBRProperties(vec2 newTexCoord) {
     PBRProperties PBRData;
     if (hasTexture(ALBEDO)){
-        PBRData.albedo = texture(albedoTex, texCoord).rgb;
+        PBRData.albedo = texture(albedoTex, newTexCoord).rgb;
     }
     else {
         PBRData.albedo = vec3(0.0f);
     }
     if (hasTexture(METALLIC_ROUGHNESS)){
-        vec4 metallicRoughness = texture(metallicRoughnessTex, texCoord);
+        vec4 metallicRoughness = texture(metallicRoughnessTex, newTexCoord);
         PBRData.roughness = metallicRoughness.g;
         PBRData.metallic = metallicRoughness.b;
     }
@@ -294,4 +303,43 @@ float random(vec2 p){
 
 vec3 randomColor(vec2 p) {
     return vec3(random(p), random(p + 1.0), random(p + 2.0));
+}
+
+vec2 parallaxOcclusionMapping(vec2 texCoord, vec3 viewDirTangentSpace, vec2 dx, vec2 dy) {
+    const float minLayers = 8.0;
+    const float maxLayers = 32.0;
+    const float heightScale = 0.14;
+    // calculate the correct number of layer based on dot product
+    float layersCount = mix(maxLayers, minLayers, abs(viewDirTangentSpace.z));
+
+    // calculate depth of each layer
+    float layerDepth = 1.0f / layersCount;
+
+    // calculate total shift
+    vec2 P = viewDirTangentSpace.xy / max(viewDirTangentSpace.z, 0.05) * heightScale;
+    // get shift for one layer
+    vec2 deltaTexCoords = P / layersCount;
+
+    // fetch original texture values
+    vec2 currentTexCoord = texCoord;
+    float currentDisplacement = 1.0 - textureGrad(displacementTex, currentTexCoord, dx, dy).r;
+
+    float currentLayerDepth = 0.0f;
+    for (int i = 0; i < maxLayers; ++i) {
+        if (currentLayerDepth >= currentDisplacement){
+            break;
+        }
+        // shift texture coordinates
+        currentTexCoord -= deltaTexCoords;
+        currentDisplacement = 1.0 - textureGrad(displacementTex, currentTexCoord, dx, dy).r;
+        currentLayerDepth += layerDepth;
+    }
+
+    // interpolate between the last two steps for a smooth result
+    vec2 prevTexCoord = currentTexCoord + deltaTexCoords;
+    float afterDepth = currentDisplacement - currentLayerDepth;
+    float beforeDepth = (1.0 - textureGrad(displacementTex, prevTexCoord, dx, dy).r) - (currentLayerDepth - layerDepth);
+    float denominator = afterDepth - beforeDepth;
+    float weight = abs(denominator) > 1e-5 ? afterDepth / denominator : 0.0;
+    return mix(currentTexCoord, prevTexCoord, clamp(weight, 0.0, 1.0));
 }
