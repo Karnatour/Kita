@@ -224,6 +224,10 @@ namespace Kita {
                 return Texture::TextureType::ALBEDO;
             case aiTextureType_GLTF_METALLIC_ROUGHNESS:
                 return Texture::TextureType::METALLIC_ROUGHNESS;
+            case aiTextureType_DISPLACEMENT:
+                return Texture::TextureType::DISPLACEMENT;
+            case aiTextureType_AMBIENT_OCCLUSION:
+                return Texture::TextureType::AMBIENT_OCCLUSION;
             case aiTextureType_NORMAL_CAMERA:
             case aiTextureType_NORMALS:
                 return Texture::TextureType::NORMAL;

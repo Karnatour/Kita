@@ -41,6 +41,8 @@ namespace Kita {
                 break;
             case TextureType::DEPTH_ARRAY:
                 KITA_ENGINE_ASSERT(false, "Trying to create DEPTH_ARRAY texture with createTexture() func, use createTextureBufferTypeTextureArray() instead");
+            case TextureType::AMBIENT_OCCLUSION:
+                break;
         }
 
         if (!texturePath.has_value()) {
@@ -105,7 +107,7 @@ namespace Kita {
                 return std::unexpected(TextureError::UNSUPPORTED_NUM_OF_CHANNELS);
         }
 
-        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL || textureType == TextureType::DISPLACEMENT) {
+        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL || textureType == TextureType::DISPLACEMENT || textureType == TextureType::AMBIENT_OCCLUSION) {
             glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glGenerateTextureMipmap(m_texture);
         }

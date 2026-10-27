@@ -33,6 +33,7 @@ namespace Kita {
             setUniformInt("normalTex", 7);
             setUniformInt("depthTexArray", 8);
             setUniformInt("displacementTex", 9);
+            setUniformInt("ambientOcclusionTex", 10);
             m_textureUniformsSet = true;
         }
     }

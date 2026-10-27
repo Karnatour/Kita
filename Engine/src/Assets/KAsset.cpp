@@ -193,6 +193,9 @@ namespace Kita {
                 case Texture::TextureType::DISPLACEMENT:
                     materialComponent.displacementTextureID = textureID;
                     break;
+                case Texture::TextureType::AMBIENT_OCCLUSION:
+                    materialComponent.ambientOcclusionTextureID = textureID;
+                    break;
                 default:
                     KITA_ENGINE_WARN("[KAsset] Unknown texture type while reading material");
             }
@@ -331,9 +334,9 @@ namespace Kita {
         if (entity.hasAllComponents<MaterialComponent>()) {
             MaterialData materialData{};
 
-            std::array<Texture*, 3> textures;
+            std::array<Texture*, 5> textures;
 
-            const auto& [shaderID, albedoTextureID, metallicRoughnessTextureID, normalTextureID, displacementTextureID] = entity.getComponent<MaterialComponent>();
+            const auto& [shaderID, albedoTextureID, metallicRoughnessTextureID, normalTextureID, displacementTextureID, ambientOcclusionTextureID] = entity.getComponent<MaterialComponent>();
             auto& assetManager = Engine::getEngine()->getAssetManager();
             if (albedoTextureID != AssetManager::INVALID_ASSET_ID) {
                 textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(albedoTextureID);
@@ -346,6 +349,9 @@ namespace Kita {
             }
             if (displacementTextureID != AssetManager::INVALID_ASSET_ID) {
                 textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(displacementTextureID);
+            }
+            if (ambientOcclusionTextureID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(ambientOcclusionTextureID);
             }
 
             writeTextures(materialData, textures);

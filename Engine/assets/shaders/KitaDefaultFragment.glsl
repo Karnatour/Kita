@@ -10,6 +10,7 @@ const uint SKYBOX = 1u << 6;
 const uint NORMAL = 1u << 7;
 const uint DEPTH_ARRAY = 1u << 8;
 const uint DISPLACEMENT = 1u << 9;
+const uint AMBIENT_OCCLUSION = 1u << 10;
 
 struct Light {
     vec4 position;
@@ -42,6 +43,7 @@ struct PBRProperties {
     vec3 albedo;
     float metallic;
     float roughness;
+    float ao;
 };
 
 out vec4 FragColor;
@@ -54,6 +56,7 @@ uniform sampler2D normalTex;
 uniform samplerCube cubemapTex;
 uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
 uniform sampler2D displacementTex;
+uniform sampler2D ambientOcclusionTex;
 
 uniform float iblIntensity;
 
@@ -117,7 +120,7 @@ void main()
     vec3 kD = 1.0 - kS;
     vec3 irradiance = texture(cubemapTex, normal).rgb;
     vec3 diffuse = irradiance * PBRData.albedo;
-    vec3 ambient = kD * diffuse * iblIntensity;// * ao
+    vec3 ambient = kD * diffuse * iblIntensity * PBRData.ao;
 
     vec3 finalColor = ambient + combined;
     FragColor = vec4(finalColor, 1.0);
@@ -253,6 +256,11 @@ PBRProperties getPBRProperties(vec2 newTexCoord) {
     else {
         PBRData.roughness = 1.0f;
         PBRData.metallic = 0.0f;
+    }
+    if (hasTexture(AMBIENT_OCCLUSION)) {
+        PBRData.ao = texture(ambientOcclusionTex, newTexCoord).r;
+    } else {
+        PBRData.ao = 1.0;
     }
     return PBRData;
 }
