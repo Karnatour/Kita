@@ -18,7 +18,7 @@ namespace Kita {
         const auto debugScope = DebugScope::createPtr();
         debugScope->scope("Skybox pass");
 
-        auto entity = Entity(&scene,scene.view<SkyboxComponent>().front());
+        auto entity = Entity(&scene, scene.view<SkyboxComponent>().front());
         if (!entity) {
             return;
         }
@@ -33,11 +33,10 @@ namespace Kita {
         renderer.disableCapability(Capability::CULL_FACE);
 
         if (m_cubemapCaptureFBO == nullptr) {
-            m_cubemapCaptureFBO = FrameBuffer::createPtr();
             //temp attachments so FBO is complete
-            m_cubemapCaptureFBO->createBuffer(
-                {1,1},
-                {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH, FrameBuffer::AttachType::RENDERBUFFER}}},
+            m_cubemapCaptureFBO = m_cubemapCaptureFBO->createPtr(
+                std::make_pair(1, 1),
+                {{.bufferType = BufferType::COLOR, .attachmentType = FrameBuffer::AttachType::TEXTURE}, {.bufferType = BufferType::DEPTH, .attachmentType = FrameBuffer::AttachType::RENDERBUFFER}},
                 true, 1);
             convertSkyboxTextureToCubemap(skyboxComponent); //TODO Release skybox texture
             convertCubemapToIrradiance(skyboxComponent);
@@ -52,8 +51,7 @@ namespace Kita {
         renderer.setDepthFunc(DepthFunction::LEQUAL);
         renderer.disableBufferWrite(BufferType::DEPTH);
 
-        renderer.renderMesh(assetManager.getAsset<Mesh>(m_skyboxMeshID), assetManager.getAsset<Shader>(m_skyboxRenderShaderID), glm::mat4(1.0f),
-                            {{&assetManager.getAsset<Texture>(skyboxComponent.cubemapID)}});
+        renderer.renderMesh(assetManager.getAsset<Mesh>(m_skyboxMeshID), assetManager.getAsset<Shader>(m_skyboxRenderShaderID), glm::mat4(1.0f), {{&assetManager.getAsset<Texture>(skyboxComponent.cubemapID)}});
 
         renderer.enableBufferWrite(BufferType::DEPTH);
         renderer.setDepthFunc(DepthFunction::LESS);
@@ -86,7 +84,7 @@ namespace Kita {
 
         const std::vector<glm::mat4> captureViews = CubemapUtil::getCubemapCaptureViews();
         for (int i = 0; i < 6; ++i) {
-            m_cubemapCaptureFBO->attachCubemapFace(cubemapTexture.getTexture(), i);
+            m_cubemapCaptureFBO->attachCubemapFace(cubemapTexture, i);
 
             builderShader.setUniformMat4("view", captureViews[i]);
 
@@ -119,7 +117,7 @@ namespace Kita {
 
         const std::vector<glm::mat4> captureViews = CubemapUtil::getCubemapCaptureViews();
         for (int i = 0; i < 6; ++i) {
-            m_cubemapCaptureFBO->attachCubemapFace(irradianceCubemapTexture.getTexture(), i);
+            m_cubemapCaptureFBO->attachCubemapFace(irradianceCubemapTexture, i);
 
             convertShader.setUniformMat4("view", captureViews[i]);
 

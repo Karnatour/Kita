@@ -52,14 +52,14 @@ namespace Kita {
             return {.define = std::move(name), .value = std::move(value)};
         }
 
-        virtual ~Shader() = default;
+        ~Shader() override = default;
         virtual void bind() = 0;
         unsigned int getProgram() const;
         static std::unique_ptr<Shader> createPtr();
 
         void setTextureUniforms();
 
-        virtual std::expected<void, ShaderError> createShader(std::span<const ShaderInfo> shaders) = 0;
+        virtual std::expected<void, ShaderError> createShader(std::initializer_list<ShaderInfo> shaders) = 0;
 
         virtual void setUniformBool(std::string_view location, bool value) = 0;
         virtual void setUniformFloat(std::string_view location, float value) = 0;

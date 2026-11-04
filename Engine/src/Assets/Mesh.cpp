@@ -1,21 +1,20 @@
 #include "../Assets/Mesh.h"
 
 namespace Kita {
-    Mesh::Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices) {
-        create(std::move(vertices), std::move(indices));
+    Mesh::Mesh(VertexBufferData bufferData, std::vector<unsigned int> indices) {
+        create(std::move(bufferData), std::move(indices));
     }
 
-    Mesh::Mesh(MeshData data) {
-        create(std::move(data.vertices), std::move(data.indices));
+    Mesh::Mesh(MeshData meshData) {
+        create(std::move(meshData.vertexBufferData), std::move(meshData.indices));
     }
 
-    void Mesh::create(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices) {
-        m_vbo->createBuffer(std::move(vertices));
+    void Mesh::create(VertexBufferData bufferData, std::vector<unsigned int> indices) {
+        m_vbo = VertexBuffer::createPtr(std::move(bufferData));
         if (!indices.empty()) {
-            m_ibo = IndexBuffer::createPtr();
-            m_ibo->createBuffer(std::move(indices));
+            m_ibo = IndexBuffer::createPtr(std::move(indices));
         }
-        m_vao->createBuffer(m_vbo, m_ibo);
+        m_vao = m_vao->createPtr(m_vbo, m_ibo);
     }
 
     VertexArray& Mesh::getVertexArray() const {

@@ -10,18 +10,15 @@ namespace Kita {
             ELEMENTS
         };
 
-        DrawCommandBuffer() = default;
         DrawCommandBuffer(const DrawCommandBuffer&) = delete;
         DrawCommandBuffer& operator=(const DrawCommandBuffer&) = delete;
         DrawCommandBuffer(DrawCommandBuffer&&) = delete;
         DrawCommandBuffer& operator=(DrawCommandBuffer&&) = delete;
         virtual ~DrawCommandBuffer() = default;
 
-        [[nodiscard]] static std::unique_ptr<DrawCommandBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<DrawCommandBuffer> createPtr(const std::vector<DrawArraysIndirectCommandProperties>& arraysCommands);
+        [[nodiscard]] static std::unique_ptr<DrawCommandBuffer> createPtr(const std::vector<DrawElementsIndirectCommandProperties>& elementsCommands);
 
-        virtual void createEmptyBuffer(Type type, size_t size) = 0;
-        virtual void createBuffer(const std::vector<DrawArraysIndirectCommandProperties>& arraysCommands) = 0;
-        virtual void createBuffer(const std::vector<DrawElementsIndirectCommandProperties>& elementsCommands) = 0;
         virtual void upload(size_t offset, const std::vector<DrawArraysIndirectCommandProperties>& arraysIndirectCommands) = 0;
         virtual void upload(size_t offset, const std::vector<DrawElementsIndirectCommandProperties>& elementsIndirectCommands) = 0;
         virtual void bind() = 0;
@@ -30,6 +27,7 @@ namespace Kita {
         Type getType() const;
 
     protected:
+        DrawCommandBuffer(Type type);
         unsigned int m_dcb = 0;
         Type m_type;
     };

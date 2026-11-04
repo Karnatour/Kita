@@ -47,7 +47,6 @@ add_library(KitaEngine SHARED
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLIndexBuffer.h
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.cpp
         src/Renderer/GraphicsAPI/OpenGL/GLBuffers/GLVertexArray.h
-        src/Renderer/Properties/VertexProperties.h
         src/Renderer/Renderer.cpp
         src/Renderer/Renderer.h
         src/Assets/Mesh.cpp
@@ -209,6 +208,12 @@ add_library(KitaEngine SHARED
         src/Events/RendererEvents.h
         src/Util/ColorUtil.cpp
         src/Util/ColorUtil.h
+        src/Renderer/Vertex/VertexLayout.cpp
+        src/Renderer/Vertex/VertexLayout.h
+        src/Renderer/Vertex/VertexBufferData.cpp
+        src/Renderer/Vertex/VertexBufferData.h
+        src/Renderer/Vertex/VertexAttribute.cpp
+        src/Renderer/Vertex/VertexAttribute.h
 )
 
 #Multithreaded compilation

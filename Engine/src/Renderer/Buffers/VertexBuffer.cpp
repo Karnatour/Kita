@@ -4,10 +4,10 @@
 #include "../GraphicsAPI/OpenGL/GLBuffers//GLVertexBuffer.h"
 
 namespace Kita {
-    std::unique_ptr<VertexBuffer> VertexBuffer::createPtr() {
+    std::unique_ptr<VertexBuffer> VertexBuffer::createPtr(VertexBufferData bufferData) {
         switch (Renderer::getAPI()) {
             case RenderingAPI::OPENGL:
-                return std::make_unique<GLVertexBuffer>();
+                return std::make_unique<GLVertexBuffer>(std::move(bufferData));
             case RenderingAPI::NONE:
                 KITA_ENGINE_ASSERT(false, "RenderingAPI::NONE is not a valid selection");
                 return nullptr;
@@ -21,7 +21,10 @@ namespace Kita {
         return m_vbo;
     }
 
-    const std::vector<VertexProperties>& VertexBuffer::getVertices() {
-        return m_vertices;
+    const VertexBufferData& VertexBuffer::getBufferData() const {
+        return m_bufferData;
+    }
+
+    VertexBuffer::VertexBuffer(VertexBufferData bufferData) : m_bufferData(std::move(bufferData)) {
     }
 } // Kita

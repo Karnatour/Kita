@@ -96,6 +96,20 @@ namespace Kita {
         }
     }
 
+    GLenum GLRendererAPI::convertAttributeTypeToGL(const VertexAttribute::Type type) {
+        switch (type) {
+            case VertexAttribute::Type::BYTE:
+                return GL_BYTE;
+            case VertexAttribute::Type::SHORT:
+                return GL_SHORT;
+            case VertexAttribute::Type::FLOAT:
+                return GL_FLOAT;
+            default:
+                KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(type));
+                return GL_NONE;
+        }
+    }
+
     void GLRendererAPI::setupDebug() {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

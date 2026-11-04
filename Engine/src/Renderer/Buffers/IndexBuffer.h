@@ -6,21 +6,20 @@
 namespace Kita {
     class KITAENGINE_API IndexBuffer {
     public:
-        IndexBuffer() = default;
         IndexBuffer(const IndexBuffer&) = delete;
         IndexBuffer& operator=(const IndexBuffer&) = delete;
         IndexBuffer(IndexBuffer&&) = delete;
         IndexBuffer& operator=(IndexBuffer&&) = delete;
         virtual ~IndexBuffer() = default;
 
-        [[nodiscard]] static std::unique_ptr<IndexBuffer> createPtr();
-
-        virtual void createBuffer(std::vector<unsigned int> indices) = 0;
+        [[nodiscard]] static std::unique_ptr<IndexBuffer> createPtr(std::vector<unsigned int> indices);
 
         unsigned int getIBO() const;
         const std::vector<unsigned int>& getIndices();
 
     protected:
+        explicit IndexBuffer(std::vector<unsigned int> indices);
+
         unsigned int m_ibo = 0;
         std::vector<unsigned int> m_indices;
     };

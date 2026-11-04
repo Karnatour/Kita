@@ -71,6 +71,13 @@ namespace Kita {
         static bool saveToFile(Entity rootEntity, const std::filesystem::path& path);
 
     private:
+        constexpr static std::size_t vertexSize =
+            sizeof(glm::vec3) + // position
+            sizeof(glm::vec2) + // uv
+            sizeof(glm::vec4) + // color
+            sizeof(glm::vec3) + // normal
+            sizeof(glm::vec3) * 2; // tangent, bitangent
+
         static uint32_t calculateNodeCount(Entity entity);
         static void loadChunk(std::ifstream& file, ChunkHeader chunk, Entity chunkEntity);
         static void checkHeaderFormat(const FileHeader& fileHeader, const std::filesystem::path& path);
@@ -84,7 +91,5 @@ namespace Kita {
         static void writeTextures(MaterialData& materialHeader, std::span<Texture* const> textures);
         static void writeShader(MaterialData& materialHeader, const Shader& shader);
         static TransformationData getTransformationData(Entity entity);
-
-
     };
 } // Kita

@@ -160,15 +160,15 @@ namespace Kita {
         MeshHeader meshHeader;
         file.read(reinterpret_cast<char*>(&meshHeader), sizeof(meshHeader));
 
-        std::vector<VertexProperties> vertices;
-        vertices.resize(meshHeader.vertexCount);
-        file.read(reinterpret_cast<char*>(vertices.data()), static_cast<std::streamsize>(vertices.size() * sizeof(VertexProperties)));
+        std::vector<std::byte> vertices;
+        vertices.resize(static_cast<size_t>(meshHeader.vertexCount) * VertexLayout::getDefaultVertexLayout().getStride());
+        file.read(reinterpret_cast<char*>(vertices.data()), static_cast<std::streamsize>(vertices.size()));
 
         std::vector<unsigned int> indices;
         indices.resize(meshHeader.indexCount);
         file.read(reinterpret_cast<char*>(indices.data()), static_cast<std::streamsize>(indices.size() * sizeof(unsigned int)));
 
-        return MeshComponent{Engine::getEngine()->getAssetManager().createAsset<Mesh>(std::move(vertices), std::move(indices))};
+        return MeshComponent{Engine::getEngine()->getAssetManager().createAsset<Mesh>(VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices))};
     }
 
     MaterialComponent KAsset::readMaterial(std::ifstream& file) {
@@ -306,15 +306,15 @@ namespace Kita {
             VertexBuffer& vbo = mesh.getVertexBuffer();
             IndexBuffer* ibo = mesh.getIndexBuffer();
 
-            const auto& vertices = vbo.getVertices();
+            const auto& vertices = vbo.getBufferData().getVertices();
             const auto* indices = ibo != nullptr ? &ibo->getIndices() : nullptr;
 
             ChunkHeader chunk;
             chunk.chunkType = static_cast<uint32_t>(ChunkType::MESH);
             if (indices != nullptr) {
-                chunk.chunkSize = sizeof(MeshHeader) + sizeof(VertexProperties) * vertices.size() + sizeof(unsigned int) * indices->size();
+                chunk.chunkSize = sizeof(MeshHeader) + sizeof(vertexSize) * vertices.size() + sizeof(unsigned int) * indices->size();
             } else {
-                chunk.chunkSize = sizeof(MeshHeader) + sizeof(VertexProperties) * vertices.size();
+                chunk.chunkSize = sizeof(MeshHeader) + sizeof(vertexSize) * vertices.size();
             }
             file.write(reinterpret_cast<const char*>(&chunk), sizeof(chunk));
 
@@ -323,7 +323,7 @@ namespace Kita {
             geometryHeader.indexCount = indices != nullptr ? static_cast<uint32_t>(indices->size()) : 0;
 
             file.write(reinterpret_cast<const char*>(&geometryHeader), sizeof(geometryHeader));
-            file.write(reinterpret_cast<const char*>(vertices.data()), static_cast<std::streamsize>(vertices.size() * sizeof(VertexProperties)));
+            file.write(reinterpret_cast<const char*>(vertices.data()), static_cast<std::streamsize>(vertices.size() * sizeof(vertexSize)));
             if (indices != nullptr) {
                 file.write(reinterpret_cast<const char*>(indices->data()), static_cast<std::streamsize>(indices->size() * sizeof(unsigned int)));
             }

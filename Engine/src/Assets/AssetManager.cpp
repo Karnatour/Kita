@@ -1,6 +1,7 @@
 #include "AssetManager.h"
 
 #include "../Renderer/Properties/LightShadowProperties.h"
+#include "../Renderer/Util/GeometryUtil.h"
 #include "../Renderer/Util/LightUtil.h"
 
 namespace Kita {

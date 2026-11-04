@@ -345,8 +345,9 @@ namespace Kita {
         glm::vec3 max(-FLT_MAX);
 
         auto meshID = Entity(wheelEntity.getScene(), wheelEntity.getComponent<ChildrenComponent>().children.front()).getComponent<MeshComponent>().meshID;
-        for (auto& element : Engine::getEngine()->getAssetManager().getAsset<Mesh>(meshID).getVertexBuffer().getVertices()) {
-            auto localPos = glm::vec3(localModel * glm::vec4(element.position, 1.0f));
+        auto& bufferData = Engine::getEngine()->getAssetManager().getAsset<Mesh>(meshID).getVertexBuffer().getBufferData();
+        for (size_t i = 0; i < bufferData.getVertexCount(); ++i) {
+            auto localPos = glm::vec3(localModel * glm::vec4(bufferData.getAttribute<glm::vec3>(i, 0), 1.0f));
             min = glm::min(min, localPos);
             max = glm::max(max, localPos);
         }
@@ -410,7 +411,7 @@ namespace Kita {
 
             // Params
             const float distance = glm::mix(5.5f, 7.5f, speedNormalized);
-            const float height   = glm::mix(2.0f, 2.6f, speedNormalized);
+            const float height = glm::mix(2.0f, 2.6f, speedNormalized);
             const float lookAhead = glm::mix(6.0f, 12.0f, speedNormalized);
 
             // Finalize camera update

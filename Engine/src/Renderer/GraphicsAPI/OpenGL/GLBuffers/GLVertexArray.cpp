@@ -1,8 +1,20 @@
 #include "GLVertexArray.h"
-#include "../../../Properties/VertexProperties.h"
 #include <glad/glad.h>
 
+#include "../GLRendererAPI.h"
+
 namespace Kita {
+    GLVertexArray::GLVertexArray(const std::unique_ptr<VertexBuffer>& vbo, const std::unique_ptr<IndexBuffer>& ibo) : VertexArray() {
+        glCreateVertexArrays(1, &m_vao);
+
+        if (vbo != nullptr && vbo->getVBO() != 0) {
+            attachVBO(*vbo);
+        }
+        if (ibo != nullptr && ibo->getIBO() != 0) {
+            attachIBO(*ibo);
+        }
+    }
+
     GLVertexArray::~GLVertexArray() {
         if (m_vao != 0) {
             glDeleteVertexArrays(1, &m_vao);
@@ -10,53 +22,12 @@ namespace Kita {
         }
     }
 
-    void GLVertexArray::createBuffer(const std::unique_ptr<VertexBuffer>& vbo, const std::unique_ptr<IndexBuffer>& ibo) {
-        glCreateVertexArrays(1, &m_vao);
-
-        if (vbo != nullptr && vbo->getVBO() != 0) {
-            glVertexArrayVertexBuffer(m_vao, 0, vbo->getVBO(), 0, sizeof(VertexProperties));
-        }
-        if (ibo != nullptr && ibo->getIBO() != 0) {
-            glVertexArrayElementBuffer(m_vao, ibo->getIBO());
-        }
-
-        //Position
-        glEnableVertexArrayAttrib(m_vao, 0);
-        glVertexArrayAttribFormat(m_vao, 0, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, position));
-        glVertexArrayAttribBinding(m_vao, 0, 0);
-
-        //Color
-        glEnableVertexArrayAttrib(m_vao, 1);
-        glVertexArrayAttribFormat(m_vao, 1, 4,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, color));
-        glVertexArrayAttribBinding(m_vao, 1, 0);
-
-        //Texture
-        glEnableVertexArrayAttrib(m_vao, 2);
-        glVertexArrayAttribFormat(m_vao, 2, 2,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, texture));
-        glVertexArrayAttribBinding(m_vao, 2, 0);
-
-        //Normal
-        glEnableVertexArrayAttrib(m_vao, 3);
-        glVertexArrayAttribFormat(m_vao, 3, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, normal));
-        glVertexArrayAttribBinding(m_vao, 3, 0);
-
-        //Tangent
-        glEnableVertexArrayAttrib(m_vao, 4);
-        glVertexArrayAttribFormat(m_vao, 4, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, tangent));
-        glVertexArrayAttribBinding(m_vao, 4, 0);
-
-        //Bitangent
-        glEnableVertexArrayAttrib(m_vao, 5);
-        glVertexArrayAttribFormat(m_vao, 5, 3,GL_FLOAT,GL_FALSE,offsetof(VertexProperties, bitangent));
-        glVertexArrayAttribBinding(m_vao, 5, 0);
-    }
-
     void GLVertexArray::attachVBO(const VertexBuffer& vbo) {
         if (vbo.getVBO() != 0) {
-            glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, sizeof(VertexProperties));
+            setupAttributes(vbo);
             return;
         }
-        KITA_ENGINE_ERROR("[GLVertexArray] Unable to attach VertexBuffer");
+        KITA_ENGINE_ERROR("[GLVertexArray] Unable to attach VertexBuffer, it has not beed created");
     }
 
     void GLVertexArray::attachIBO(const IndexBuffer& ibo) {
@@ -64,11 +35,28 @@ namespace Kita {
             glVertexArrayElementBuffer(m_vao, ibo.getIBO());
             return;
         }
-        KITA_ENGINE_ERROR("[GLVertexArray] Unable to attach IndexBuffer");
+        KITA_ENGINE_ERROR("[GLVertexArray] Unable to attach IndexBuffer, it has not been created");
     }
 
     void GLVertexArray::bind() {
         KITA_ENGINE_PROFILE("Set VAO");
         glBindVertexArray(m_vao);
+    }
+
+    void GLVertexArray::setupAttributes(const VertexBuffer& vbo) {
+        const auto& vertexLayout = vbo.getBufferData().getVertexLayout();
+
+        glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, static_cast<GLsizei>(vertexLayout.getStride()));
+
+        GLsizei attributeIndex = 0;
+        GLuint offset = 0;
+        for (auto attribute : vertexLayout.getVertexAttributes()) {
+            glEnableVertexArrayAttrib(m_vao, attributeIndex);
+            glVertexArrayAttribFormat(m_vao, attributeIndex, static_cast<GLint>(attribute.getCount()), GLRendererAPI::convertAttributeTypeToGL(attribute.getType()),GL_FALSE, offset);
+            glVertexArrayAttribBinding(m_vao, attributeIndex, 0);
+
+            attributeIndex = attributeIndex + 1;
+            offset = offset + static_cast<GLuint>(static_cast<size_t>(attribute.getCount()) * attribute.getTypeSize());
+        }
     }
 } // Kita

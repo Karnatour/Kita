@@ -2,6 +2,8 @@
 #include "../../RendererAPI.h"
 #include <glad/glad.h>
 
+#include "../../Vertex/VertexAttribute.h"
+
 namespace Kita {
     class GLRendererAPI final : public RendererAPI {
     public:
@@ -10,6 +12,7 @@ namespace Kita {
         static GLenum convertDrawModeToGL(DrawMode drawMode);
         static GLenum convertBlendFuncToGL(BlendFunc function);
         static GLbitfield convertBitToGL(ClearBit bit);
+        static GLenum convertAttributeTypeToGL(VertexAttribute::Type type);
 
     private:
         void setupDebug() override;

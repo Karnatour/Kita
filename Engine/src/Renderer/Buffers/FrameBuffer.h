@@ -16,22 +16,19 @@ namespace Kita {
             AttachType attachmentType;
         };
 
-        FrameBuffer() = default;
         FrameBuffer(const FrameBuffer&) = delete;
         FrameBuffer& operator=(const FrameBuffer&) = delete;
         FrameBuffer(FrameBuffer&&) = delete;
         FrameBuffer& operator=(FrameBuffer&&) = delete;
         virtual ~FrameBuffer() = default;
 
-        [[nodiscard]] static std::unique_ptr<FrameBuffer> createPtr();
+        [[nodiscard]] static std::unique_ptr<FrameBuffer> createPtr(const std::optional<std::pair<int, int>>& resolution, std::initializer_list<AttachInfo> attachments, bool highPrecision = false, int layers = 0);
 
-        virtual void createBuffer(const std::pair<int, int>& resolution, std::span<const AttachInfo> attachments, bool highPrecision, int layers) = 0;
-        virtual void createEmptyBuffer() = 0;
-        virtual void attachCubemapFace(unsigned int cubemapTexture, int faceIndex) = 0;
+        virtual void attachCubemapFace(const Texture& cubemapTexture, int faceIndex) = 0;
         virtual void attachExternalTexture(BufferType type, const Texture& texture) = 0;
         virtual void bind() = 0;
         virtual void unbind() = 0;
-        virtual void resize(const std::pair<int,int>& newResolution) = 0;
+        virtual void resize(const std::pair<int, int>& newResolution) = 0;
 
         unsigned int getFBO() const;
         std::pair<int, int> getResolution() const;
@@ -41,7 +38,10 @@ namespace Kita {
 
         RenderBuffer* getColorRenderBuffer() const;
         RenderBuffer* getDepthRenderBuffer() const;
+
     protected:
+        FrameBuffer(const std::optional<std::pair<int, int>>& resolution, std::initializer_list<AttachInfo> attachments, bool highPrecision, int layers);
+
         unsigned int m_fbo = 0;
 
         std::unique_ptr<Texture> m_colorTexture;
@@ -50,7 +50,7 @@ namespace Kita {
         std::unique_ptr<RenderBuffer> m_colorRenderBuffer;
         std::unique_ptr<RenderBuffer> m_depthRenderBuffer;
 
-        std::pair<int, int> m_resolution;
+        std::pair<int, int> m_resolution = {-1, -1};
 
         std::vector<AttachInfo> m_attachments;
         bool m_highPrecision = false;

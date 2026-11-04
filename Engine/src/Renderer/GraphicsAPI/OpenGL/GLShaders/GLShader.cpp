@@ -18,7 +18,7 @@ namespace Kita {
         }
     }
 
-    std::expected<void, Shader::ShaderError> GLShader::createShader(const std::span<const ShaderInfo> shaders) {
+    std::expected<void, Shader::ShaderError> GLShader::createShader(std::initializer_list<ShaderInfo> shaders) {
         m_shaders = std::ranges::to<std::vector>(shaders);
         KITA_ENGINE_DEBUG("Starting compilation of {} shaders", shaders.size());
         for (const auto& [index, shader] : std::views::enumerate(m_shaders)) {

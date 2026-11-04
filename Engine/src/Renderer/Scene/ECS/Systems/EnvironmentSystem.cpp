@@ -41,13 +41,11 @@ namespace Kita {
         }
 
         if (m_environmentUBO == nullptr) {
-            m_environmentUBO = m_environmentUBO->createPtr();
-            m_environmentUBO->createBuffer(sizeof(EnvironmentUBOLayout), nullptr);
+            m_environmentUBO = m_environmentUBO->createPtr(sizeof(EnvironmentUBOLayout), nullptr);
         }
 
         if (m_environmentalFBO == nullptr) {
-            m_environmentalFBO = m_environmentalFBO->createPtr();
-            m_environmentalFBO->createEmptyBuffer();
+            m_environmentalFBO = m_environmentalFBO->createPtr(std::nullopt, {});
             m_environmentalFBO->attachExternalTexture(BufferType::COLOR, *Engine::getEngine()->getRenderer().getMainFramebuffer().getColorTexture());
         }
 

@@ -1,10 +1,9 @@
 #include "ChunkData.h"
 
 #include "WorldGenerator.h"
-#include "../../Renderer/Properties/VertexProperties.h"
 
 namespace Kita {
-    ChunkData::ChunkData(const ChunkPos& chunkPos, std::vector<VertexProperties> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, JPH::BodyCreationSettings bodyCreationSettings)
+    ChunkData::ChunkData(const ChunkPos& chunkPos, std::vector<std::byte> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, JPH::BodyCreationSettings bodyCreationSettings)
         : m_chunkPos(chunkPos), m_vertices(std::move(vertices)), m_heightmap(std::move(heightmap)), m_bodySettings(std::move(bodyCreationSettings)) {
     }
 
@@ -12,7 +11,7 @@ namespace Kita {
         return m_chunkPos;
     }
 
-    const std::vector<VertexProperties>& ChunkData::getVertices() const {
+    const std::vector<std::byte>& ChunkData::getVertices() const {
         return m_vertices;
     }
 

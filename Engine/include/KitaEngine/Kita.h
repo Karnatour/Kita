@@ -27,7 +27,6 @@
 #include "../src/Renderer/Buffers/UniformBuffer.h"
 #include "../src/Renderer/Buffers/VertexArray.h"
 #include "../src/Renderer/Buffers/VertexBuffer.h"
-#include "../src/Renderer/Properties/VertexProperties.h"
 #include "../src/Renderer/Scene/Scene.h"
 #include "../src/Renderer/Scene/ECS/Entity.h"
 #include "../src/Renderer/Scene/ECS/EntityBuilder.h"

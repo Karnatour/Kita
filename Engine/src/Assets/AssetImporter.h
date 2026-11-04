@@ -5,7 +5,6 @@
 #include "AssetManager.h"
 #include "Texture.h"
 #include "../Core/DllTemplate.h"
-#include "../Renderer/Properties/VertexProperties.h"
 #include "../Renderer/Scene/ECS/Entity.h"
 
 namespace Kita {
@@ -30,12 +29,19 @@ namespace Kita {
             bool ignoreBecauseOfAlpha = false;
         };
 
+        constexpr static std::size_t vertexSize =
+            sizeof(glm::vec3) + // position
+            sizeof(glm::vec2) + // uv
+            sizeof(glm::vec4) + // color
+            sizeof(glm::vec3) + // normal
+            sizeof(glm::vec3) * 2; // tangent, bitangent
+
         static std::vector<Material> importMaterials(const aiScene* aiScene, const std::filesystem::path& path);
         static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform);
         static void addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials);
         static glm::mat4 convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix);
         static Entity processMesh(const ::aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials);
-        static VertexProperties importVertex(const aiMesh& aiMesh, unsigned int index);
+        static std::vector<std::byte> importVertex(const aiMesh& aiMesh, unsigned int index);
         static Texture::TextureType assimpToKitaTextureType(const aiTextureType& ai_texture);
         static std::optional<AssetManager::AssetID> importTexture(aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path);
         static void moveTexture(const std::filesystem::path& texturePath);

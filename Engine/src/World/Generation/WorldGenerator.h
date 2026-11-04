@@ -12,6 +12,7 @@ namespace Kita {
         static constexpr int SEED = 69420;
 
         static constexpr int VERTICES_PER_EDGE = ChunkData::CHUNK_QUAD_PER_EDGE + 1; // +1 -> One more vertex than quads because N quads need N+1 vertices
+        static constexpr int VERTICES_PER_CHUNK = VERTICES_PER_EDGE * VERTICES_PER_EDGE;
         static constexpr int SAMPLES_PER_EDGE = VERTICES_PER_EDGE + 2; //  +2 -> Normals need neighbours, so we need one extra sample on each side
         static constexpr int PHYSICS_SAMPLES = VERTICES_PER_EDGE + (VERTICES_PER_EDGE % 2); // Must be even number
 

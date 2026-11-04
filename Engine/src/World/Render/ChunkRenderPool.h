@@ -11,7 +11,7 @@ namespace Kita {
 
         explicit ChunkRenderPool(unsigned int renderDistance);
         void render();
-        unsigned int addChunk(const std::vector<VertexProperties>& vertices);
+        unsigned int addChunk(const std::vector<std::byte>& vertices);
         void release(int slot);
 
     private:
@@ -25,6 +25,7 @@ namespace Kita {
         std::vector<DrawElementsIndirectCommandProperties> m_commands;
         std::unique_ptr<DrawCommandBuffer> m_drawCommandBuffer;
 
+        VertexLayout m_vertexLayout;
         unsigned int m_maxChunks;
         bool m_dirty;
     };

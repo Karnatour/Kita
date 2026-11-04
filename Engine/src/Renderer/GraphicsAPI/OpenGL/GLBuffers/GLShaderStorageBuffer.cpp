@@ -3,6 +3,11 @@
 #include <glad/glad.h>
 
 namespace Kita {
+    GLShaderStorageBuffer::GLShaderStorageBuffer(const size_t size, const void* data) : ShaderStorageBuffer(size) {
+        glCreateBuffers(1, &m_ssbo);
+        glNamedBufferData(m_ssbo, m_size, data,GL_DYNAMIC_DRAW);
+    }
+
     GLShaderStorageBuffer::~GLShaderStorageBuffer() {
         if (m_ssbo != 0) {
             glDeleteBuffers(1, &m_ssbo);
@@ -23,11 +28,5 @@ namespace Kita {
         } else {
             glNamedBufferSubData(m_ssbo, 0, size, data);
         }
-    }
-
-    void GLShaderStorageBuffer::createBuffer(const size_t size, const void* data) {
-        m_size = size;
-        glCreateBuffers(1, &m_ssbo);
-        glNamedBufferData(m_ssbo, m_size, data,GL_DYNAMIC_DRAW);
     }
 } // Kita

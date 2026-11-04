@@ -32,8 +32,7 @@ namespace Kita {
 
         // lazy creation on render thread
         if (m_cameraUBO == nullptr) {
-            m_cameraUBO = UniformBuffer::createPtr();
-            m_cameraUBO->createBuffer(sizeof(CameraUBOLayout), &m_activeCameraData);
+            m_cameraUBO = UniformBuffer::createPtr(sizeof(CameraUBOLayout), &m_activeCameraData);
         }
 
         auto entity = Entity(&scene, scene.view<CameraComponent, ActiveCamera>().front());

@@ -13,13 +13,12 @@ namespace Kita {
         m_rendererAPI->init();
 
         EventManager::listenToEvent<FrameBufferResized>([this](const FrameBufferResized& event) { onFrameBufferResize(event); });
-        m_mainFramebuffer = FrameBuffer::createPtr();
-        m_mainFramebuffer->createBuffer(
-            m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}, {BufferType::DEPTH_STENCIL, FrameBuffer::AttachType::TEXTURE}}},
+        m_mainFramebuffer = FrameBuffer::createPtr(
+            m_viewport,
+            {{.bufferType = BufferType::COLOR, .attachmentType = FrameBuffer::AttachType::TEXTURE}, {.bufferType = BufferType::DEPTH_STENCIL, .attachmentType = FrameBuffer::AttachType::TEXTURE}},
             true, 1);
 
-        m_outputFramebuffer = FrameBuffer::createPtr();
-        m_outputFramebuffer->createBuffer(m_viewport, {{{BufferType::COLOR, FrameBuffer::AttachType::TEXTURE}}}, true, 1);
+        m_outputFramebuffer = FrameBuffer::createPtr(m_viewport, {{.bufferType = BufferType::COLOR, .attachmentType = FrameBuffer::AttachType::TEXTURE}}, true, 1);
 
         enableCapability(Capability::CULL_FACE);
         setCullMode(CullMode::BACK);
@@ -58,7 +57,7 @@ namespace Kita {
         if (mesh.getIndexBuffer()) {
             m_rendererAPI->drawElements(DrawMode::TRIANGLES, mesh.getIndexBuffer()->getIndices().size());
         } else {
-            m_rendererAPI->drawArrays(DrawMode::TRIANGLES, mesh.getVertexBuffer().getVertices().size());
+            m_rendererAPI->drawArrays(DrawMode::TRIANGLES, mesh.getVertexBuffer().getBufferData().getVertices().size());
         }
     }
 

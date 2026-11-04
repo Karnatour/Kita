@@ -3,6 +3,11 @@
 #include <glad/glad.h>
 
 namespace Kita {
+    GLUniformBuffer::GLUniformBuffer(const size_t size, const void* data) : UniformBuffer(size) {
+        glCreateBuffers(1, &m_ubo);
+        glNamedBufferStorage(m_ubo, m_size, data,GL_DYNAMIC_STORAGE_BIT);
+    }
+
     GLUniformBuffer::~GLUniformBuffer() {
         if (m_ubo != 0) {
             glDeleteBuffers(1, &m_ubo);
@@ -14,17 +19,11 @@ namespace Kita {
         glBindBufferBase(GL_UNIFORM_BUFFER, position, m_ubo);
     }
 
-    void GLUniformBuffer::upload(const unsigned int size, const void* data) {
+    void GLUniformBuffer::upload(const size_t size, const void* data) {
         if (size == m_size) {
             glNamedBufferSubData(m_ubo, 0, size, data);
         } else {
             KITA_ENGINE_WARN("Input size doesn't match with uniform buffer size Before:{} New:{}", m_size, size);
         }
-    }
-
-    void GLUniformBuffer::createBuffer(const unsigned int size, const void* data) {
-        m_size = size;
-        glCreateBuffers(1, &m_ubo);
-        glNamedBufferStorage(m_ubo, m_size, data,GL_DYNAMIC_STORAGE_BIT);
     }
 } // Kita

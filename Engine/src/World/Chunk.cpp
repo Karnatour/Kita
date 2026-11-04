@@ -8,7 +8,7 @@ namespace Kita {
     }
 
     float Chunk::getWorldHeightForVertexPos(const int vertexX, const int vertexZ) const {
-        return m_chunkData.getHeightmap()[(vertexZ + 1) * ChunkData::HEIGHTMAP_EDGE + (vertexX + 1)] * WorldGenerator::HEIGHT_SCALE;
+        return m_chunkData.getHeightmap()[(vertexZ + 1) * ChunkData::HEIGHTMAP_EDGE + (vertexX + 1)];
     }
 
     float Chunk::getWorldHeightForVertexPos(const std::pair<int, int> pos) const {

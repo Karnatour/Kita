@@ -3,6 +3,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/GltfMaterial.h>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "KAsset.h"
 #include "../Core/Engine.h"
 #include "../Renderer/Scene/ECS/Components/Components.h"
@@ -132,12 +134,12 @@ namespace Kita {
 
         Entity newEntity = scene.createEntity();
 
-        std::vector<VertexProperties> vertices;
+        std::vector<std::byte> vertices;
         std::vector<unsigned int> indices;
 
-        vertices.reserve(aiMesh->mNumVertices);
+        vertices.reserve(aiMesh->mNumVertices * vertexSize);
         for (unsigned int v = 0; v < aiMesh->mNumVertices; v++) {
-            vertices.emplace_back(importVertex(*aiMesh, v));
+            vertices.append_range(importVertex(*aiMesh, v));
         }
 
         for (unsigned int f = 0; f < aiMesh->mNumFaces; f++) {
@@ -148,7 +150,7 @@ namespace Kita {
         addMaterialComponent(newEntity, aiMesh, materials);
 
         const auto& engine = Engine::getEngine();
-        const AssetManager::AssetID meshID = engine->getAssetManager().createAsset<Mesh>(std::move(vertices), std::move(indices));
+        const AssetManager::AssetID meshID = engine->getAssetManager().createAsset<Mesh>(VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices));
 
         newEntity.addComponent<MeshComponent>(MeshComponent{.meshID = meshID});
         newEntity.addComponent<NameComponent>(NameComponent{.name = aiMesh->mName.C_Str()});
@@ -180,40 +182,40 @@ namespace Kita {
         };
     }
 
-    VertexProperties AssetImporter::importVertex(const aiMesh& aiMesh, const unsigned int index) {
-        VertexProperties vertex{};
-        vertex.position.x = aiMesh.mVertices[index].x;
-        vertex.position.y = aiMesh.mVertices[index].y;
-        vertex.position.z = aiMesh.mVertices[index].z;
+    std::vector<std::byte> AssetImporter::importVertex(const aiMesh& aiMesh, const unsigned int index) {
+        std::vector<std::byte> vertex;
+
+        // Position
+        VertexBufferData::appendBytes(vertex, aiMesh.mVertices[index]);
 
         if (aiMesh.HasTextureCoords(0)) {
-            vertex.texture.s = aiMesh.mTextureCoords[0][index].x;
-            vertex.texture.t = aiMesh.mTextureCoords[0][index].y;
+            const aiVector3D& uv = aiMesh.mTextureCoords[0][index];
+            VertexBufferData::appendBytes(vertex, glm::vec2(uv.x, uv.y));
+        } else {
+            VertexBufferData::appendBytes(vertex, glm::vec2(0.0f, 0.0f));
         }
 
         if (aiMesh.HasVertexColors(0)) {
-            vertex.color.r = aiMesh.mColors[0][index].r;
-            vertex.color.g = aiMesh.mColors[0][index].g;
-            vertex.color.b = aiMesh.mColors[0][index].b;
-            vertex.color.a = aiMesh.mColors[0][index].a;
+            VertexBufferData::appendBytes(vertex, aiMesh.mColors[0][index]);
+        } else {
+            VertexBufferData::appendBytes(vertex, glm::vec4(1.0f));
         }
 
         if (aiMesh.HasNormals()) {
-            vertex.normal.x = aiMesh.mNormals[index].x;
-            vertex.normal.y = aiMesh.mNormals[index].y;
-            vertex.normal.z = aiMesh.mNormals[index].z;
+            VertexBufferData::appendBytes(vertex, aiMesh.mNormals[index]);
+        } else {
+            VertexBufferData::appendBytes(vertex, glm::vec3(0.0f, 1.0f, 0.0f));
         }
 
         if (aiMesh.HasTangentsAndBitangents()) {
-            vertex.tangent.x = aiMesh.mTangents[index].x;
-            vertex.tangent.y = aiMesh.mTangents[index].y;
-            vertex.tangent.z = aiMesh.mTangents[index].z;
-
-            vertex.bitangent.x = aiMesh.mBitangents[index].x;
-            vertex.bitangent.y = aiMesh.mBitangents[index].y;
-            vertex.bitangent.z = aiMesh.mBitangents[index].z;
+            VertexBufferData::appendBytes(vertex, aiMesh.mTangents[index]);
+            VertexBufferData::appendBytes(vertex, aiMesh.mBitangents[index]);
+        } else {
+            VertexBufferData::appendBytes(vertex, glm::vec3(1.0f, 0.0f, 0.0f));
+            VertexBufferData::appendBytes(vertex, glm::vec3(0.0f, 0.0f, 1.0f));
         }
 
+        KITA_ENGINE_ASSERT(vertex.size() == vertexSize, "[AssetImporter] Vertex size doesn't match expected layout");
         return vertex;
     }
 

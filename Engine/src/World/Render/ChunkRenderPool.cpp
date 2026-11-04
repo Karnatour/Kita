@@ -1,6 +1,5 @@
 #include "ChunkRenderPool.h"
 
-#include "../Chunk.h"
 #include "../../Core/Engine.h"
 #include "../Generation/WorldGenerator.h"
 
@@ -30,7 +29,10 @@ namespace Kita {
         return indices;
     }
 
-    ChunkRenderPool::ChunkRenderPool(const unsigned int renderDistance) {
+    ChunkRenderPool::ChunkRenderPool(const unsigned int renderDistance) : m_vertexLayout(VertexLayout({
+        VertexAttribute(VertexAttribute::Type::FLOAT, VertexAttribute::Count::THREE),
+        VertexAttribute(VertexAttribute::Type::FLOAT, VertexAttribute::Count::TWO)
+    })) {
         m_maxChunks = static_cast<unsigned int>(std::pow(2 * renderDistance + 1, 2));
         m_freeSlots.reserve(m_maxChunks);
         for (unsigned int i = 0; i < m_maxChunks; ++i) {
@@ -40,13 +42,10 @@ namespace Kita {
         m_slotToCommand.assign(m_maxChunks, INVALID_SLOT);
         m_commands.reserve(m_maxChunks);
 
-        m_meshID = Engine::getEngine()->getAssetManager().createAsset<Mesh>(std::vector<VertexProperties>(), createIndices());
-        Mesh& mesh = Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID);
-        mesh.getVertexBuffer().createEmptyBuffer(m_maxChunks * (WorldGenerator::VERTICES_PER_EDGE * WorldGenerator::VERTICES_PER_EDGE) * sizeof(VertexProperties));
-        mesh.getVertexArray().attachVBO(mesh.getVertexBuffer());
+        constexpr int VERTICES_PER_CHUNK = WorldGenerator::VERTICES_PER_EDGE * WorldGenerator::VERTICES_PER_EDGE;
+        m_meshID = Engine::getEngine()->getAssetManager().createAsset<Mesh>(VertexBufferData(std::vector<std::byte>(m_vertexLayout.getStride() * m_maxChunks * VERTICES_PER_CHUNK), m_vertexLayout), createIndices());
 
-        m_drawCommandBuffer = DrawCommandBuffer::createPtr();
-        m_drawCommandBuffer->createEmptyBuffer(DrawCommandBuffer::Type::ELEMENTS, m_maxChunks * sizeof(DrawElementsIndirectCommandProperties));
+        m_drawCommandBuffer = DrawCommandBuffer::createPtr(std::vector<DrawElementsIndirectCommandProperties>(m_maxChunks));
     }
 
     void ChunkRenderPool::render() {
@@ -64,7 +63,7 @@ namespace Kita {
         Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, m_commands.size());
     }
 
-    unsigned int ChunkRenderPool::addChunk(const std::vector<VertexProperties>& vertices) {
+    unsigned int ChunkRenderPool::addChunk(const std::vector<std::byte>& vertices) {
         if (m_freeSlots.empty()) {
             KITA_ENGINE_ERROR("ChunkRenderPool is full this shouldn't happen");
             return INVALID_SLOT;
@@ -75,11 +74,10 @@ namespace Kita {
 
         const Mesh& mesh = Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID);
 
-        constexpr int VERTICES_PER_CHUNK = WorldGenerator::VERTICES_PER_EDGE * WorldGenerator::VERTICES_PER_EDGE;
-        mesh.getVertexBuffer().upload(slot * VERTICES_PER_CHUNK * sizeof(VertexProperties), VERTICES_PER_CHUNK * sizeof(VertexProperties), vertices);
+        mesh.getVertexBuffer().upload(slot * WorldGenerator::VERTICES_PER_CHUNK * m_vertexLayout.getStride(), WorldGenerator::VERTICES_PER_CHUNK * m_vertexLayout.getStride(), vertices);
 
         m_slotToCommand[slot] = static_cast<uint32_t>(m_commands.size());
-        m_commands.emplace_back(static_cast<unsigned int>(mesh.getIndexBuffer()->getIndices().size()), 1, 0, (slot * VERTICES_PER_CHUNK), slot); // Since we are not using baseInstance we can store slot into it
+        m_commands.emplace_back(static_cast<unsigned int>(mesh.getIndexBuffer()->getIndices().size()), 1, 0, (slot * WorldGenerator::VERTICES_PER_CHUNK), slot); // Since we are not using baseInstance we can store slot into it
 
         m_dirty = true;
         return slot;

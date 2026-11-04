@@ -194,18 +194,18 @@ namespace Kita {
         if (mesh.getIndexBuffer() == nullptr) {
             JPH::TriangleList triangleList;
 
-            auto& vertices = mesh.getVertexBuffer().getVertices();
+            auto& bufferData = mesh.getVertexBuffer().getBufferData();
             KITA_ENGINE_ASSERT(!vertices.empty(), "Mesh has no vertices");
 
-            triangleList.reserve(vertices.size() / 3);
+            triangleList.reserve(bufferData.getVertexCount() / 3);
 
             KITA_ENGINE_ASSERT(vertices.size() % 3 == 0, "Vertices must be triangulated");
 
-            for (size_t i = 0; i < vertices.size(); i = i + 3) {
+            for (size_t i = 0; i < bufferData.getVertexCount(); i = i + 3) {
                 triangleList.push_back(JPH::Triangle(
-                    PhysicsUtil::GLMToJPHFloat3(vertices[i + 0].position),
-                    PhysicsUtil::GLMToJPHFloat3(vertices[i + 1].position),
-                    PhysicsUtil::GLMToJPHFloat3(vertices[i + 2].position)));
+                    PhysicsUtil::GLMToJPHFloat3(bufferData.getAttribute<glm::vec3>(i + 0, 0)),
+                    PhysicsUtil::GLMToJPHFloat3(bufferData.getAttribute<glm::vec3>(i + 1, 0)),
+                    PhysicsUtil::GLMToJPHFloat3(bufferData.getAttribute<glm::vec3>(i + 2, 0))));
             }
 
             return JPH::MeshShapeSettings(triangleList).Create();
@@ -214,13 +214,13 @@ namespace Kita {
         JPH::VertexList vertexList;
         JPH::IndexedTriangleList triangleList;
 
-        auto& vertices = mesh.getVertexBuffer().getVertices();
+        auto& bufferData = mesh.getVertexBuffer().getBufferData();
         KITA_ENGINE_ASSERT(!vertices.empty(), "Mesh has no vertices");
 
-        vertexList.reserve(vertices.size() / 3);
+        vertexList.reserve(bufferData.getVertexCount() / 3);
 
-        for (const auto& vertex : vertices) {
-            vertexList.push_back(PhysicsUtil::GLMToJPHFloat3(vertex.position));
+        for (size_t i = 0; i < bufferData.getVertexCount(); ++i) {
+            vertexList.push_back(PhysicsUtil::GLMToJPHFloat3(bufferData.getAttribute<glm::vec3>(i, 0)));
         }
 
         auto& indices = mesh.getIndexBuffer()->getIndices();
@@ -237,10 +237,10 @@ namespace Kita {
 
     JPH::ShapeSettings::ShapeResult PhysicsManager::createConvexHullShape(const Mesh& mesh) {
         JPH::Array<JPH::Vec3> points;
-        auto& vertices = mesh.getVertexBuffer().getVertices();
-        points.reserve(vertices.size());
-        for (const auto& vertex : vertices) {
-            points.emplace_back(PhysicsUtil::GLMToJPHVec3(vertex.position));
+        auto& bufferData = mesh.getVertexBuffer().getBufferData();
+        points.reserve(bufferData.getVertexCount());
+        for (size_t i = 0; i < bufferData.getVertexCount(); ++i) {
+            points.emplace_back(PhysicsUtil::GLMToJPHVec3(bufferData.getAttribute<glm::vec3>(i, 0)));
         }
 
         return JPH::ConvexHullShapeSettings(points).Create();

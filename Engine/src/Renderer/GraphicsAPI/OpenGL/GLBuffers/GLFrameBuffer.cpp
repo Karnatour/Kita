@@ -6,24 +6,12 @@
 #include "../../../../Window/Window.h"
 
 namespace Kita {
-    GLFrameBuffer::~GLFrameBuffer() {
-        if (m_fbo != 0) {
-            glDeleteFramebuffers(1, &m_fbo);
-            m_fbo = 0;
-        }
-    }
-
-    void GLFrameBuffer::createBuffer(const std::pair<int, int>& resolution, const std::span<const AttachInfo> attachments, const bool highPrecision, const int layers) {
-        m_resolution = resolution;
-        m_attachments = std::ranges::to<std::vector>(attachments);
-        m_highPrecision = highPrecision;
-        m_layers = layers;
-
+    GLFrameBuffer::GLFrameBuffer(const std::optional<std::pair<int, int>>& resolution, const std::initializer_list<AttachInfo> attachments, const bool highPrecision, const int layers) : FrameBuffer(resolution, attachments, highPrecision, layers) {
         glCreateFramebuffers(1, &m_fbo);
 
         createAndAttachAttachments();
 
-        if (m_colorTexture == nullptr && m_colorRenderBuffer == nullptr) {
+        if (!attachments.empty() && m_colorTexture == nullptr && m_colorRenderBuffer == nullptr) {
             glNamedFramebufferDrawBuffer(m_fbo, GL_NONE);
             glNamedFramebufferReadBuffer(m_fbo, GL_NONE);
         }
@@ -31,8 +19,11 @@ namespace Kita {
         verifyBuild();
     }
 
-    void GLFrameBuffer::createEmptyBuffer() {
-        glCreateFramebuffers(1, &m_fbo);
+    GLFrameBuffer::~GLFrameBuffer() {
+        if (m_fbo != 0) {
+            glDeleteFramebuffers(1, &m_fbo);
+            m_fbo = 0;
+        }
     }
 
     void GLFrameBuffer::bind() {
@@ -43,11 +34,13 @@ namespace Kita {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void GLFrameBuffer::attachCubemapFace(const unsigned cubemapTexture, const int faceIndex) {
-        glNamedFramebufferTextureLayer(m_fbo, GL_COLOR_ATTACHMENT0, cubemapTexture, 0, faceIndex);
+    void GLFrameBuffer::attachCubemapFace(const Texture& cubemapTexture, const int faceIndex) {
+        m_resolution = cubemapTexture.getResolution();
+        glNamedFramebufferTextureLayer(m_fbo, GL_COLOR_ATTACHMENT0, cubemapTexture.getTexture(), 0, faceIndex);
     }
 
     void GLFrameBuffer::attachExternalTexture(const BufferType bufferType, const Texture& texture) {
+        m_resolution = texture.getResolution();
         switch (bufferType) {
             case BufferType::COLOR:
                 glNamedFramebufferTexture(m_fbo, GL_COLOR_ATTACHMENT0, texture.getTexture(), 0);
@@ -60,7 +53,7 @@ namespace Kita {
                 break;
             default:
                 KITA_ENGINE_ERROR("Trying to attach unsupported buffertype texture {}", magic_enum::enum_name(bufferType));
-                break;;
+                break;
         }
         verifyBuild();
     }
@@ -90,18 +83,15 @@ namespace Kita {
         KITA_ENGINE_INFO("Creating RBO at {}x{}", m_resolution.first, m_resolution.second);
         switch (bufferType) {
             case BufferType::COLOR:
-                m_colorRenderBuffer = RenderBuffer::createPtr();
-                m_colorRenderBuffer->createBuffer(m_resolution, bufferType);
+                m_colorRenderBuffer = RenderBuffer::createPtr(m_resolution, bufferType);
                 glNamedFramebufferRenderbuffer(m_fbo, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_colorRenderBuffer->getRBO());
                 break;
             case BufferType::DEPTH:
-                m_depthRenderBuffer = RenderBuffer::createPtr();
-                m_depthRenderBuffer->createBuffer(m_resolution, bufferType);
+                m_depthRenderBuffer = RenderBuffer::createPtr(m_resolution, bufferType);
                 glNamedFramebufferRenderbuffer(m_fbo, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthRenderBuffer->getRBO());
                 break;
             case BufferType::DEPTH_STENCIL:
-                m_depthRenderBuffer = RenderBuffer::createPtr();
-                m_depthRenderBuffer->createBuffer(m_resolution, bufferType);
+                m_depthRenderBuffer = RenderBuffer::createPtr(m_resolution, bufferType);
                 glNamedFramebufferRenderbuffer(m_fbo, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthRenderBuffer->getRBO());
                 break;
             default:
@@ -153,6 +143,11 @@ namespace Kita {
     }
 
     void GLFrameBuffer::verifyBuild() {
+        if (m_attachments.empty()) {
+            KITA_ENGINE_WARN("Framebuffer has no attachments, skipping build check");
+            return;
+        }
+
         if (glCheckNamedFramebufferStatus(m_fbo, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             KITA_ENGINE_ERROR("Framebuffer build error {}", m_fbo);
         }

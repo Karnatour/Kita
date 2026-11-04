@@ -316,7 +316,7 @@ vec3 randomColor(vec2 p) {
 vec2 parallaxOcclusionMapping(vec2 texCoord, vec3 viewDirTangentSpace, vec2 dx, vec2 dy) {
     const float minLayers = 8.0;
     const float maxLayers = 32.0;
-    const float heightScale = 0.14;
+    const float heightScale = 0.05;
     // calculate the correct number of layer based on dot product
     float layersCount = mix(maxLayers, minLayers, abs(viewDirTangentSpace.z));
 
@@ -324,7 +324,7 @@ vec2 parallaxOcclusionMapping(vec2 texCoord, vec3 viewDirTangentSpace, vec2 dx, 
     float layerDepth = 1.0f / layersCount;
 
     // calculate total shift
-    vec2 P = viewDirTangentSpace.xy / max(viewDirTangentSpace.z, 0.05) * heightScale;
+    vec2 P = viewDirTangentSpace.xy / max(viewDirTangentSpace.z, 0.1) * heightScale;
     // get shift for one layer
     vec2 deltaTexCoords = P / layersCount;
 

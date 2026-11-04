@@ -31,13 +31,11 @@ namespace Kita {
 
     void LightShadowSystem::createBuffersIfMissing(Scene& scene) {
         if (m_lightSSBO == nullptr) {
-            m_lightSSBO = ShaderStorageBuffer::createPtr();
-            m_lightSSBO->createBuffer(sizeof(glm::ivec4) + sizeof(LightSSBOLayout) * LightSSBOLayout::INITIAL_LIGHT_CAPACITY_COUNT, nullptr);
+            m_lightSSBO = ShaderStorageBuffer::createPtr(sizeof(glm::ivec4) + sizeof(LightSSBOLayout) * LightSSBOLayout::INITIAL_LIGHT_CAPACITY_COUNT, nullptr);
         }
 
         if (m_directionalShadowUBO == nullptr) {
-            m_directionalShadowUBO = UniformBuffer::createPtr();
-            m_directionalShadowUBO->createBuffer(sizeof(DirectionalShadowUBOLayout), nullptr);
+            m_directionalShadowUBO = UniformBuffer::createPtr(sizeof(DirectionalShadowUBOLayout), nullptr);
         }
 
         Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front());
@@ -47,14 +45,10 @@ namespace Kita {
         if (m_lightFBO == nullptr || m_cascadeCount != cascadeCount) {
             m_cascadeCount = cascadeCount;
 
-            m_lightFBO = FrameBuffer::createPtr();
-            m_lightFBO->createBuffer(properties.resolution, {{{BufferType::DEPTH, FrameBuffer::AttachType::TEXTURE}}}, true, m_cascadeCount);
+            m_lightFBO = FrameBuffer::createPtr(properties.resolution, {{.bufferType = BufferType::DEPTH, .attachmentType = FrameBuffer::AttachType::TEXTURE}}, true, m_cascadeCount);
             const std::initializer_list shaderInfos = {
                 Shader::vert("KitaCSMVertex.glsl"),
-                Shader::geom("KitaCSMGeometry.glsl", {
-                                 Shader::define("NUM_CASCADES", std::to_string(m_cascadeCount)),
-                                 Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowUBOLayout::MAX_CASCADES))
-                             }),
+                Shader::geom("KitaCSMGeometry.glsl", {Shader::define("NUM_CASCADES", std::to_string(m_cascadeCount)), Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowUBOLayout::MAX_CASCADES))}),
                 Shader::frag("KitaEmptyFragment.glsl")
             };
             m_CSMShaderAssetID = Engine::getEngine()->getAssetManager().createAsset<Shader>(shaderInfos);

@@ -1,11 +1,11 @@
 #pragma once
 #include "../../Core/DllTemplate.h"
 #include <vector>
-#include "../Properties/VertexProperties.h"
+#include "../Vertex/VertexBufferData.h"
 
 namespace Kita {
     struct MeshData {
-        std::vector<VertexProperties> vertices;
+        VertexBufferData vertexBufferData;
         std::vector<unsigned int> indices;
     };
 

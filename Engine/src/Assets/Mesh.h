@@ -8,20 +8,21 @@
 #include "Asset.h"
 #include "../Core/DllTemplate.h"
 #include "../Renderer/Util/GeometryUtil.h"
+#include "../Renderer/Vertex/VertexBufferData.h"
 
 namespace Kita {
     class KITAENGINE_API Mesh : public Asset {
     public:
-        Mesh(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);
-        explicit Mesh(MeshData data);
+        Mesh(VertexBufferData bufferData, std::vector<unsigned int> indices);
+        explicit Mesh(MeshData meshData);
         VertexArray& getVertexArray() const;
         VertexBuffer& getVertexBuffer() const;
         IndexBuffer* getIndexBuffer() const;
 
     private:
-        void create(std::vector<VertexProperties> vertices, std::vector<unsigned int> indices);
-        std::unique_ptr<VertexArray> m_vao = VertexArray::createPtr();
-        std::unique_ptr<VertexBuffer> m_vbo = VertexBuffer::createPtr();
+        void create(VertexBufferData bufferData, std::vector<unsigned int> indices);
+        std::unique_ptr<VertexArray> m_vao;
+        std::unique_ptr<VertexBuffer> m_vbo;
         std::unique_ptr<IndexBuffer> m_ibo;
     };
 } // Kita

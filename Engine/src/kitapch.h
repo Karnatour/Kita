@@ -25,6 +25,11 @@
 #include <span>
 #include <thread>
 #include <typeindex>
+#include <format>
+#include <type_traits>
+#include <cstring>
+#include <cstddef>
+#include <typeinfo>
 
 #include <glm/glm.hpp>
 #include <magic_enum/magic_enum.hpp>
