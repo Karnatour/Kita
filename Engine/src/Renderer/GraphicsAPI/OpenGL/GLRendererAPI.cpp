@@ -26,6 +26,8 @@ namespace Kita {
                 return GL_CULL_FACE;
             case Capability::BLEND:
                 return GL_BLEND;
+            case Capability::DEPTH_CLAMP:
+                return GL_DEPTH_CLAMP;
             default:
                 KITA_ENGINE_ERROR("Trying to convert unknown capability to GL variation {} ", magic_enum::enum_name(capability));
                 return GL_NONE;
@@ -248,6 +250,25 @@ namespace Kita {
         KITA_ENGINE_PROFILE("Multi Draw Elements Indirect");
 
         glMultiDrawElementsIndirect(convertDrawModeToGL(mode),GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(drawCount), 0);
+    }
+
+    bool GLRendererAPI::isExtensionSupported(const Extension extension) {
+        std::string extensionName;
+        switch (extension) {
+            case Extension::SHADER_VIEWPORT_LAYER_ARRAY:
+                extensionName = "GL_ARB_shader_viewport_layer_array";
+                break;
+        }
+
+        GLint numExtensions;
+        glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+        for (GLint i = 0; i < numExtensions; i++) {
+            if (extensionName == std::string(reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i)))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void GLRendererAPI::debugCallback(GLenum source, GLenum type, GLuint id, const GLenum severity, GLsizei /*length*/, GLchar const* message, void const* /*user_param*/) {

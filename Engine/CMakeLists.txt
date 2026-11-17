@@ -214,6 +214,8 @@ add_library(KitaEngine SHARED
         src/Renderer/Vertex/VertexBufferData.h
         src/Renderer/Vertex/VertexAttribute.cpp
         src/Renderer/Vertex/VertexAttribute.h
+        src/Assets/AssetKey.cpp
+        src/Assets/AssetKey.h
 )
 
 #Multithreaded compilation

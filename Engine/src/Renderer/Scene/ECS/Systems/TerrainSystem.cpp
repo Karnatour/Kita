@@ -14,10 +14,6 @@ namespace Kita {
     void TerrainSystem::update(Scene& scene) {
         KITA_ENGINE_PROFILE("Terrain system update");
 
-        if (Engine::getEngine()->isFirstFrame()) {
-            m_chunkRenderPool = std::make_unique<ChunkRenderPool>(m_renderDistance);
-        }
-
         Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
 
         const auto& position = cameraEntity.getComponent<CameraComponent>().properties.position;
@@ -26,6 +22,11 @@ namespace Kita {
         const int chunkZ = static_cast<int>(std::floor(position.z / static_cast<float>(ChunkData::CHUNK_SIZE)));
 
         const ChunkPos newChunkPos(chunkX, chunkZ);
+
+        if (Engine::getEngine()->isFirstFrame()) {
+            m_chunkRenderPool = std::make_unique<ChunkRenderPool>(newChunkPos, m_renderDistance);
+        }
+
         processGeneratedChunkMeshData();
 
         if (newChunkPos == m_cameraChunkPos && !Engine::getEngine()->isFirstFrame()) {
@@ -57,11 +58,21 @@ namespace Kita {
         renderer.getMainFramebuffer().bind();
 
         if (m_materialComponent.albedoTextureID == AssetManager::INVALID_ASSET_ID) {
-            m_materialComponent.albedoTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_Color.png", {}, Texture::TextureType::ALBEDO, std::nullopt);
-            m_materialComponent.metallicRoughnessTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_Roughness.png", {}, Texture::TextureType::METALLIC_ROUGHNESS, std::nullopt);
-            m_materialComponent.normalTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_NormalGL.png", {}, Texture::TextureType::NORMAL, std::nullopt);
-            m_materialComponent.displacementTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_Displacement.png", {}, Texture::TextureType::DISPLACEMENT, std::nullopt);
-            m_materialComponent.ambientOcclusionTextureID = assetManager.createAsset<Texture>("Rock029_2K-PNG_AmbientOcclusion.png", {}, Texture::TextureType::AMBIENT_OCCLUSION, std::nullopt);
+            m_materialComponent.shaderID = assetManager.getOrCreateAsset<Shader>(AssetKey{"KitaTerrainVertex.glsl", "KitaTerrainFragment.glsl"}, {},
+                                                                                 std::vector{Shader::vert(), Shader::frag({Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowProperties::MAX_CASCADES))})}).id;
+            m_materialComponent.albedoTextureID = assetManager.getOrCreateAsset<Texture>(AssetKey{"Ground047_2K-PNG/Ground047_2K-PNG_Color.png", "Rock023_2K-PNG/Rock023_2K-PNG_Color.png", "Snow008A_2K-PNG/Snow008A_2K-PNG_Color.png"}, {},
+                                                                                         Texture::TextureType::ALBEDO, std::nullopt).id;
+            m_materialComponent.metallicRoughnessTextureID = assetManager.getOrCreateAsset<Texture>(
+                AssetKey{"Ground047_2K-PNG/Ground047_2K-PNG_Roughness.png", "Rock023_2K-PNG/Rock023_2K-PNG_Roughness.png", "Snow008A_2K-PNG/Snow008A_2K-PNG_Roughness.png"},
+                {}, Texture::TextureType::METALLIC_ROUGHNESS, std::nullopt).id;
+            m_materialComponent.normalTextureID = assetManager.getOrCreateAsset<Texture>(AssetKey{"Ground047_2K-PNG/Ground047_2K-PNG_NormalGL.png", "Rock023_2K-PNG/Rock023_2K-PNG_NormalGL.png", "Snow008A_2K-PNG/Snow008A_2K-PNG_NormalGL.png"}, {},
+                                                                                         Texture::TextureType::NORMAL, std::nullopt).id;
+            m_materialComponent.displacementTextureID = assetManager.getOrCreateAsset<Texture>(
+                AssetKey{"Ground047_2K-PNG/Ground047_2K-PNG_Displacement.png", "Rock023_2K-PNG/Rock023_2K-PNG_Displacement.png", "Snow008A_2K-PNG/Snow008A_2K-PNG_Displacement.png"}, {},
+                Texture::TextureType::DISPLACEMENT, std::nullopt).id;
+            m_materialComponent.ambientOcclusionTextureID = assetManager.getOrCreateAsset<Texture>(
+                AssetKey{"Ground047_2K-PNG/Ground047_2K-PNG_AmbientOcclusion.png", "Rock023_2K-PNG/Rock023_2K-PNG_AmbientOcclusion.png", "Snow008A_2K-PNG/Snow008A_2K-PNG_AmbientOcclusion.png"}, {}, Texture::TextureType::AMBIENT_OCCLUSION,
+                std::nullopt).id;
         }
 
         Shader& shader = assetManager.getAsset<Shader>(m_materialComponent.shaderID);
@@ -79,14 +90,14 @@ namespace Kita {
             }
         }
 
-        if (const Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front()); dirShadowEntity) {
-            textures[6] = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties.texture;
+        if (const auto dirShadowComponent = scene.contextGet<DirectionalShadowComponent>()) {
+            textures[6] = dirShadowComponent->properties.texture;
         }
 
         renderer.setMaterialInShader(shader, textures);
         shader.setUniformFloat("iblIntensity", scene.contextGet<SceneSettingsComponent>()->properties.iblIntensity); //TODO Move to UBO ?
         shader.setUniformMat4("model", glm::mat4(1.0f));
-        m_chunkRenderPool->render();
+        m_chunkRenderPool->render(m_cameraChunkPos);
 
         renderer.getMainFramebuffer().unbind();
     }
@@ -204,7 +215,7 @@ namespace Kita {
         const bool inSimulationRange = chunkPos.isChunkInRadius(m_cameraChunkPos, m_simulationDistance);
 
         if (inRenderRange && !chunk.hasValidSlot()) {
-            chunk.setSlot(m_chunkRenderPool->addChunk(chunk.getChunkData().getVertices()));
+            chunk.setSlot(m_chunkRenderPool->addChunk(chunkPos, chunk.getChunkData().getVertices()));
         } else if (!inRenderRange && chunk.hasValidSlot()) {
             m_chunkRenderPool->release(chunk.getSlot());
             chunk.clearSlot();

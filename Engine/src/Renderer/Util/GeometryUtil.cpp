@@ -273,4 +273,16 @@ namespace Kita {
             }
         };
     }
+
+    std::string Geometry::getCubeKey() {
+        return "Kita::Geometry::Cube";
+    }
+
+    std::string Geometry::getQuadKey() {
+        return "Kita::Geometry::Quad";
+    }
+
+    std::string Geometry::getTriangleKey() {
+        return "Kita::Geometry::Triangle";
+    }
 }

@@ -11,7 +11,7 @@ namespace Kita {
     }
 
     GLDrawCommandBuffer::GLDrawCommandBuffer(const std::vector<DrawElementsIndirectCommandProperties>& elementsCommands) : DrawCommandBuffer(Type::ELEMENTS) {
-        KITA_ENGINE_ASSERT(!arraysCommands.empty(), "DrawCommandBuffer has received empty commands vector");
+        KITA_ENGINE_ASSERT(!elementsCommands.empty(), "DrawCommandBuffer has received empty commands vector");
 
         glCreateBuffers(1, &m_dcb);
         glNamedBufferStorage(m_dcb, sizeof(DrawElementsIndirectCommandProperties) * elementsCommands.size(), elementsCommands.data(), GL_DYNAMIC_STORAGE_BIT);

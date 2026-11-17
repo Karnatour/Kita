@@ -64,8 +64,8 @@ namespace Kita {
             }
         }
 
-        if (const Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front()); dirShadowEntity) {
-            textures[4] = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties.texture;
+        if (const auto dirShadowComponent = scene.contextGet<DirectionalShadowComponent>()) {
+            textures[4] = dirShadowComponent->properties.texture;
         }
 
         return textures;

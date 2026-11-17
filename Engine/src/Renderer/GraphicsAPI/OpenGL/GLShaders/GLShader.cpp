@@ -18,15 +18,27 @@ namespace Kita {
         }
     }
 
-    std::expected<void, Shader::ShaderError> GLShader::createShader(std::initializer_list<ShaderInfo> shaders) {
-        m_shaders = std::ranges::to<std::vector>(shaders);
-        KITA_ENGINE_DEBUG("Starting compilation of {} shaders", shaders.size());
-        for (const auto& [index, shader] : std::views::enumerate(m_shaders)) {
+    std::expected<void, Shader::ShaderError> GLShader::createShader(std::vector<std::filesystem::path> shaderPaths, std::vector<ShaderInfoInput> shaderInfos) {
+        if (shaderPaths.size() != shaderInfos.size()) {
+            return std::unexpected(ShaderError{.code = ShaderErrorCode::SIZE_MISMATCH});
+        }
+
+        // (wanted to try bit of modern c++)
+        // zip_transform takes lambda and here two vectors, it iterates the vectors at same position and lambda define what it does for each element.
+        // Lambda takes objects as reference so we move objects from the vectors instead of moving copies
+        m_shaderInfos = std::views::zip_transform(
+                [](std::filesystem::path& path, ShaderInfoInput& info) { return ShaderInfo{.path = std::move(path), .type = info.type, .defines = std::move(info.defines)}; },
+                shaderPaths,
+                shaderInfos)
+            | std::ranges::to<std::vector>();
+
+        KITA_ENGINE_DEBUG("Starting compilation of {} shaders", m_shaderInfos.size());
+        for (const auto& [index, shader] : std::views::enumerate(m_shaderInfos)) {
             KITA_ENGINE_DEBUG("{}: {}", index, shader.path.string());
         }
 
         std::vector<GLuint> glShaders;
-        for (const auto& [path, type, defines] : m_shaders) {
+        for (const auto& [path, type, defines] : m_shaderInfos) {
             GLuint shaderID = glCreateShader(getGLShaderType(type));
             if (auto result = compileGLShader(shaderID, AssetManager::SHADER_PREFIX / path, defines); !result) {
                 // Release already compiled shaders if compilation fails
@@ -39,7 +51,7 @@ namespace Kita {
         auto result = linkGLProgram(glShaders);
         releaseCompiledShaders(glShaders);
 
-        KITA_ENGINE_DEBUG("Finished compilation of {} shaders", shaders.size());
+        KITA_ENGINE_DEBUG("Finished compilation of {} shaders", m_shaderInfos.size());
         return result;
     }
 
@@ -50,15 +62,17 @@ namespace Kita {
     }
 
     std::expected<void, Shader::ShaderError> GLShader::compileGLShader(const GLuint& shader, const std::filesystem::path& shaderPath, const std::vector<ShaderDefine>& defines) {
-        const std::optional<std::string> shaderSource = FileReader::readFileString(shaderPath);
+        std::optional<std::string> shaderSource = FileReader::readFileString(shaderPath);
         std::string shaderPathStr = shaderPath.string();
 
         if (!shaderSource.has_value()) {
             return std::unexpected(ShaderError(ShaderErrorCode::FILE, shaderPathStr));
         }
 
-        std::string shaderSourceStr = shaderSource.value();
-        replaceDefines(shaderSourceStr, defines, shaderPathStr);
+        std::string shaderSourceStr = std::move(shaderSource.value());
+        if (auto result = replaceDefines(shaderSourceStr, defines, shaderPathStr); !result) {
+            return result;
+        }
 
         const char* sourcePtr = shaderSourceStr.data();
 
@@ -72,6 +86,7 @@ namespace Kita {
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
             std::string log(logLength, ' ');
             glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+            KITA_ENGINE_ERROR("Final source ({}):\n{}", shaderPathStr, shaderSourceStr);
             KITA_ENGINE_ERROR("GLShader compilation failed ({}): {}", shaderPathStr, log);
             return std::unexpected(ShaderError(ShaderErrorCode::COMPILATION, shaderPathStr));
         }
@@ -101,7 +116,7 @@ namespace Kita {
 
     void GLShader::setUniformBool(const std::string_view location, const bool value) {
         KITA_ENGINE_PROFILE("Set uniform bool");
-        glUniform1f(getUniformLocation(location), value);
+        glUniform1i(getUniformLocation(location), value);
     }
 
     void GLShader::setUniformFloat(const std::string_view location, const float value) {

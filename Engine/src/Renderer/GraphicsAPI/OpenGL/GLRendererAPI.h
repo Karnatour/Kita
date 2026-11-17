@@ -36,6 +36,8 @@ namespace Kita {
         void drawElements(DrawMode mode, size_t indicesCount) override;
         void multiDrawElementsIndirect(DrawMode mode, size_t drawCount) override;
 
+        bool isExtensionSupported(Extension extension) override;
+
         static void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
     };
 } // Kita

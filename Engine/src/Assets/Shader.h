@@ -14,7 +14,9 @@ namespace Kita {
         enum class ShaderErrorCode {
             FILE,
             COMPILATION,
-            LINKING
+            LINKING,
+            REPLACE,
+            SIZE_MISMATCH
         };
 
         enum class ShaderType {
@@ -39,15 +41,21 @@ namespace Kita {
             std::vector<ShaderDefine> defines;
         };
 
-        static ShaderInfo vert(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
-            return {.path = std::move(path), .type = ShaderType::VERTEX, .defines = std::move(defines)};
+        struct ShaderInfoInput {
+            ShaderType type;
+            std::vector<ShaderDefine> defines;
+        };
+
+        static ShaderInfoInput vert(std::vector<ShaderDefine> defines = {}) {
+            return {.type = ShaderType::VERTEX, .defines = std::move(defines)};
         }
-        static ShaderInfo frag(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
-            return {.path = std::move(path), .type = ShaderType::FRAGMENT, .defines = std::move(defines)};
+        static ShaderInfoInput frag(std::vector<ShaderDefine> defines = {}) {
+            return {.type = ShaderType::FRAGMENT, .defines = std::move(defines)};
         }
-        static ShaderInfo geom(std::filesystem::path path, std::vector<ShaderDefine> defines = {}) {
-            return {.path = std::move(path), .type = ShaderType::GEOMETRY, .defines = std::move(defines)};
+        static ShaderInfoInput geom(std::vector<ShaderDefine> defines = {}) {
+            return {.type = ShaderType::GEOMETRY, .defines = std::move(defines)};
         }
+
         static ShaderDefine define(std::string name, std::string value) {
             return {.define = std::move(name), .value = std::move(value)};
         }
@@ -59,7 +67,7 @@ namespace Kita {
 
         void setTextureUniforms();
 
-        virtual std::expected<void, ShaderError> createShader(std::initializer_list<ShaderInfo> shaders) = 0;
+        virtual std::expected<void, ShaderError> createShader(std::vector<std::filesystem::path> shaderPaths, std::vector<ShaderInfoInput> shaderInfos) = 0;
 
         virtual void setUniformBool(std::string_view location, bool value) = 0;
         virtual void setUniformFloat(std::string_view location, float value) = 0;
@@ -72,15 +80,15 @@ namespace Kita {
         virtual void setUniformMat3(std::string_view location, const glm::mat3& value) = 0;
         virtual void setUniformMat4(std::string_view location, const glm::mat4& value) = 0;
 
-        const std::vector<ShaderInfo>& getShadersInfo() const;
+        std::span<const ShaderInfo> getShadersInfo() const;
 
     protected:
-        void replaceDefines(std::string& shaderSource, const std::vector<ShaderDefine>& defines, const std::string& shaderPath);
+        std::expected<void, ShaderError> replaceDefines(std::string& shaderSource, const std::vector<ShaderDefine>& defines, const std::string& shaderPath);
 
         unsigned int m_program = 0;
         static inline unsigned int m_currentlyBoundProgram = 0;
         bool m_textureUniformsSet = false;
-        std::vector<ShaderInfo> m_shaders;
+        std::vector<ShaderInfo> m_shaderInfos;
         std::unordered_map<std::string, int, StringHash, std::equal_to<>> m_shaderLocations;
     };
 } // Kita

@@ -183,8 +183,7 @@ namespace Kita {
                     m_textureFlags |= Texture::TextureFlags::AMBIENT_OCCLUSION;
                     break;
                 default:
-                    std::string str = texture->getPath().has_value() ? texture->getPath().value().string() : std::string("missing path");
-                    KITA_ENGINE_WARN("Texture: {}, type is NONE or Unknown, unable to bind into shader", str);
+                    KITA_ENGINE_WARN("Texture: {}, type is NONE or Unknown, unable to bind into shader", texture->getPaths().front().string());
                     break;
             }
         }

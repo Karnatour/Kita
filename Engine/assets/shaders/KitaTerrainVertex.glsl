@@ -11,21 +11,20 @@ layout(std140, binding = 0) uniform Camera {
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aSlope;
 
-out vec4 vertexColor;
 out vec2 texCoord;
 out vec3 normalVec;
 out vec3 fragPosWorld;
 out mat3 TBNMat;
 
 void main(){
-    vertexColor = aColor;
+    fragPosWorld = aPos;
     texCoord = vec2(aPos.x, aPos.z);
-
-    mat3 normalMatrix = transpose(inverse(mat3(model)));
 
     vec3 N = normalize(vec3(-aSlope.x, 1.0, -aSlope.y));
     vec3 T = normalize(vec3(1.0, aSlope.x, 0.0));
-    vec3 B = cross(T, N);
+    T = normalize(T - dot(T, N) * N);
+    vec3 B = cross(N, T);
+
     TBNMat = mat3(T, B, N);
     normalVec = N;
 

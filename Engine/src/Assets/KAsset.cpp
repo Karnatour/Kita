@@ -39,6 +39,7 @@ namespace Kita {
 
                 // sanity check: catches stream desync immediately
                 if (nodeHeader.nodeIndex != i || (i > 0 && nodeHeader.parentIndex >= i)) {
+                    //TODO std::unexpected
                     throw std::runtime_error(fmt::format("Corrupt KAsset node header at index {}: read nodeIndex={}, parentIndex={}", i, nodeHeader.nodeIndex, nodeHeader.parentIndex));
                 }
 
@@ -143,15 +144,18 @@ namespace Kita {
         }
 
         if (const auto chunkEnd = file.tellg(); static_cast<uint64_t>(chunkEnd - chunkStart) != chunk.chunkSize) {
+            //TODO std::unexpected
             throw std::runtime_error("Chunk size mismatch! Expected " + std::to_string(chunk.chunkSize) + ", read " + std::to_string(chunkEnd - chunkStart));
         }
     }
 
     void KAsset::checkHeaderFormat(const FileHeader& fileHeader, const std::filesystem::path& path) {
         if (fileHeader.magicNumber != MAGIC_NUMBER) {
+            //TODO std::unexpected
             throw std::runtime_error("Invalid magic number in asset file: " + path.string());
         }
         if (fileHeader.versionFormat != VERSION_FORMAT) {
+            //TODO std::unexpected
             throw std::runtime_error("Unsupported version in asset file: " + path.string());
         }
     }
@@ -168,7 +172,9 @@ namespace Kita {
         indices.resize(meshHeader.indexCount);
         file.read(reinterpret_cast<char*>(indices.data()), static_cast<std::streamsize>(indices.size() * sizeof(unsigned int)));
 
-        return MeshComponent{Engine::getEngine()->getAssetManager().createAsset<Mesh>(VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices))};
+        //TODO Save mesh name into file
+        static int ID = 0;
+        return MeshComponent{Engine::getEngine()->getAssetManager().getOrCreateAsset<Mesh>(AssetKey{"Kita::KAsset::" + std::to_string(ID++)}, {}, VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices)).id};
     }
 
     MaterialComponent KAsset::readMaterial(std::ifstream& file) {
@@ -179,7 +185,7 @@ namespace Kita {
 
         for (int j = 0; j < materialHeader.textureCount; ++j) {
             const auto textureType = static_cast<Texture::TextureType>(materialHeader.textureTypes[j]);
-            auto [textureID, textureAsset] = Engine::getEngine()->getAssetManager().getOrCreateAsset<Texture>(materialHeader.texturePaths[j], {}, textureType, std::nullopt);
+            auto [textureID, textureAsset] = Engine::getEngine()->getAssetManager().getOrCreateAsset<Texture>(AssetKey{materialHeader.texturePaths[j]}, {}, textureType, std::nullopt);
             switch (textureType) {
                 case Texture::TextureType::ALBEDO:
                     materialComponent.albedoTextureID = textureID;
@@ -200,10 +206,8 @@ namespace Kita {
                     KITA_ENGINE_WARN("[KAsset] Unknown texture type while reading material");
             }
         }
-        auto [shaderID, shaderAsset] = Engine::getEngine()->getAssetManager().getOrCreateAsset<Shader>(std::string(materialHeader.shaderPaths[0]) + std::string(materialHeader.shaderPaths[1]), {},
-                                                                                                       std::initializer_list{Shader::vert(materialHeader.shaderPaths[0]), Shader::frag(materialHeader.shaderPaths[1])});
 
-        materialComponent.shaderID = shaderID;
+        materialComponent.shaderID = Engine::getEngine()->getAssetManager().getOrCreateAsset<Shader>(AssetKey{materialHeader.shaderPaths[0], materialHeader.shaderPaths[1]}, {}, std::vector{Shader::vert(), Shader::frag()}).id;
 
         return materialComponent;
     }
@@ -290,6 +294,7 @@ namespace Kita {
         FileHeader fileHeader;
         const std::optional<uint64_t> fileHash = FileReader::getFileHash(filePath);
         if (!fileHash) {
+            //TODO std::unexpected
             throw std::runtime_error(fmt::format("Unable to calculate file hash for: {}", filePath.string()));
         }
         fileHeader.sourceFileHash = fileHash.value();
@@ -369,20 +374,22 @@ namespace Kita {
 
     void KAsset::writeTextures(MaterialData& materialHeader, const std::span<Texture* const> textures) {
         if (materialHeader.textureCount > MAX_MATERIAL_TEXTURE_PATH_COUNT) {
+            //TODO std::unexpected
             throw std::runtime_error(fmt::format("Texture count: {} is larger than max allowed texture count: {}", materialHeader.textureCount, MAX_MATERIAL_TEXTURE_PATH_COUNT));
         }
 
         for (int i = 0; i < materialHeader.textureCount; i++) {
-            if (textures[i]->getPath()->string().length() >= MAX_PATH_LENGTH) {
-                throw std::runtime_error(fmt::format("TexturePath is larger than: {} causing overflow: {}", MAX_PATH_LENGTH, textures[i]->getPath()->string()));
+            if (textures[i]->getPaths().front().string().length() >= MAX_PATH_LENGTH) {
+                //TODO std::unexpected
+                throw std::runtime_error(fmt::format("TexturePath is larger than: {} causing overflow: {}", MAX_PATH_LENGTH, textures[i]->getPaths().front().string()));
             }
-            strcpy_s(materialHeader.texturePaths[i], textures[i]->getPath()->string().c_str());
+            strcpy_s(materialHeader.texturePaths[i], textures[i]->getPaths().front().string().c_str());
             materialHeader.textureTypes[i] = static_cast<unsigned char>(textures[i]->getType());
         }
     }
 
     void KAsset::writeShader(MaterialData& materialHeader, const Shader& shader) {
-        auto& shadersInfo = shader.getShadersInfo();
+        const auto& shadersInfo = shader.getShadersInfo();
 
         std::string vertexPath;
         std::string fragmentPath;
@@ -397,20 +404,24 @@ namespace Kita {
         }
 
         if (vertexPath.empty()) {
+            //TODO std::unexpected
             throw std::runtime_error("VertexShaderPath is empty");
         }
         if (fragmentPath.empty()) {
+            //TODO std::unexpected
             throw std::runtime_error("FragmentShaderPath is empty");
         }
 
         //Vertex
         if (vertexPath.length() >= MAX_PATH_LENGTH) {
+            //TODO std::unexpected
             throw std::runtime_error(fmt::format("VertexShaderPath is larger than: {} causing overflow: {}", MAX_PATH_LENGTH, vertexPath));
         }
         strcpy_s(materialHeader.shaderPaths[0], vertexPath.c_str());
 
         //Fragment
         if (fragmentPath.length() >= MAX_PATH_LENGTH) {
+            //TODO std::unexpected
             throw std::runtime_error(fmt::format("FragmentShaderPath is larger than: {} causing overflow: {}", MAX_PATH_LENGTH, fragmentPath));
         }
         strcpy_s(materialHeader.shaderPaths[1], fragmentPath.c_str());

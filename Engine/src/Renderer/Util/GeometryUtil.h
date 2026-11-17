@@ -13,5 +13,8 @@ namespace Kita {
         static MeshData getCubeData();
         static MeshData getQuadData();
         static MeshData getTriangleData();
+        static std::string getCubeKey();
+        static std::string getQuadKey();
+        static std::string getTriangleKey();
     };
 }

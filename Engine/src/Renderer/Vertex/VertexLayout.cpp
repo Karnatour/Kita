@@ -35,7 +35,7 @@ namespace Kita {
     }
 
     size_t VertexLayout::getStride() const {
-        KITA_ENGINE_ASSERT(m_stride == 0, "Stride can't be zero");
+        KITA_ENGINE_ASSERT(m_stride != 0, "Stride can't be zero");
         return m_stride;
     }
 

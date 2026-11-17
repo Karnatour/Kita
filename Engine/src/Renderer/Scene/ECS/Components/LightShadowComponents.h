@@ -14,4 +14,16 @@ namespace Kita {
 
     };
 
+    struct DirectionalLight {
+
+    };
+
+    struct PointLight {
+
+    };
+
+    struct SpotLight {
+
+    };
+
 } //Kita

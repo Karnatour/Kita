@@ -9,6 +9,7 @@
 #include "../Renderer/Scene/ECS/Components/TransformationComponent.h"
 
 namespace Kita {
+    //TODO
     class KITAENGINE_API KAsset {
     public:
         static inline const std::filesystem::path BAKED_PREFIX = "../assets/baked";

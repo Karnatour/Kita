@@ -35,5 +35,7 @@ namespace Kita {
         virtual void multiDrawElementsIndirect(DrawMode mode, size_t drawCount) = 0;
 
         virtual void setViewport(std::pair<int, int> resolution) = 0;
+
+        virtual bool isExtensionSupported(Extension extension) = 0;
     };
 } // Kita

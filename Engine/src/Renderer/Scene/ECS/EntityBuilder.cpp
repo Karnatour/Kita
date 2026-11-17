@@ -12,7 +12,8 @@ namespace Kita {
     Entity EntityBuilder::createDirectionalLight(Scene& scene, const bool castShadows) {
         auto lightEntity = scene.createEntity();
         lightEntity.addComponent<LightComponent>(LightComponent{.properties = LightProperties{.direction = glm::vec3(-0.1f, -1.0f, 0.1f), .lightType = LightType::DIRECTIONAL}});
-        lightEntity.addComponent<DirectionalShadowComponent>();
+        lightEntity.addComponent<DirectionalLight>();
+        scene.contextAdd<DirectionalShadowComponent>();
 
         if (castShadows) {
             lightEntity.addComponent<CastsShadows>();

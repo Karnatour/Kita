@@ -32,4 +32,8 @@ namespace Kita {
     bool ChunkPos::isChunkInRadius(const ChunkPos& middleChunkPos, const int renderDistance) const {
         return std::abs(m_chunkPos.first - middleChunkPos.getChunkX()) <= renderDistance && std::abs(m_chunkPos.second - middleChunkPos.getChunkZ()) <= renderDistance;
     }
+
+    int ChunkPos::chunkDistance(const ChunkPos& first, const ChunkPos& second) {
+        return std::max(std::abs(first.getChunkX() - second.getChunkX()), std::abs(first.getChunkZ() - second.getChunkZ()));
+    }
 } // Kita

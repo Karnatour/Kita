@@ -30,8 +30,12 @@ namespace Kita {
         return m_channels;
     }
 
-    const std::optional<std::filesystem::path>& Texture::getPath() const {
-        return m_path;
+    bool Texture::isHighPrecision() const {
+        return m_highPrecision;
+    }
+
+    std::span<const std::filesystem::path> Texture::getPaths() const {
+        return m_paths;
     }
 
     Texture::TextureType Texture::getType() const {

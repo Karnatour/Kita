@@ -15,7 +15,6 @@ layout (location = 3) in vec3 aNormal;
 layout (location = 4) in vec3 aTangent;
 layout (location = 5) in vec3 aBitangent;
 
-out vec4 vertexColor;
 out vec2 texCoord;
 out vec3 normalVec;
 out vec3 fragPosWorld;
@@ -25,19 +24,18 @@ uniform mat4 model;
 
 void main(){
     fragPosWorld = vec3(model * vec4(aPos, 1.0));
-    vertexColor = aColor;
     texCoord = aTex;
 
     mat3 normalMatrix = transpose(inverse(mat3(model)));
 
-    normalVec = normalize(normalMatrix * aNormal);
-
-    vec3 T = normalize(normalMatrix * aTangent);
     vec3 N = normalize(normalMatrix * aNormal);
+    vec3 T = normalize(normalMatrix * aTangent);
     T = normalize(T - dot(T, N) * N);
     vec3 B = normalize(normalMatrix * aBitangent);
     B = normalize(B - dot(B, N) * N - dot(B, T) * T);
+
     TBNMat = mat3(T, B, N);
+    normalVec = normalize(normalMatrix * aNormal);
 
     gl_Position = camera.projection * camera.view * vec4(fragPosWorld, 1.0);
 }

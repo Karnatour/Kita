@@ -30,7 +30,7 @@ layout (std140, binding = 0) uniform CameraUBO {
 
 layout (std140, binding = 1) uniform DirectionalShadowUBO {
     mat4 lightSpaceMatrices[MAX_CASCADES];
-    vec4 cascadeSplitDistances[MAX_CASCADES];// distance | padding | padding | padding
+    vec4 cascadeSplitDistances[MAX_CASCADES];// distance | radius | depthPerUnit | padding
     ivec4 params;// cascadeCount | unused | unused | unused
 } directionalShadow;
 
@@ -60,7 +60,6 @@ uniform sampler2D ambientOcclusionTex;
 
 uniform float iblIntensity;
 
-in vec4 vertexColor;
 in vec2 texCoord;
 in vec3 normalVec;
 in vec3 fragPosWorld;
@@ -134,7 +133,7 @@ vec3 getNormal(vec2 newTexCoord) {
         normal = normalize(TBNMat * normal);
     }
     else {
-        normal = normalVec;
+        normal = normalize(normalVec);
     }
     return normal;
 }
@@ -143,7 +142,7 @@ vec3 calculateDirectionalLight(vec3 normal, vec3 viewDir, Light light, vec3 F0, 
     vec3 lightDir = normalize(-light.direction.xyz);
 
     float shadow = 0.0;
-    shadow = calculateShadow(normal, lightDir);
+    shadow = calculateShadow(normalize(normalVec), lightDir);
 
     float attenuation = 1.0;
     vec3 outgoingRadiance = calculateOutgoingRadiance(normal, viewDir, lightDir, attenuation, F0, PBRData, light);
@@ -265,7 +264,12 @@ PBRProperties getPBRProperties(vec2 newTexCoord) {
     return PBRData;
 }
 
-float calculateShadow(vec3 normal, vec3 lightDir){
+float calculateShadow(vec3 geomNormal, vec3 lightDir){
+    float normalDotLightDir = dot(geomNormal, lightDir);
+    if (normalDotLightDir <= 0.0) {
+        return 1.0;
+    }
+
     vec4 fragPosViewSpace = camera.view * vec4(fragPosWorld, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
 
@@ -276,29 +280,44 @@ float calculateShadow(vec3 normal, vec3 lightDir){
             break;
         }
     }
-    vec4 fragPosLightSpace = directionalShadow.lightSpaceMatrices[layer] * vec4(fragPosWorld, 1.0);
+
+    mat4 lsm = directionalShadow.lightSpaceMatrices[layer];
+
+    vec4 cascadeData = directionalShadow.cascadeSplitDistances[layer];
+
+    float cascadeRadius = cascadeData.y;
+    float depthPerUnit = cascadeData.z;
+
+    vec2 mapSize = vec2(textureSize(depthTexArray, 0).xy);
+    float texelWorld = 2.0 * cascadeRadius / mapSize.x;
+
+    float sinTheta = sqrt(max(1.0 - normalDotLightDir * normalDotLightDir, 0.0));
+    float tanTheta = min(sinTheta / max(normalDotLightDir, 0.001), 4.0);
+
+    const float NORMAL_OFFSET_TEXELS = 1.5;
+    vec3 offsetPos = fragPosWorld + geomNormal * texelWorld * NORMAL_OFFSET_TEXELS * sinTheta;
+
+    vec4 fragPosLightSpace = lsm * vec4(offsetPos, 1.0);
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
-    float currentDepth = projCoords.z;
-    if (currentDepth > 1.0) {
+    if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 || projCoords.y < 0.0 || projCoords.y > 1.0) {
         return 0.0;
     }
 
-    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.0005);
-    bias = clamp(bias, 0.0005, 0.003);
+    float biasWorld = texelWorld * (0.5 + 1.0 * tanTheta);
+    float bias = biasWorld * depthPerUnit;
 
+    float currentDepth = projCoords.z;
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(depthTexArray, 0));
+    vec2 texelSize = 1.0 / mapSize;
     for (int x = -2; x <= 2; ++x) {
         for (int y = -2; y <= 2; ++y) {
             float pcfDepth = texture(depthTexArray, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
             shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
         }
     }
-    shadow /= 25.0;
-
-    return shadow;
+    return shadow / 25.0;
 }
 
 bool hasTexture(uint flag){

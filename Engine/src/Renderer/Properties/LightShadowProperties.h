@@ -22,11 +22,9 @@ namespace Kita {
         std::pair<int, int> resolution = std::make_pair(4096, 4096);
         Texture* texture = nullptr;
         int cascadeCount = 4;
-        float shadowDistance = 500.0f;
+        float shadowDistance = 1000.0f;
         // lambda = 0 will be linear distance split
         // lambda = 1 will be logarithmic split
         float lambda = 0.75f;
     };
-
-
 }

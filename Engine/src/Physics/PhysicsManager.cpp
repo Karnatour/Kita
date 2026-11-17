@@ -195,11 +195,11 @@ namespace Kita {
             JPH::TriangleList triangleList;
 
             auto& bufferData = mesh.getVertexBuffer().getBufferData();
-            KITA_ENGINE_ASSERT(!vertices.empty(), "Mesh has no vertices");
+            KITA_ENGINE_ASSERT(!bufferData.getVertices().empty(), "Mesh has no vertices");
 
             triangleList.reserve(bufferData.getVertexCount() / 3);
 
-            KITA_ENGINE_ASSERT(vertices.size() % 3 == 0, "Vertices must be triangulated");
+            KITA_ENGINE_ASSERT(bufferData.getVertexCount() % 3 == 0, "Vertices must be triangulated");
 
             for (size_t i = 0; i < bufferData.getVertexCount(); i = i + 3) {
                 triangleList.push_back(JPH::Triangle(
@@ -215,7 +215,7 @@ namespace Kita {
         JPH::IndexedTriangleList triangleList;
 
         auto& bufferData = mesh.getVertexBuffer().getBufferData();
-        KITA_ENGINE_ASSERT(!vertices.empty(), "Mesh has no vertices");
+        KITA_ENGINE_ASSERT(!bufferData.getVertices().empty(), "Mesh has no vertices");
 
         vertexList.reserve(bufferData.getVertexCount() / 3);
 

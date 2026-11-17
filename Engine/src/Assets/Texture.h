@@ -40,23 +40,33 @@ namespace Kita {
             AMBIENT_OCCLUSION = 1u << 10
         };
 
-        enum class TextureError {
+        enum class TextureErrorCode {
             FILE = 0,
-            UNSUPPORTED_NUM_OF_CHANNELS = 1
+            UNSUPPORTED_NUM_OF_CHANNELS = 1,
+            UNSUPPORTED_TEXTURE_ARRAY_FOR_TYPE = 2,
+            PROPERTIES_MISMATCH = 3,
+            EMPTY = 4,
         };
 
-        virtual ~Texture() = default;
-        virtual std::expected<void, TextureError> createTexture(const std::optional<std::filesystem::path>& texturePath, TextureType textureType, std::optional<std::pair<int, int>> resolution) = 0;
+        struct TextureError {
+            TextureErrorCode code;
+            std::string errorStr;
+        };
+
+        ~Texture() override = default;
+        virtual std::expected<void, TextureError> createTexture(std::vector<std::filesystem::path> texturePaths, TextureType textureType, std::optional<std::pair<int, int>> resolution) = 0;
         virtual void createBufferTypeTexture(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision) = 0;
         virtual void createBufferTypeTextureArray(std::pair<int, int> resolution, BufferType bufferType, bool highPrecision, int layersCount) = 0;
         virtual void bind(unsigned int position) = 0;
         virtual void destroy() = 0;
+        virtual void generateMipmaps() = 0;
         static std::unique_ptr<Texture> createPtr();
         unsigned int getTexture() const;
         int getWidth() const;
         int getHeight() const;
         int getChannels() const;
-        const std::optional<std::filesystem::path>& getPath() const;
+        bool isHighPrecision() const;
+        std::span<const std::filesystem::path> getPaths() const;
         TextureType getType() const;
         std::pair<int, int> getResolution() const;
 
@@ -65,7 +75,8 @@ namespace Kita {
         int m_width = 0;
         int m_height = 0;
         int m_channels = 0;
-        std::optional<std::filesystem::path> m_path;
+        bool m_highPrecision = false;
+        std::vector<std::filesystem::path> m_paths;
         TextureType m_textureType = TextureType::NONE;
     };
 

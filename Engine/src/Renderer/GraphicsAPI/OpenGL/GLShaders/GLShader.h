@@ -8,7 +8,7 @@ namespace Kita {
     public:
         ~GLShader() override;
         void bind() override;
-        std::expected<void, ShaderError> createShader(std::initializer_list<ShaderInfo> shaders) override;
+        std::expected<void, ShaderError> createShader(std::vector<std::filesystem::path> shaderPaths, std::vector<ShaderInfoInput> shaderInfos) override;
 
         void setUniformBool(std::string_view location, bool value) override;
         void setUniformFloat(std::string_view location, float value) override;

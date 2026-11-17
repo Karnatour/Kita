@@ -31,13 +31,11 @@ namespace Kita {
         auto& assetManager = Engine::getEngine()->getAssetManager();
         auto& renderer = Engine::getEngine()->getRenderer();
         if (m_quadMeshAssetID == AssetManager::INVALID_ASSET_ID) {
-            m_quadMeshAssetID = assetManager.createAsset<Mesh>(Geometry::getQuadData());
+            m_quadMeshAssetID = assetManager.getOrCreateAsset<Mesh>(AssetKey{Geometry::getQuadKey()}, {}, Geometry::getQuadData()).id;
         }
 
         if (m_shaderAssetID == AssetManager::INVALID_ASSET_ID) {
-            m_shaderAssetID = assetManager.createAsset<Shader>(std::initializer_list{
-                Shader::vert("KitaPostProcessVertex.glsl"), Shader::frag("KitaEnvironmentFragment.glsl")
-            });
+            m_shaderAssetID = assetManager.getOrCreateAsset<Shader>(AssetKey{"KitaPostProcessVertex.glsl", "KitaEnvironmentFragment.glsl"}, {}, std::vector{Shader::vert(), Shader::frag()}).id;
         }
 
         if (m_environmentUBO == nullptr) {

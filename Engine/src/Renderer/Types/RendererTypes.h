@@ -4,7 +4,8 @@ namespace Kita {
     enum class Capability {
         DEPTH_TEST,
         CULL_FACE,
-        BLEND
+        BLEND,
+        DEPTH_CLAMP
     };
 
     enum class DepthFunction {
@@ -58,5 +59,9 @@ namespace Kita {
         ONE_MINUS_CONSTANT_COLOR,
         CONSTANT_ALPHA,
         ONE_MINUS_CONSTANT_ALPHA
+    };
+
+    enum class Extension {
+        SHADER_VIEWPORT_LAYER_ARRAY
     };
 }

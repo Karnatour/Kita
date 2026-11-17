@@ -38,20 +38,21 @@ namespace Kita {
             m_directionalShadowUBO = UniformBuffer::createPtr(sizeof(DirectionalShadowUBOLayout), nullptr);
         }
 
-        Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front());
-        const DirectionalShadowProperties& properties = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties;
-        int cascadeCount = properties.cascadeCount;
+        auto dirShadowComponent = scene.contextGet<DirectionalShadowComponent>();
+        if (!dirShadowComponent) {
+            return;
+        }
+        const DirectionalShadowProperties& properties = dirShadowComponent->properties;
+        const int cascadeCount = properties.cascadeCount;
 
         if (m_lightFBO == nullptr || m_cascadeCount != cascadeCount) {
             m_cascadeCount = cascadeCount;
 
             m_lightFBO = FrameBuffer::createPtr(properties.resolution, {{.bufferType = BufferType::DEPTH, .attachmentType = FrameBuffer::AttachType::TEXTURE}}, true, m_cascadeCount);
-            const std::initializer_list shaderInfos = {
-                Shader::vert("KitaCSMVertex.glsl"),
-                Shader::geom("KitaCSMGeometry.glsl", {Shader::define("NUM_CASCADES", std::to_string(m_cascadeCount)), Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowUBOLayout::MAX_CASCADES))}),
-                Shader::frag("KitaEmptyFragment.glsl")
-            };
-            m_CSMShaderAssetID = Engine::getEngine()->getAssetManager().createAsset<Shader>(shaderInfos);
+
+            const std::string cascadeCountStr = std::to_string(DirectionalShadowUBOLayout::MAX_CASCADES);
+            auto& assetManager = Engine::getEngine()->getAssetManager();
+            m_CSMShaderAssetID = assetManager.getOrCreateAsset<Shader>(AssetKey{"KitaCSMVertex.glsl", "KitaEmptyFragment.glsl"}, {}, std::vector{Shader::vert({Shader::define("MAX_CASCADES", cascadeCountStr)}), Shader::frag()}).id;
         }
     }
 
@@ -63,33 +64,40 @@ namespace Kita {
 
         auto& shader = assetManager.getAsset<Shader>(m_CSMShaderAssetID);
 
-        Entity dirShadowEntity(&scene, scene.view<DirectionalShadowComponent>().front());
-        DirectionalShadowProperties& properties = dirShadowEntity.getComponent<DirectionalShadowComponent>().properties;
+        const auto dirShadowComponent = scene.contextGet<DirectionalShadowComponent>();
+        if (!dirShadowComponent) {
+            return;
+        }
+        DirectionalShadowProperties& properties = dirShadowComponent->properties;
 
         m_lightFBO->bind();
+        renderer.enableCapability(Capability::DEPTH_CLAMP);
         renderer.setViewport(properties.resolution, false);
         renderer.clearBit({{ClearBit::DEPTH}});
-        // Set cull mode to front to reduce shadow artifacts
-        renderer.setCullMode(CullMode::FRONT);
 
-        // Handle terrain manually since we don't store terrain data in ECS
-        if (const TerrainSystem* terrainSystem = scene.getSystem<TerrainSystem>(); terrainSystem != nullptr) {
-            shader.bind();
-            shader.setUniformMat4("model", glm::mat4(1.0f));
-            terrainSystem->getChunkRenderPool()->render();
-        }
+        shader.bind();
+        for (int i = 0; i < m_cascadeCount; ++i) {
+            shader.setUniformInt("cascadeIndex", i);
+            if (const TerrainSystem* terrainSystem = scene.getSystem<TerrainSystem>(); terrainSystem != nullptr) {
+                shader.setUniformMat4("model", glm::mat4(1.0f));
+                terrainSystem->getChunkRenderPool()->render(terrainSystem->getCameraChunkPos());
+            }
 
-        for (const auto [entity,children, transformation] : scene.view<ChildrenComponent, TransformationComponent, RenderInShadowPass>().each()) {
-            for (const auto child : children.children) {
-                if (Entity childEntity(&scene, child); childEntity.hasAllComponents<MeshComponent, MaterialComponent>()) {
-                    Mesh& mesh = assetManager.getAsset<Mesh>(childEntity.getComponent<MeshComponent>().meshID);
+            // Set cull mode to front to reduce shadow artifacts (doesn't affect terrain so keep BACK for it)
+            renderer.setCullMode(CullMode::FRONT);
+            for (const auto [entity,children, transformation] : scene.view<ChildrenComponent, TransformationComponent, RenderInShadowPass>().each()) {
+                for (const auto child : children.children) {
+                    if (Entity childEntity(&scene, child); childEntity.hasAllComponents<MeshComponent, MaterialComponent>()) {
+                        Mesh& mesh = assetManager.getAsset<Mesh>(childEntity.getComponent<MeshComponent>().meshID);
 
-                    renderer.renderMesh(mesh, shader, transformation.worldModel, {}, true);
+                        renderer.renderMesh(mesh, shader, transformation.worldModel, {}, true);
+                    }
                 }
             }
         }
 
         renderer.setCullMode(CullMode::BACK);
+        renderer.disableCapability(Capability::DEPTH_CLAMP);
 
         renderer.restoreViewport();
         m_lightFBO->unbind();
@@ -123,14 +131,20 @@ namespace Kita {
     void LightShadowSystem::uploadDirectionalLightData(Scene& scene) const {
         KITA_ENGINE_PROFILE("Upload directional light data");
 
-        Entity dirLightEntity(&scene, scene.view<LightComponent, DirectionalShadowComponent>().front());
-        Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
+        const auto dirShadowComponent = scene.contextGet<DirectionalShadowComponent>();
+        if (!dirShadowComponent) {
+            return;
+        }
 
-        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount, shadowDistance, lambda] = dirLightEntity.getComponent<DirectionalShadowComponent>().properties;
+        const Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
+
+        auto& [cascadeSplitDistances, lightSpaceMatrices, shadowMapResolution,texture, cascadeCount, shadowDistance, lambda] = dirShadowComponent->properties;
         DirectionalShadowUBOLayout dirLightUBOData{};
 
         const CameraProperties& cameraProperties = cameraEntity.getComponent<CameraComponent>().properties;
-        const glm::vec3 lightDir = dirLightEntity.getComponent<LightComponent>().properties.direction;
+
+        const Entity dirShadowEntity(&scene, scene.view<LightComponent, DirectionalLight>().front());
+        const glm::vec3 lightDir = dirShadowEntity.getComponent<LightComponent>().properties.direction;
 
         //extract
         for (int i = 0; i < m_cascadeCount; i++) {
@@ -145,9 +159,13 @@ namespace Kita {
             const float nearPlane = (i == 0) ? cameraProperties.zNear : cascadeSplitDistances[i - 1];
             const float farPlane = cascadeSplitDistances[i];
 
-            lightSpaceMatrices[i] = LightUtil::getLightSpaceMatrix(cameraProperties, nearPlane, farPlane, lightDir, Engine::getEngine()->getRenderer().getViewport(), shadowMapResolution);
+            auto [matrix, radius, depthPerUnit] = LightUtil::getLightSpaceMatrix(cameraProperties, nearPlane, farPlane, lightDir, Engine::getEngine()->getRenderer().getViewport(), shadowMapResolution);;
+            lightSpaceMatrices[i] = matrix;
 
             dirLightUBOData.cascadeSplitDistances[i].x = cascadeSplitDistances[i];
+            dirLightUBOData.cascadeSplitDistances[i].y = radius;
+            dirLightUBOData.cascadeSplitDistances[i].z = depthPerUnit;
+
             dirLightUBOData.lightSpaceMatrices[i] = lightSpaceMatrices[i];
         }
 

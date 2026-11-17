@@ -71,10 +71,10 @@ namespace Kita {
         m_cubemapCaptureFBO->bind();
 
         if (skyboxComponent.cubemapID == AssetManager::INVALID_ASSET_ID) {
-            skyboxComponent.cubemapID = assetManager.createAsset<Texture>(Texture::TextureType::CUBEMAP, CUBEMAP_FACE_RES);
+            skyboxComponent.cubemapID = assetManager.getOrCreateAsset<Texture>(AssetKey{"Kita::SkyboxSystem::Cubemap"}, {}, Texture::TextureType::CUBEMAP, CUBEMAP_FACE_RES).id;
         }
 
-        const auto& cubemapTexture = assetManager.getAsset<Texture>(skyboxComponent.cubemapID);
+        auto& cubemapTexture = assetManager.getAsset<Texture>(skyboxComponent.cubemapID);
         auto& skyboxTexture = assetManager.getAsset<Texture>(skyboxComponent.skyboxID);
         auto& builderShader = assetManager.getAsset<Shader>(m_skyboxBuilderShaderID);
         const auto& skyboxMesh = assetManager.getAsset<Mesh>(m_skyboxMeshID);
@@ -91,6 +91,7 @@ namespace Kita {
             renderer.clearBit({{ClearBit::COLOR, ClearBit::DEPTH}});
             renderer.renderMesh(skyboxMesh, builderShader, glm::mat4(1.0f), {{&skyboxTexture}});
         }
+        cubemapTexture.generateMipmaps();
         m_cubemapCaptureFBO->unbind();
         renderer.restoreViewport();
     }
@@ -104,7 +105,7 @@ namespace Kita {
         m_cubemapCaptureFBO->bind();
 
         if (skyboxComponent.irradianceCubemapID == AssetManager::INVALID_ASSET_ID) {
-            skyboxComponent.irradianceCubemapID = assetManager.createAsset<Texture>(Texture::TextureType::CUBEMAP, IRRADIANCE_RES);
+            skyboxComponent.irradianceCubemapID = assetManager.getOrCreateAsset<Texture>(AssetKey{"Kita::SkyboxSystem::IrradianceCubemap"}, {}, Texture::TextureType::CUBEMAP, IRRADIANCE_RES).id;
         }
 
         auto& inputCubemapTexture = assetManager.getAsset<Texture>(skyboxComponent.cubemapID);
@@ -133,22 +134,16 @@ namespace Kita {
         auto& assetManager = Engine::getEngine()->getAssetManager();
 
         if (m_skyboxMeshID == AssetManager::INVALID_ASSET_ID) {
-            m_skyboxMeshID = assetManager.createAsset<Mesh>(Geometry::getCubeData());
+            m_skyboxMeshID = assetManager.getOrCreateAsset<Mesh>(AssetKey{Geometry::getCubeKey()}, {}, Geometry::getCubeData()).id;
         }
         if (m_skyboxBuilderShaderID == AssetManager::INVALID_ASSET_ID) {
-            m_skyboxBuilderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
-                Shader::vert("KitaSkyboxBuilderVertex.glsl"), Shader::frag("KitaSkyboxBuilderFragment.glsl")
-            });
+            m_skyboxBuilderShaderID = assetManager.getOrCreateAsset<Shader>(AssetKey{"KitaSkyboxBuilderVertex.glsl", "KitaSkyboxBuilderFragment.glsl"}, {}, std::vector{Shader::vert(), Shader::frag()}).id;
         }
         if (m_skyboxBuilderIrradianceShaderID == AssetManager::INVALID_ASSET_ID) {
-            m_skyboxBuilderIrradianceShaderID = assetManager.createAsset<Shader>(std::initializer_list{
-                Shader::vert("KitaSkyboxBuilderVertex.glsl"), Shader::frag("KitaSkyboxBuilderIrradianceFragment.glsl")
-            });
+            m_skyboxBuilderIrradianceShaderID = assetManager.getOrCreateAsset<Shader>(AssetKey{"KitaSkyboxBuilderVertex.glsl", "KitaSkyboxBuilderIrradianceFragment.glsl"}, {}, std::vector{Shader::vert(), Shader::frag()}).id;
         }
         if (m_skyboxRenderShaderID == AssetManager::INVALID_ASSET_ID) {
-            m_skyboxRenderShaderID = assetManager.createAsset<Shader>(std::initializer_list{
-                Shader::vert("KitaSkyboxRenderVertex.glsl"), Shader::frag("KitaSkyboxRenderFragment.glsl")
-            });
+            m_skyboxRenderShaderID = assetManager.getOrCreateAsset<Shader>(AssetKey{"KitaSkyboxRenderVertex.glsl", "KitaSkyboxRenderFragment.glsl"}, {}, std::vector{Shader::vert(), Shader::frag()}).id;
         }
     }
 } // Kita

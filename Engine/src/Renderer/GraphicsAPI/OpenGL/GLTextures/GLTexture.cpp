@@ -14,11 +14,9 @@ namespace Kita {
         }
     }
 
-    std::expected<void, Texture::TextureError> GLTexture::createTexture(const std::optional<std::filesystem::path>& texturePath, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
-        m_path = texturePath;
+    std::expected<void, Texture::TextureError> GLTexture::createTexture(std::vector<std::filesystem::path> texturePaths, const TextureType textureType, const std::optional<std::pair<int, int>> resolution) {
+        m_paths = std::move(texturePaths);
         m_textureType = textureType;
-
-        bool highPrecision = false;
 
         switch (textureType) {
             case TextureType::NONE:
@@ -37,45 +35,42 @@ namespace Kita {
             case TextureType::NORMAL:
                 break;
             case TextureType::DISPLACEMENT:
-                highPrecision = true;
+                m_highPrecision = true;
                 break;
             case TextureType::DEPTH_ARRAY:
-                KITA_ENGINE_ASSERT(false, "Trying to create DEPTH_ARRAY texture with createTexture() func, use createTextureBufferTypeTextureArray() instead");
+                KITA_ENGINE_ASSERT(false, "Trying to create DEPTH_ARRAY texture with createTexture() func, use createBufferTypeTextureArray() instead"); //TODO Probably merge inside here
             case TextureType::AMBIENT_OCCLUSION:
                 break;
         }
 
-        if (!texturePath.has_value()) {
-            KITA_ENGINE_ERROR("Texture type: {}, supports only textures with path", magic_enum::enum_name(textureType));
+        if (m_paths.empty()) {
+            return std::unexpected(TextureError{.code = TextureErrorCode::EMPTY, .errorStr = std::string(magic_enum::enum_name(m_textureType))});
         }
 
-        if (texturePath->extension() == ".dds") {
+        if (m_paths.front().extension() == ".dds") {
             return loadDDSTexture();
         }
 
         stbi_set_flip_vertically_on_load(true);
-        const std::string fullPath = (AssetManager::TEXTURE_PREFIX / texturePath.value()).string();
 
-        void* pixels = nullptr;
-        if (highPrecision) {
-            pixels = stbi_load_16(fullPath.c_str(), &m_width, &m_height, &m_channels, 0);
-        } else {
-            pixels = stbi_load(fullPath.c_str(), &m_width, &m_height, &m_channels, 0);
+        if (auto result = setTexturesInformation(); !result) {
+            return result;
         }
 
-        if (!pixels) {
-            KITA_ENGINE_ERROR("Unable to load texture, {}", texturePath.value().string());
-            return std::unexpected(TextureError::FILE);
-        }
-
-        const int levels = static_cast<int>(floor(log2(std::max(m_width, m_height))) + 1);
-        const GLenum pixelType = highPrecision ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
+        const int levels = static_cast<int>(std::floor(std::log2(std::max(m_width, m_height))) + 1);
         const bool useSRGB = (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR);
 
-        glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
+        const GLenum internalFormat = getInternalFormat(useSRGB);
+        if (m_paths.size() == 1) {
+            glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
+            glTextureStorage2D(m_texture, levels, internalFormat, m_width, m_height);
+        } else {
+            glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &m_texture);
+            glTextureStorage3D(m_texture, levels, internalFormat, m_width, m_height, static_cast<GLsizei>(m_paths.size()));
+        }
 
 #ifdef KITA_BUILD_DEBUG
-        glObjectLabel(GL_TEXTURE, m_texture, -1, m_path->string().c_str());
+        glObjectLabel(GL_TEXTURE, m_texture, -1, m_paths.front().string().c_str());
 #endif
 
         glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -84,56 +79,68 @@ namespace Kita {
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        switch (m_channels) {
-            case 1:
-                glTextureStorage2D(m_texture, levels, highPrecision ? GL_R16 : GL_R8, m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RED, pixelType, pixels);
-                break;
-            case 2:
-                glTextureStorage2D(m_texture, levels, highPrecision ? GL_RG16 : GL_RG8, m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RG, pixelType, pixels);
-                break;
-            case 3:
-                glTextureStorage2D(m_texture, levels, highPrecision ? GL_RGB16 : (useSRGB ? GL_SRGB8 : GL_RGB8), m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, pixelType, pixels);
-                break;
-            case 4:
-                glTextureStorage2D(m_texture, levels, highPrecision ? GL_RGBA16 : (useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8), m_width, m_height);
-                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGBA, pixelType, pixels);
-                break;
-            default:
-                stbi_image_free(pixels);
-                KITA_ENGINE_ERROR("Unsupported number of channels for texture, {}", texturePath.value().string());
-                return std::unexpected(TextureError::UNSUPPORTED_NUM_OF_CHANNELS);
+
+        const GLenum textureFormat = getTextureFormat();
+        const GLenum pixelType = m_highPrecision ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE;
+
+        for (size_t i = 0; i < m_paths.size(); ++i) {
+            auto& path = m_paths.at(i);
+
+            const std::string fullPath = (AssetManager::TEXTURE_PREFIX / path.string()).string();
+
+            const void* pixels = nullptr;
+            int unused_w,unused_h,unused_ch; // stb_image would otherwise crash
+            if (m_highPrecision) {
+                pixels = stbi_load_16(fullPath.c_str(), &unused_w, &unused_h, &unused_ch, 0);
+            } else {
+                pixels = stbi_load(fullPath.c_str(), &unused_w, &unused_h, &unused_ch, 0);
+            }
+
+            if (!pixels) {
+                return std::unexpected(TextureError{.code = TextureErrorCode::FILE, .errorStr = path.string()});
+            }
+
+            if (m_paths.size() == 1) {
+                glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, textureFormat, pixelType, pixels);
+            } else {
+                glTextureSubImage3D(m_texture, 0, 0, 0, static_cast<GLint>(i), m_width, m_height, 1, textureFormat, pixelType, pixels);
+            }
         }
 
-        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL || textureType == TextureType::DISPLACEMENT || textureType == TextureType::AMBIENT_OCCLUSION) {
+        if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL || textureType == TextureType::DISPLACEMENT || textureType ==
+            TextureType::AMBIENT_OCCLUSION) {
             glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTextureParameterf(m_texture, GL_TEXTURE_MAX_ANISOTROPY, 16.0f);
             glGenerateTextureMipmap(m_texture);
         }
 
-        stbi_image_free(pixels);
         return {};
     }
 
     std::expected<void, Texture::TextureError> GLTexture::createSkyboxTexture() {
         stbi_set_flip_vertically_on_load(true);
-        if (float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / m_path.value()).string().c_str(), &m_width, &m_height, &m_channels, 0); image) {
-            glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
 
-            glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            glTextureStorage2D(m_texture, 1, GL_RGB32F, m_width, m_height);
-            glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, image);
-
-            stbi_image_free(image);
-        } else {
-            KITA_ENGINE_ERROR("Unable to load texture, {}", m_path.value().string());
-            return std::unexpected(TextureError::FILE);
+        if (m_paths.size() != 1) {
+            return std::unexpected(TextureError({.code = TextureErrorCode::UNSUPPORTED_TEXTURE_ARRAY_FOR_TYPE, .errorStr = m_paths.front().string()}));
         }
+
+        float* image = stbi_loadf((AssetManager::TEXTURE_PREFIX / m_paths.front()).string().c_str(), &m_width, &m_height, &m_channels, 0);
+        if (!image) {
+            return std::unexpected(TextureError{.code = TextureErrorCode::FILE, .errorStr = m_paths.front().string()});
+        }
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_texture);
+
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTextureStorage2D(m_texture, 1, GL_RGB32F, m_width, m_height);
+        glTextureSubImage2D(m_texture, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, image);
+
+        stbi_image_free(image);
+
         return {};
     }
 
@@ -148,7 +155,8 @@ namespace Kita {
         glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTextureStorage2D(m_texture, 1, GL_RGB32F, resolution.first, resolution.second);
+        const int levels = static_cast<int>(std::floor(std::log2(std::max(m_width, m_height))) + 1);
+        glTextureStorage2D(m_texture, levels, GL_RGB32F, resolution.first, resolution.second);
 
         return {};
     }
@@ -221,15 +229,90 @@ namespace Kita {
         glBindTextureUnit(position, m_texture);
     }
 
+    void GLTexture::generateMipmaps() {
+        glGenerateTextureMipmap(m_texture);
+        glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    }
+
     void GLTexture::destroy() {
         glDeleteTextures(1, &m_texture);
         m_texture = 0;
     }
 
+    std::expected<void, Texture::TextureError> GLTexture::setTexturesInformation() {
+        int previousNumberOfChannels = -1, previousWidth = -1, previousHeight = -1;
+
+        for (size_t i = 0; i < m_paths.size(); ++i) {
+            int numberOfChannels = 0, width = 0, height = 0;
+            const auto& path = m_paths.at(i);
+
+            const std::string fullPath = (AssetManager::TEXTURE_PREFIX / path.string()).string();
+
+            if (stbi_info(fullPath.c_str(), &width, &height, &numberOfChannels) == 0) {
+                return std::unexpected(TextureError{.code = TextureErrorCode::FILE, .errorStr = path.string()});
+            }
+
+            if (i != 0 && (previousNumberOfChannels != numberOfChannels || previousWidth != width || previousHeight != height)) {
+                return std::unexpected(TextureError{.code = TextureErrorCode::PROPERTIES_MISMATCH, .errorStr = path.string()});
+            }
+
+            previousNumberOfChannels = numberOfChannels;
+            previousWidth = width;
+            previousHeight = height;
+        }
+
+        if (previousNumberOfChannels == -1 || previousWidth == -1 || previousHeight == -1) {
+            return std::unexpected(TextureError{.code = TextureErrorCode::EMPTY, .errorStr = std::string(magic_enum::enum_name(m_textureType))});
+        }
+
+        m_channels = previousNumberOfChannels;
+        m_height = previousHeight;
+        m_width = previousWidth;
+
+        return {};
+    }
+
+    GLenum GLTexture::getInternalFormat(const bool useSRGB) const {
+        switch (m_channels) {
+            case 1:
+                return m_highPrecision ? GL_R16 : GL_R8;
+            case 2:
+                return m_highPrecision ? GL_RG16 : GL_RG8;
+            case 3:
+                return m_highPrecision ? GL_RGB16 : (useSRGB ? GL_SRGB8 : GL_RGB8);
+            case 4:
+                return m_highPrecision ? GL_RGBA16 : (useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8);
+            default:
+                KITA_ENGINE_ASSERT(false, "[GLTexture] Unsupported number of channels while getting internalFormat");
+                return GL_NONE;
+        }
+    }
+
+    GLenum GLTexture::getTextureFormat() const {
+        switch (m_channels) {
+            case 1:
+                return GL_RED;
+            case 2:
+                return GL_RG;
+            case 3:
+                return GL_RGB;
+            case 4:
+                return GL_RGBA;
+            default:
+                KITA_ENGINE_ASSERT(false, "[GLTexture] Unsupported number of channels while getting textureFormat");
+                return GL_NONE;
+        }
+    }
+
     std::expected<void, Texture::TextureError> GLTexture::loadDDSTexture() {
-        gli::texture image = gli::load((AssetManager::TEXTURE_PREFIX / m_path.value()).string());
+        if (m_paths.size() != 1) {
+            return std::unexpected(TextureError({.code = TextureErrorCode::UNSUPPORTED_TEXTURE_ARRAY_FOR_TYPE, .errorStr = m_paths.front().string()}));
+        }
+
+        auto pathStr = m_paths.front().string();
+        gli::texture image = gli::load((AssetManager::TEXTURE_PREFIX / pathStr).string());
         if (image.empty()) {
-            return std::unexpected(TextureError::FILE);
+            return std::unexpected(TextureError{.code = TextureErrorCode::FILE, .errorStr = pathStr});
         }
 
         const gli::gl gl(gli::gl::PROFILE_GL33);
@@ -238,7 +321,7 @@ namespace Kita {
         glCreateTextures(gl.translate(image.target()), 1, &m_texture);
 
 #ifdef KITA_BUILD_DEBUG
-        glObjectLabel(GL_TEXTURE, m_texture, -1, m_path->string().c_str());
+        glObjectLabel(GL_TEXTURE, m_texture, -1, pathStr.c_str());
 #endif
 
         glTextureParameteri(m_texture, GL_TEXTURE_BASE_LEVEL, 0);
@@ -251,7 +334,7 @@ namespace Kita {
 
         glTextureParameteriv(m_texture, GL_TEXTURE_SWIZZLE_RGBA, &format.Swizzles[0]);
 
-        KITA_ENGINE_DEBUG("DDS {}: GL internal format = 0x{:X}", m_path->string(), static_cast<GLenum>(format.Internal));
+        KITA_ENGINE_DEBUG("DDS {}: GL internal format = 0x{:X}", pathStr, static_cast<GLenum>(format.Internal));
 
         auto toSRGBInternalFormat = [](const gli::gl::internal_format internalFormat) {
             switch (internalFormat) {

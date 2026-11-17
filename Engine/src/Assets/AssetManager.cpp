@@ -6,12 +6,21 @@
 
 namespace Kita {
     void AssetManager::addDefaultAssets() {
-        createAsset<Texture>(DEFAULT_TEXTURE, {.setAsDefault = true}, Texture::TextureType::ALBEDO, std::nullopt);
-        createAsset<Shader>(DEFAULT_VERTEX.string() + DEFAULT_FRAGMENT.string(), {.setAsDefault = true}, std::initializer_list{
-                                Shader::vert(DEFAULT_VERTEX),
-                                Shader::frag(DEFAULT_FRAGMENT, {Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowProperties::MAX_CASCADES))})
-                            });
-        createAsset<Mesh>(std::nullopt, {.setAsDefault = true}, Geometry::getTriangleData());
+        getOrCreateAsset<Texture>(AssetKey{DEFAULT_TEXTURE}, {.replace = true, .setAsDefault = true}, Texture::TextureType::ALBEDO, std::nullopt);
+        getOrCreateAsset<Shader>(AssetKey{DEFAULT_VERTEX, DEFAULT_FRAGMENT}, {.replace = true, .setAsDefault = true},
+                                 std::vector{Shader::vert(), Shader::frag({Shader::define("MAX_CASCADES", std::to_string(DirectionalShadowProperties::MAX_CASCADES))})});
+        getOrCreateAsset<Mesh>(AssetKey{Geometry::getTriangleKey()}, {.replace = true, .setAsDefault = true}, Geometry::getTriangleData());
+    }
+
+    std::optional<AssetManager::AssetID> AssetManager::getAssetID(const AssetOptions options, const std::string& pathString) {
+        std::optional<AssetID> ID;
+        if (options.setAsDefault) {
+            m_stringPathToID.insert_or_assign(pathString, DEFAULT_ASSET_ID);
+            ID = DEFAULT_ASSET_ID;
+        } else {
+            ID = options.replace ? getIDForStringPath(pathString) : getOrAddStringPath(pathString);
+        }
+        return ID;
     }
 
     AssetManager::AssetID AssetManager::getNextID() {
@@ -23,13 +32,13 @@ namespace Kita {
         if (const auto it = m_stringPathToID.find(string); it != m_stringPathToID.end()) {
             return it->second;
         }
-        KITA_ENGINE_ERROR("StringPath is not stored {}", string);
+        KITA_ENGINE_ERROR("[AssetBuilder] StringPath is not stored {}", string);
         return std::nullopt;
     }
 
     AssetManager::AssetID AssetManager::getOrAddStringPath(const std::string& string) {
         if (const auto it = m_stringPathToID.find(string); it != m_stringPathToID.end()) {
-            KITA_ENGINE_INFO("StringPath: {} is already stored, returning original", string);
+            KITA_ENGINE_INFO("[AssetBuilder] StringPath: {} is already stored, returning original", string);
             return it->second;
         }
 

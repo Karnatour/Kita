@@ -35,8 +35,6 @@ namespace Kita {
         Input::init();
         EventManager::listenToEvent<WindowClosed>(onWindowClosed);
 
-        //KAsset::fetchExistingBakedFiles();
-
         KITA_ENGINE_INFO("Engine initialized");
     }
 
@@ -58,7 +56,13 @@ namespace Kita {
 
     void Engine::loadGameInstance(std::shared_ptr<IGameInstance> instance) {
         m_game = std::move(instance);
-        m_isRunning = true;
+
+        // If something triggered stop exit early
+        if (!m_isRunning) {
+            exit();
+            KITA_ENGINE_ERROR("Engine triggered early exit, check log for errors");
+            return;
+        }
         run();
     }
 

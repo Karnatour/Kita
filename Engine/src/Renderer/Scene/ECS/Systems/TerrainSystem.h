@@ -42,7 +42,7 @@ namespace Kita {
         void updateAllChunks();
         void updateChunkState(Chunk& chunk);
 
-        int m_renderDistance = 96;
+        int m_renderDistance = 32;
         // Used for physics simulation currently
         int m_simulationDistance = 16;
 

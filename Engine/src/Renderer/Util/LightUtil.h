@@ -12,8 +12,14 @@ namespace Kita {
         SPOT = 2
     };
 
+    struct LightSpaceResult {
+        glm::mat4 matrix;
+        float radius;
+        float depthPerUnit;
+    };
+
     struct KITAENGINE_API LightUtil {
         static std::vector<glm::vec4> getFrustumPoints(const glm::mat4& view, const glm::mat4& projection);
-        static glm::mat4 getLightSpaceMatrix(const CameraProperties& properties, float zNear, float zFar, const glm::vec3& lightDir, std::pair<int, int> viewportResolution, std::pair<int, int> shadowMapResolution);
+        static LightSpaceResult getLightSpaceMatrix(const CameraProperties& properties, float zNear, float zFar, const glm::vec3& lightDirection, std::pair<int, int> viewportResolution, std::pair<int, int> shadowMapResolution);
     };
 } // Kita

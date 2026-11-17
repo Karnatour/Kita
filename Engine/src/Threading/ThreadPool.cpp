@@ -17,11 +17,12 @@ namespace Kita {
             m_workers.emplace_back([this, i](const std::stop_token& stopToken) {
                 t_workerIndex = i;
                 const std::wstring name = L"Kita Worker " + std::to_wstring(i);
+                // ReSharper disable once CppFunctionResultShouldBeUsed
                 SetThreadDescription(GetCurrentThread(), name.c_str());
                 workerLoop(stopToken);
             });
         }
-        KITA_ENGINE_DEBUG("[ThreadPool] Created {} worker threads", threadCount);
+        KITA_ENGINE_INFO("[ThreadPool] Created {} worker threads", threadCount);
     }
 
     ThreadPool::~ThreadPool() {

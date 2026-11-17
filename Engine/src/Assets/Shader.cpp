@@ -38,14 +38,30 @@ namespace Kita {
         }
     }
 
-    const std::vector<Shader::ShaderInfo>& Shader::getShadersInfo() const {
-        return m_shaders;
+    std::span<const Shader::ShaderInfo> Shader::getShadersInfo() const {
+        return m_shaderInfos;
     }
 
-    void Shader::replaceDefines(std::string& shaderSource, const std::vector<ShaderDefine>& defines, const std::string& shaderPath) {
+    std::expected<void, Shader::ShaderError> Shader::replaceDefines(std::string& shaderSource, const std::vector<ShaderDefine>& defines, const std::string& shaderPath) {
+        const size_t versionPos = shaderSource.find("#version");
+        if (versionPos == std::string::npos) {
+            return std::unexpected(ShaderError{.code = ShaderErrorCode::REPLACE, .file = shaderPath});
+        }
+
+        const size_t insertPos = shaderSource.find('\n', versionPos);
+        if (insertPos == std::string::npos) {
+            return std::unexpected(ShaderError{.code = ShaderErrorCode::REPLACE, .file = shaderPath});
+        }
+
+        std::string block = "\n";
         for (const auto& [define, value] : defines) {
             KITA_ENGINE_DEBUG("Replacing for shader {}: define: {} value: {}", shaderPath, define, value);
-            StringUtil::replaceAll(shaderSource, define, value);
+            block = block + "#define " + define + " " + value + "\n";
         }
+        block += "#line 2"; // Corrects line number when shader compilation fails
+
+        shaderSource.insert(insertPos, block);
+
+        return {};
     }
 } // Kita

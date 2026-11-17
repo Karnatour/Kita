@@ -3,7 +3,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/GltfMaterial.h>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "KAsset.h"
 #include "../Core/Engine.h"
@@ -59,7 +58,7 @@ namespace Kita {
 
         const auto materials = importMaterials(aiScene, path);
 
-        processNode(aiScene, aiScene->mRootNode, scene, rootEntity, materials, aiMatrix4x4());
+        processNode(aiScene, aiScene->mRootNode, scene, rootEntity, materials, aiMatrix4x4(), path);
 
         if (!skipPhysics) {
             rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
@@ -101,7 +100,7 @@ namespace Kita {
         return materials;
     }
 
-    void AssetImporter::processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform) {
+    void AssetImporter::processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform, const std::filesystem::path& path) {
         if (aiNode == nullptr || (aiNode->mNumMeshes == 0 && aiNode->mChildren == nullptr)) {
             return;
         }
@@ -119,17 +118,17 @@ namespace Kita {
         // we must fetch the component before every addition since entt can reallocate and invalidate the reference
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
             const aiMesh* aiMesh = aiScene->mMeshes[aiNode->mMeshes[m]];
-            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials));
+            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials, path));
         }
 
         for (unsigned int i = 0; i < aiNode->mNumChildren; i++) {
             const Entity newNodeEntity = scene.createEntity();
             parentEntity.getComponent<ChildrenComponent>().children.emplace_back(newNodeEntity);
-            processNode(aiScene, aiNode->mChildren[i], scene, newNodeEntity, materials, worldTransform);
+            processNode(aiScene, aiNode->mChildren[i], scene, newNodeEntity, materials, worldTransform, path);
         }
     }
 
-    Entity AssetImporter::processMesh(const ::aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials) {
+    Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const std::filesystem::path& path) {
         KITA_ENGINE_DEBUG("[AssetImporter] Starting process of mesh: {}", aiMesh->mName.C_Str());
 
         Entity newEntity = scene.createEntity();
@@ -150,7 +149,7 @@ namespace Kita {
         addMaterialComponent(newEntity, aiMesh, materials);
 
         const auto& engine = Engine::getEngine();
-        const AssetManager::AssetID meshID = engine->getAssetManager().createAsset<Mesh>(VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices));
+        const AssetManager::AssetID meshID = engine->getAssetManager().getOrCreateAsset<Mesh>(AssetKey{path.string() + aiMesh->mName.C_Str()}, {}, VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices)).id;
 
         newEntity.addComponent<MeshComponent>(MeshComponent{.meshID = meshID});
         newEntity.addComponent<NameComponent>(NameComponent{.name = aiMesh->mName.C_Str()});
@@ -258,7 +257,7 @@ namespace Kita {
         //Move texture to AssetManager texture folder
         moveTexture(texturePath);
 
-        return Engine::getEngine()->getAssetManager().createAsset<Texture>(texturePath, {}, assimpToKitaTextureType(textureType), std::nullopt);
+        return Engine::getEngine()->getAssetManager().getOrCreateAsset<Texture>(AssetKey{texturePath}, {}, assimpToKitaTextureType(textureType), std::nullopt).id;
     }
 
     void AssetImporter::moveTexture(const std::filesystem::path& texturePath) {
