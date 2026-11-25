@@ -21,6 +21,10 @@ namespace Kita {
         return glm::perspective(glm::radians(fov), static_cast<float>(viewport.first) / static_cast<float>(viewport.second), zNear, zFar);
     }
 
+    glm::mat4 CameraUtil::getViewProjection(const CameraProperties& properties, const std::pair<int, int> viewport) {
+        return getProjectionMatrix(properties, viewport) * getViewMatrix(properties);
+    }
+
     void CameraUtil::updateOrientationVectors(CameraProperties& properties) {
         glm::vec3 newFront;
         newFront.x = cos(glm::radians(properties.yaw)) * cos(glm::radians(properties.pitch));

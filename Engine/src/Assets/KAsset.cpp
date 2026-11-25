@@ -202,6 +202,9 @@ namespace Kita {
                 case Texture::TextureType::AMBIENT_OCCLUSION:
                     materialComponent.ambientOcclusionTextureID = textureID;
                     break;
+                case Texture::TextureType::OPACITY:
+                    materialComponent.opacityTextureID = textureID;
+                    break;
                 default:
                     KITA_ENGINE_WARN("[KAsset] Unknown texture type while reading material");
             }
@@ -335,28 +338,31 @@ namespace Kita {
         }
     }
 
-    void KAsset::writeMaterial(std::ofstream& file, Entity entity) {
+    void KAsset::writeMaterial(std::ofstream& file, const Entity entity) {
         if (entity.hasAllComponents<MaterialComponent>()) {
             MaterialData materialData{};
 
             std::array<Texture*, 5> textures;
 
-            const auto& [shaderID, albedoTextureID, metallicRoughnessTextureID, normalTextureID, displacementTextureID, ambientOcclusionTextureID] = entity.getComponent<MaterialComponent>();
+            const auto& [shaderID, albedoTexID, metallicRoughnessTexID, normalTexID, displacementTexID, ambientOcclusionTexID, opacityTexID] = entity.getComponent<MaterialComponent>();
             auto& assetManager = Engine::getEngine()->getAssetManager();
-            if (albedoTextureID != AssetManager::INVALID_ASSET_ID) {
-                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(albedoTextureID);
+            if (albedoTexID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(albedoTexID);
             }
-            if (metallicRoughnessTextureID != AssetManager::INVALID_ASSET_ID) {
-                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(metallicRoughnessTextureID);
+            if (metallicRoughnessTexID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(metallicRoughnessTexID);
             }
-            if (normalTextureID != AssetManager::INVALID_ASSET_ID) {
-                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(normalTextureID);
+            if (normalTexID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(normalTexID);
             }
-            if (displacementTextureID != AssetManager::INVALID_ASSET_ID) {
-                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(displacementTextureID);
+            if (displacementTexID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(displacementTexID);
             }
-            if (ambientOcclusionTextureID != AssetManager::INVALID_ASSET_ID) {
-                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(ambientOcclusionTextureID);
+            if (ambientOcclusionTexID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(ambientOcclusionTexID);
+            }
+            if (opacityTexID != AssetManager::INVALID_ASSET_ID) {
+                textures[materialData.textureCount++] = &assetManager.getAsset<Texture>(opacityTexID);
             }
 
             writeTextures(materialData, textures);

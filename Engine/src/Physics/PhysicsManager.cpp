@@ -90,6 +90,26 @@ namespace Kita {
         return PhysicsUtil::JPHToGLMMat4(m_physicsSystem->GetBodyInterface().GetWorldTransform(id));
     }
 
+    void PhysicsManager::addBodies(std::vector<JPH::BodyID>& ids, const JPH::EActivation activation) {
+        if (ids.empty()) {
+            return;
+        }
+
+        auto& bodyInterface = m_physicsSystem->GetBodyInterface();
+        const int count = static_cast<int>(ids.size());
+
+        const JPH::BodyInterface::AddState state = bodyInterface.AddBodiesPrepare(ids.data(), count);
+        bodyInterface.AddBodiesFinalize(ids.data(), count, state, activation);
+    }
+
+    void PhysicsManager::removeBodies(std::vector<JPH::BodyID>& ids) {
+        if (ids.empty()) {
+            return;
+        };
+
+        m_physicsSystem->GetBodyInterface().RemoveBodies(ids.data(), static_cast<int>(ids.size()));
+    }
+
     void PhysicsManager::removeBody(const JPH::BodyID id) {
         m_physicsSystem->GetBodyInterface().RemoveBody(id);
     }
@@ -217,7 +237,7 @@ namespace Kita {
         auto& bufferData = mesh.getVertexBuffer().getBufferData();
         KITA_ENGINE_ASSERT(!bufferData.getVertices().empty(), "Mesh has no vertices");
 
-        vertexList.reserve(bufferData.getVertexCount() / 3);
+        vertexList.reserve(bufferData.getVertexCount());
 
         for (size_t i = 0; i < bufferData.getVertexCount(); ++i) {
             vertexList.push_back(PhysicsUtil::GLMToJPHFloat3(bufferData.getAttribute<glm::vec3>(i, 0)));

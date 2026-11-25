@@ -5,8 +5,18 @@
 #define NOMINMAX
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <Windows.h>
 #include <dwmapi.h>
+
+#undef NEAR
+#undef FAR
+#undef near
+#undef far
+
 #include <iostream>
 #include <memory>
 #include <utility>

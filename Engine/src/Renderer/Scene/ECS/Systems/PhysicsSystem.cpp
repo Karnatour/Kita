@@ -31,6 +31,7 @@ namespace Kita {
                 preUpdateVehicle(event);
             });
         }
+        updateSimulationRange();
         handlePlayerCharacterInput();
         handleVehicleInput();
 
@@ -72,6 +73,10 @@ namespace Kita {
     // https://github.com/jrouwe/JoltPhysics/blob/master/Samples/Tests/Character/CharacterVirtualTest.cpp
     void PhysicsSystem::preUpdatePlayerCharacter(const PreUpdateEvent& event) {
         for (auto [entityID, playerCharacter, camera] : m_scene.view<PlayerCharacterComponent, CameraComponent>().each()) {
+            if (!Entity(&m_scene,entityID).hasAllComponents<ActiveCamera>()) {
+                continue; // Skip simulation if player doesn't hold active camera component
+            }
+
             PlayerCharacterProperties& p = playerCharacter.properties;
             JPH::CharacterVirtual::ExtendedUpdateSettings updateSettings;
 
@@ -325,10 +330,6 @@ namespace Kita {
     }
 
     std::array<JPH::Ref<JPH::WheelSettingsWV>, 4> PhysicsSystem::getVehicleWheels(VehicleProperties& p) {
-        auto getCenter = [](const std::pair<glm::vec3, glm::vec3>& minMaxPos) {
-            return (minMaxPos.first + minMaxPos.second) * 0.5f;
-        };
-
         return {
             makeWheel(p.frontLeftWheelEnttID, true, true, p),
             makeWheel(p.frontRightWheelEnttID, true, false, p),
@@ -358,6 +359,10 @@ namespace Kita {
     // https://github.com/jrouwe/JoltPhysics/blob/master/Samples/Tests/Vehicle/VehicleConstraintTest.cpp
     void PhysicsSystem::preUpdateVehicle(const PreUpdateEvent& event) {
         for (auto [entityID,physicsCmp,vehicle,camera, transformation] : m_scene.view<PhysicsComponent, VehicleComponent, CameraComponent, TransformationComponent>().each()) {
+            if (!Engine::getEngine()->getPhysicsManager().getPhysicsSystem().GetBodyInterface().IsAdded(physicsCmp.bodyID)) {
+                continue;
+            }
+
             VehicleProperties& p = vehicle.properties;
 
             // Park the vehicle if player is not inside
@@ -478,6 +483,48 @@ namespace Kita {
             } else if (Input::isKeyPressed(InputKeys::KeyboardKey::KEY_D)) {
                 p.right = 1.0f;
             }
+        }
+    }
+
+    void PhysicsSystem::updateSimulationRange() {
+        if (!CameraUtil::activeCameraExists(m_scene)) return;
+
+        const auto cam = Entity(&m_scene, m_scene.view<CameraComponent, ActiveCamera>().front());
+        const glm::vec3 camPos = cam.getComponent<CameraComponent>().properties.position;
+
+        auto& physicsManager = Engine::getEngine()->getPhysicsManager();
+        auto& bodyInterface = physicsManager.getPhysicsSystem().GetBodyInterface();
+
+        m_toAddStatic.clear();
+        m_toAddDynamic.clear();
+        m_toRemove.clear();
+
+        for (auto [entityID, physics] : m_scene.view<PhysicsComponent>().each()) {
+            if (physics.bodyID.IsInvalid()) continue;
+
+            const float distSq = glm::distance2(physicsManager.getPosition(physics.bodyID), camPos);
+            const bool inRange = distSq < m_simulationDistanceSquared;
+            const bool added = bodyInterface.IsAdded(physics.bodyID);
+
+            if (inRange && !added) {
+                if (bodyInterface.GetMotionType(physics.bodyID) == JPH::EMotionType::Dynamic) {
+                    m_toAddDynamic.push_back(physics.bodyID);
+                } else {
+                    m_toAddStatic.push_back(physics.bodyID);
+                }
+            } else if (!inRange && added) {
+                m_toRemove.push_back(physics.bodyID);
+            }
+        }
+
+        if (!m_toRemove.empty()) {
+            physicsManager.removeBodies(m_toRemove);
+        }
+        if (!m_toAddStatic.empty()) {
+            physicsManager.addBodies(m_toAddStatic, JPH::EActivation::DontActivate);
+        }
+        if (!m_toAddDynamic.empty()) {
+            physicsManager.addBodies(m_toAddDynamic, JPH::EActivation::Activate);
         }
     }
 

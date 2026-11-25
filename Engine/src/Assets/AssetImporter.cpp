@@ -12,14 +12,14 @@
 
 namespace Kita {
     std::expected<Entity, AssetImporter::ImportError> AssetImporter::importModel(const std::filesystem::path& path, Scene& scene, const bool skipPhysics) {
-        std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene, skipPhysics);
+        /*std::expected<Entity, ImportError> result = KAsset::loadFromFile(path, scene, skipPhysics);
         if (result) {
             return result;
         }
 
         if (result.error() == ImportError::HASH_MISMATCH) {
             KITA_ENGINE_INFO("[AssetImporter] Hash mismatch for asset: {}", path.string());
-        }
+        }*/
 
         const std::filesystem::path filePath(MODELS_PREFIX / path);
         KITA_ENGINE_INFO("[AssetImporter] Starting process of model: {}", filePath.string());
@@ -64,43 +64,45 @@ namespace Kita {
             rootEntity.addComponent<PhysicsComponent>(PhysicsComponent{.bodyID = Engine::getEngine()->getPhysicsManager().createBody(rootEntity, JPH::EMotionType::Static, PhysicsLayers::STATIC, JPH::EActivation::Activate)});
         }
 
-        KAsset::saveToFile(rootEntity, path);
+        //KAsset::saveToFile(rootEntity, path);
         rootEntity.addComponent<PathComponent>(path);
 
         return rootEntity;
     }
 
-    std::vector<AssetImporter::Material> AssetImporter::importMaterials(const aiScene* aiScene, const std::filesystem::path& path) {
-        std::vector<Material> materials;
+    std::vector<MaterialComponent> AssetImporter::importMaterials(const aiScene* aiScene, const std::filesystem::path& path) {
+        std::vector<MaterialComponent> materials;
         materials.resize(aiScene->mNumMaterials);
 
         for (unsigned int materialIndex = 0; materialIndex < aiScene->mNumMaterials; ++materialIndex) {
             const aiMaterial* aiMaterial = aiScene->mMaterials[materialIndex];
-            KITA_ENGINE_DEBUG("[AssetImporter] Starting import of material: {}", aiMaterial->GetName().C_Str());
+            KITA_ENGINE_INFO("[AssetImporter] Starting import of material: {}", aiMaterial->GetName().C_Str());
+            auto& [shaderID, albedoTexID, metallicRoughnessTexID, normalTexID, displacementTexID, ambientOcclusionTexID, opacityTexID] = materials[materialIndex];
 
-            auto& [albedoTextureID, metallicRoughnessTextureID, normalTextureID, ignore] = materials[materialIndex];
-
-            aiString alphaMode;
-            aiMaterial->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode);
-            if (std::string(alphaMode.C_Str()) == "BLEND" || std::string(alphaMode.C_Str()) == "MASK") {
-                ignore = true;
+            if (auto albedoTexture = importTexture(aiTextureType_BASE_COLOR, *aiMaterial, path).or_else([&]() { return importTexture(aiTextureType_DIFFUSE, *aiMaterial, path); })) {
+                albedoTexID = albedoTexture.value();
             }
-
-            if (auto assetID = importTexture(aiTextureType_BASE_COLOR, *aiMaterial, path).or_else([&]() { return importTexture(aiTextureType_DIFFUSE, *aiMaterial, path); })) {
-                albedoTextureID = assetID.value();
-            }
-            if (auto assetID = importTexture(aiTextureType_GLTF_METALLIC_ROUGHNESS, *aiMaterial, path)) {
-                metallicRoughnessTextureID = assetID.value();
+            if (auto metallicRoughnessTexture = importTexture(aiTextureType_GLTF_METALLIC_ROUGHNESS, *aiMaterial, path)) {
+                metallicRoughnessTexID = metallicRoughnessTexture.value();
             }
             if (auto normalTexture = importTexture(aiTextureType_NORMAL_CAMERA, *aiMaterial, path).or_else([&]() { return importTexture(aiTextureType_NORMALS, *aiMaterial, path); })) {
-                normalTextureID = normalTexture.value();
+                normalTexID = normalTexture.value();
+            }
+            if (auto displacementTexture = importTexture(aiTextureType_DISPLACEMENT, *aiMaterial, path)) {
+                displacementTexID = displacementTexture.value();
+            }
+            if (auto ambientOcclusionTexture = importTexture(aiTextureType_AMBIENT_OCCLUSION, *aiMaterial, path)) {
+                ambientOcclusionTexID = ambientOcclusionTexture.value();
+            }
+            if (auto opacityTexture = importTexture(aiTextureType_OPACITY, *aiMaterial, path)) {
+                opacityTexID = opacityTexture.value();
             }
         }
 
         return materials;
     }
 
-    void AssetImporter::processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform, const std::filesystem::path& path) {
+    void AssetImporter::processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<MaterialComponent>& materials, const aiMatrix4x4& parentTransform, const std::filesystem::path& path) {
         if (aiNode == nullptr || (aiNode->mNumMeshes == 0 && aiNode->mChildren == nullptr)) {
             return;
         }
@@ -118,7 +120,7 @@ namespace Kita {
         // we must fetch the component before every addition since entt can reallocate and invalidate the reference
         for (unsigned int m = 0; m < aiNode->mNumMeshes; m++) {
             const aiMesh* aiMesh = aiScene->mMeshes[aiNode->mMeshes[m]];
-            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, scene, materials, path));
+            parentEntity.getComponent<ChildrenComponent>().children.emplace_back(processMesh(aiMesh, m, scene, materials, path));
         }
 
         for (unsigned int i = 0; i < aiNode->mNumChildren; i++) {
@@ -128,7 +130,7 @@ namespace Kita {
         }
     }
 
-    Entity AssetImporter::processMesh(const aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const std::filesystem::path& path) {
+    Entity AssetImporter::processMesh(const aiMesh* aiMesh, const unsigned int meshIndex, Scene& scene, const std::vector<MaterialComponent>& materials, const std::filesystem::path& path) {
         KITA_ENGINE_DEBUG("[AssetImporter] Starting process of mesh: {}", aiMesh->mName.C_Str());
 
         Entity newEntity = scene.createEntity();
@@ -149,27 +151,22 @@ namespace Kita {
         addMaterialComponent(newEntity, aiMesh, materials);
 
         const auto& engine = Engine::getEngine();
-        const AssetManager::AssetID meshID = engine->getAssetManager().getOrCreateAsset<Mesh>(AssetKey{path.string() + aiMesh->mName.C_Str()}, {}, VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices)).id;
+        const AssetManager::AssetID meshID = engine->getAssetManager().getOrCreateAsset<Mesh>(AssetKey{path.string() + aiMesh->mName.C_Str() + std::to_string(meshIndex)}, {},
+                                                                                              VertexBufferData(std::move(vertices), VertexLayout::getDefaultVertexLayout()), std::move(indices)).id;
 
         newEntity.addComponent<MeshComponent>(MeshComponent{.meshID = meshID});
         newEntity.addComponent<NameComponent>(NameComponent{.name = aiMesh->mName.C_Str()});
         return newEntity;
     }
 
-    void AssetImporter::addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials) {
+    void AssetImporter::addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<MaterialComponent>& materials) {
         if (aiMesh->mMaterialIndex >= materials.size()) {
             KITA_ENGINE_ERROR("[AssetImporter] Invalid material index for mesh: {}", aiMesh->mName.C_Str());
             entity.addComponent<MaterialComponent>();
             return;
         }
 
-        const auto& [albedoTextureID, metallicRoughnessTextureID, normalTextureID, ignore] = materials[aiMesh->mMaterialIndex];
-        if (ignore) {
-            return;
-        }
-        entity.addComponent<MaterialComponent>(MaterialComponent{
-            .albedoTextureID = albedoTextureID, .metallicRoughnessTextureID = metallicRoughnessTextureID, .normalTextureID = normalTextureID
-        });
+        entity.addComponent<MaterialComponent>(materials[aiMesh->mMaterialIndex]);
     }
 
     glm::mat4 AssetImporter::convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix) {
@@ -187,17 +184,17 @@ namespace Kita {
         // Position
         VertexBufferData::appendBytes(vertex, aiMesh.mVertices[index]);
 
+        if (aiMesh.HasVertexColors(0)) {
+            VertexBufferData::appendBytes(vertex, aiMesh.mColors[0][index]);
+        } else {
+            VertexBufferData::appendBytes(vertex, glm::vec4(1.0f));
+        }
+
         if (aiMesh.HasTextureCoords(0)) {
             const aiVector3D& uv = aiMesh.mTextureCoords[0][index];
             VertexBufferData::appendBytes(vertex, glm::vec2(uv.x, uv.y));
         } else {
             VertexBufferData::appendBytes(vertex, glm::vec2(0.0f, 0.0f));
-        }
-
-        if (aiMesh.HasVertexColors(0)) {
-            VertexBufferData::appendBytes(vertex, aiMesh.mColors[0][index]);
-        } else {
-            VertexBufferData::appendBytes(vertex, glm::vec4(1.0f));
         }
 
         if (aiMesh.HasNormals()) {
@@ -229,6 +226,8 @@ namespace Kita {
                 return Texture::TextureType::DISPLACEMENT;
             case aiTextureType_AMBIENT_OCCLUSION:
                 return Texture::TextureType::AMBIENT_OCCLUSION;
+            case aiTextureType_OPACITY:
+                return Texture::TextureType::OPACITY;
             case aiTextureType_NORMAL_CAMERA:
             case aiTextureType_NORMALS:
                 return Texture::TextureType::NORMAL;

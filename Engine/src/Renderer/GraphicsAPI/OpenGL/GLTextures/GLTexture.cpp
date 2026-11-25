@@ -40,6 +40,7 @@ namespace Kita {
             case TextureType::DEPTH_ARRAY:
                 KITA_ENGINE_ASSERT(false, "Trying to create DEPTH_ARRAY texture with createTexture() func, use createBufferTypeTextureArray() instead"); //TODO Probably merge inside here
             case TextureType::AMBIENT_OCCLUSION:
+            case TextureType::OPACITY:
                 break;
         }
 
@@ -108,7 +109,7 @@ namespace Kita {
         }
 
         if (textureType == TextureType::ALBEDO || textureType == TextureType::COLOR || textureType == TextureType::METALLIC_ROUGHNESS || textureType == TextureType::NORMAL || textureType == TextureType::DISPLACEMENT || textureType ==
-            TextureType::AMBIENT_OCCLUSION) {
+            TextureType::AMBIENT_OCCLUSION || textureType == TextureType::OPACITY) {
             glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glTextureParameterf(m_texture, GL_TEXTURE_MAX_ANISOTROPY, 16.0f);
             glGenerateTextureMipmap(m_texture);
@@ -209,14 +210,18 @@ namespace Kita {
                 break;
             case BufferType::DEPTH:
                 m_textureType = TextureType::DEPTH_ARRAY;
-                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureParameteri(m_texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                glTextureParameteri(m_texture, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTextureStorage3D(m_texture, 1, highPrecision ? GL_DEPTH_COMPONENT32F : GL_DEPTH_COMPONENT24, resolution.first, resolution.second, layersCount);
                 break;
             case BufferType::DEPTH_STENCIL:
                 m_textureType = TextureType::DEPTH_ARRAY;
-                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTextureParameteri(m_texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                glTextureParameteri(m_texture, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                glTextureParameteri(m_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTextureParameteri(m_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTextureStorage3D(m_texture, 1, highPrecision ? GL_DEPTH32F_STENCIL8 : GL_DEPTH24_STENCIL8, resolution.first, resolution.second, layersCount);
                 break;
             default:
@@ -354,7 +359,7 @@ namespace Kita {
         const glm::ivec3 extent(image.extent(0));
         glTextureStorage2D(m_texture, static_cast<GLint>(image.levels()), format.Internal, extent.x, extent.y);
 
-        for (std::size_t level = 0; level < image.levels(); ++level) {
+        for (size_t level = 0; level < image.levels(); ++level) {
             const auto levelExtent = glm::ivec3(image.extent(level));
             glCompressedTextureSubImage2D(m_texture, static_cast<GLint>(level), 0, 0, levelExtent.x, levelExtent.y, format.Internal, static_cast<GLsizei>(image.size(level)), image.data(0, 0, level));
         }

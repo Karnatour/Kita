@@ -216,6 +216,19 @@ add_library(KitaEngine SHARED
         src/Renderer/Vertex/VertexAttribute.h
         src/Assets/AssetKey.cpp
         src/Assets/AssetKey.h
+        src/World/Render/QuadTree.cpp
+        src/World/Render/QuadTree.h
+        src/World/Render/QuadNode.cpp
+        src/World/Render/QuadNode.h
+        src/World/Render/QuadNodeAABB.cpp
+        src/World/Render/QuadNodeAABB.h
+        src/Core/Hash.cpp
+        src/Core/Hash.h
+        src/World/Render/NodeKey.h
+        src/Renderer/Frustum/Frustum.cpp
+        src/Renderer/Frustum/Frustum.h
+        src/Renderer/Frustum/AABB.cpp
+        src/Renderer/Frustum/AABB.h
 )
 
 #Multithreaded compilation

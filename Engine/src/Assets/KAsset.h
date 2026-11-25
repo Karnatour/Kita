@@ -72,7 +72,7 @@ namespace Kita {
         static bool saveToFile(Entity rootEntity, const std::filesystem::path& path);
 
     private:
-        constexpr static std::size_t vertexSize =
+        constexpr static size_t vertexSize =
             sizeof(glm::vec3) + // position
             sizeof(glm::vec2) + // uv
             sizeof(glm::vec4) + // color

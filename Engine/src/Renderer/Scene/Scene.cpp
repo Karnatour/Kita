@@ -21,7 +21,7 @@ namespace Kita {
         addSystem<SkyboxSystem>();
         addSystem<PostProcessingSystem>();
         addSystem<TerrainSystem>();
-        addSystem<EnvironmentSystem>();
+        //addSystem<EnvironmentSystem>();
 
         m_camera = EntityBuilder::createActiveCamera(*this).getEnttEntityID();
         Entity skybox = createEntity();

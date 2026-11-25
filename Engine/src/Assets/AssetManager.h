@@ -27,7 +27,7 @@ namespace Kita {
         static std::unique_ptr<Shader> build(AssetKey key, Args&&... arg) {
             auto shader = Shader::createPtr();
             if (std::expected<void, Shader::ShaderError> result = shader->createShader(std::move(key).takePaths(), std::forward<Args>(arg)...); result.has_value()) {
-                KITA_ENGINE_DEBUG("[AssetBuilder] Created shader asset");
+                KITA_ENGINE_INFO("[AssetBuilder] Created shader asset");
                 return shader;
             } else if (result.error().code == Shader::ShaderErrorCode::FILE) {
                 KITA_ENGINE_ERROR("[AssetBuilder] File error while building shader {}", result.error().file);
@@ -53,7 +53,7 @@ namespace Kita {
         static std::unique_ptr<Texture> build(AssetKey key, Args&&... args) {
             auto texture = Texture::createPtr();
             if (std::expected<void, Texture::TextureError> result = texture->createTexture(std::move(key).takePaths(), std::forward<Args>(args)...); result.has_value()) {
-                KITA_ENGINE_DEBUG("[AssetBuilder] Created texture asset with type: {}", magic_enum::enum_name(texture->getType()));
+                KITA_ENGINE_INFO("[AssetBuilder] Created texture asset with type: {}", magic_enum::enum_name(texture->getType()));
                 return texture;
             } else if (result.error().code == Texture::TextureErrorCode::FILE) {
                 KITA_ENGINE_ERROR("[AssetBuilder] File error while building texture {}", result.error().errorStr);

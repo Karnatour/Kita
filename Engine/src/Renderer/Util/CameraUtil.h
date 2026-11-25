@@ -14,6 +14,8 @@ namespace Kita {
         static glm::mat4 getViewMatrix(const CameraProperties& properties);
         static glm::mat4 getProjectionMatrix(const CameraProperties& properties, std::pair<int, int> viewport);
         static glm::mat4 getProjectionMatrix(float fov, std::pair<int, int> viewport, float zNear, float zFar);
+        static glm::mat4 getViewProjection(const CameraProperties& properties, std::pair<int, int> viewport);
+
         static void updateOrientationVectors(CameraProperties& properties);
 
         //Removes ActiveCamera component from all cameras;

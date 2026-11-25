@@ -15,6 +15,7 @@ layout (location = 3) in vec3 aNormal;
 layout (location = 4) in vec3 aTangent;
 layout (location = 5) in vec3 aBitangent;
 
+out vec4 color;
 out vec2 texCoord;
 out vec3 normalVec;
 out vec3 fragPosWorld;
@@ -23,6 +24,7 @@ out mat3 TBNMat;
 uniform mat4 model;
 
 void main(){
+    color = aColor;
     fragPosWorld = vec3(model * vec4(aPos, 1.0));
     texCoord = aTex;
 

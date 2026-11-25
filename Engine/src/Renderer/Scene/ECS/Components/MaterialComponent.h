@@ -10,6 +10,7 @@ namespace Kita {
         AssetManager::AssetID normalTextureID = AssetManager::INVALID_ASSET_ID;
         AssetManager::AssetID displacementTextureID = AssetManager::INVALID_ASSET_ID;
         AssetManager::AssetID ambientOcclusionTextureID = AssetManager::INVALID_ASSET_ID;
+        AssetManager::AssetID opacityTextureID = AssetManager::INVALID_ASSET_ID;
     };
 
 } //Kita

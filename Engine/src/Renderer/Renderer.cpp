@@ -182,6 +182,10 @@ namespace Kita {
                     texture->bind(10);
                     m_textureFlags |= Texture::TextureFlags::AMBIENT_OCCLUSION;
                     break;
+                case Texture::TextureType::OPACITY:
+                    texture->bind(11);
+                    m_textureFlags |= Texture::TextureFlags::OPACITY;
+                    break;
                 default:
                     KITA_ENGINE_WARN("Texture: {}, type is NONE or Unknown, unable to bind into shader", texture->getPaths().front().string());
                     break;
@@ -198,9 +202,9 @@ namespace Kita {
     }
 
     void Renderer::onFrameBufferResize(const FrameBufferResized& event) {
-        setViewport(event.getSize(), true);
         m_mainFramebuffer->resize(event.getSize());
         m_outputFramebuffer->resize(event.getSize());
+        setViewport(event.getSize(), true);
 
         ViewportResized viewportResizedEvent;
         EventManager::triggerEvent(viewportResizedEvent);

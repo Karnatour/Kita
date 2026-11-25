@@ -30,7 +30,8 @@ void Sandbox::onInit() {
     sphereBodyID = Kita::Engine::getEngine()->getPhysicsManager().changeMotionType(m_sphere, sphereBodyID, JPH::EMotionType::Dynamic, Kita::PhysicsLayers::MOVING, JPH::EActivation::Activate);
     m_sphere.getComponent<Kita::PhysicsComponent>().bodyID = sphereBodyID;
     Kita::TransformationUtil::setWorldPosition(m_sphere, glm::vec3(5.0f, 10.0f, 5.0f));*/
-
+    auto tree = Kita::AssetImporter::importModel("purpleTree/treePurple_LOD0.fbx", *m_scene).value();
+    Kita::TransformationUtil::setWorldPosition(tree,glm::vec3(-10.0f,5.0f,80.0f));
     m_player = Kita::EntityBuilder::createPlayerCharacter(*m_scene, "Player", glm::vec3(1.0f, 1.0f, 0.0f));
 
     m_vehicle = Kita::EntityBuilder::createVehicle(*m_scene, "911final/911f.gltf", glm::vec3(0.0f, 10.0f, 0.0f));

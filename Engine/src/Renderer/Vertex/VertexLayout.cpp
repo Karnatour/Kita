@@ -4,7 +4,7 @@ namespace Kita {
     VertexLayout::VertexLayout(const std::initializer_list<VertexAttribute> attributes) : m_attributes(attributes) {
         size_t totalStride = 0;
         for (auto attribute : m_attributes) {
-            m_offsets.push_back(m_stride);
+            m_offsets.push_back(totalStride);
             totalStride = totalStride + static_cast<int>(attribute.getCount()) * attribute.getTypeSize();
         }
         m_stride = totalStride;

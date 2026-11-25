@@ -4,6 +4,7 @@
 #include "../../../DebugScope.h"
 #include "../../../../Core/Engine.h"
 #include "../../../../Util/ColorUtil.h"
+#include "../../../Util/CameraUtil.h"
 #include "../Components/Components.h"
 
 namespace Kita {
@@ -15,36 +16,43 @@ namespace Kita {
         KITA_ENGINE_PROFILE("Terrain system update");
 
         Entity cameraEntity(&scene, scene.view<CameraComponent, ActiveCamera>().front());
+        const auto& cameraProperties = cameraEntity.getComponent<CameraComponent>().properties;
+        const auto& position = cameraProperties.position;
 
-        const auto& position = cameraEntity.getComponent<CameraComponent>().properties.position;
+        const bool firstFrame = Engine::getEngine()->isFirstFrame();
+        const glm::vec2 camXZ(position.x, position.z);
 
         const int chunkX = static_cast<int>(std::floor(position.x / static_cast<float>(ChunkData::CHUNK_SIZE)));
         const int chunkZ = static_cast<int>(std::floor(position.z / static_cast<float>(ChunkData::CHUNK_SIZE)));
-
         const ChunkPos newChunkPos(chunkX, chunkZ);
 
-        if (Engine::getEngine()->isFirstFrame()) {
-            m_chunkRenderPool = std::make_unique<ChunkRenderPool>(newChunkPos, m_renderDistance);
+        auto viewProjection = CameraUtil::getViewProjection(cameraProperties, Engine::getEngine()->getRenderer().getViewport());
+
+        if (firstFrame) {
+            m_quadTree = std::make_unique<QuadTree>(static_cast<float>(m_renderDistance * ChunkData::CHUNK_SIZE), LodQuality::HIGH);
+            m_chunkRenderPool = std::make_unique<ChunkRenderPool>(m_quadTree->getMaxNodeCount());
+            m_frustum = std::make_unique<Frustum>(viewProjection);
         }
 
-        processGeneratedChunkMeshData();
+        m_cameraPos = position;
+        m_frustum->recalculate(viewProjection);
 
-        if (newChunkPos == m_cameraChunkPos && !Engine::getEngine()->isFirstFrame()) {
-            return;
-        }
+        processGeneratedNodes();
+        swapIfReady();
 
-        m_cameraChunkPos = newChunkPos;
+        if (firstFrame || newChunkPos != m_cameraChunkPos) {
+            m_cameraChunkPos = newChunkPos;
+            updateNodes(camXZ);
+            updateAllChunks();
 
-        updateAllChunks();
-        generateChunkMeshData();
-
-        if (auto* environment = scene.contextGet<EnvironmentComponent>()) {
-            auto& fogProperties = environment->properties.fogProperties;
-            fogProperties.fogEnd = static_cast<float>(m_renderDistance * ChunkData::CHUNK_SIZE);
-            fogProperties.fogStart = 0.9f * fogProperties.fogEnd;
-            fogProperties.fogDensity = 2.5f;
-            fogProperties.fogColor = glm::vec3(0.429f, 0.185f, 0.112f);
-            fogProperties.fogMode = FogMode::EXPONENTIAL2;
+            if (auto* environment = scene.contextGet<EnvironmentComponent>()) {
+                auto& [fogColor, fogStart, fogEnd, fogDensity, fogMode] = environment->properties.fogProperties;
+                fogEnd = static_cast<float>(m_renderDistance * ChunkData::CHUNK_SIZE);
+                fogStart = 0.9f * fogEnd;
+                fogDensity = 2.5f;
+                fogColor = glm::vec3(0.5f, 0.6f, 1.0f);
+                fogMode = FogMode::EXPONENTIAL2;
+            }
         }
     }
 
@@ -97,7 +105,8 @@ namespace Kita {
         renderer.setMaterialInShader(shader, textures);
         shader.setUniformFloat("iblIntensity", scene.contextGet<SceneSettingsComponent>()->properties.iblIntensity); //TODO Move to UBO ?
         shader.setUniformMat4("model", glm::mat4(1.0f));
-        m_chunkRenderPool->render(m_cameraChunkPos);
+
+        m_chunkRenderPool->render(glm::vec2(m_cameraPos.x, m_cameraPos.z), *m_frustum);
 
         renderer.getMainFramebuffer().unbind();
     }
@@ -128,81 +137,107 @@ namespace Kita {
         return m_cameraChunkPos;
     }
 
-    const std::unique_ptr<ChunkRenderPool>& TerrainSystem::getChunkRenderPool() const {
-        return m_chunkRenderPool;
+    const Frustum& TerrainSystem::getFrustum() const {
+        return *m_frustum;
     }
 
-    void TerrainSystem::generateChunkMeshData() {
-        const int centerX = m_cameraChunkPos.getChunkX();
-        const int centerZ = m_cameraChunkPos.getChunkZ();
-
-        struct Candidate {
-            ChunkPos pos;
-            int distSq;
-        };
-
-        std::vector<Candidate> candidates;
-        candidates.reserve((2 * m_renderDistance + 1) * (2 * m_renderDistance + 1));
-
-        for (int x = centerX - m_renderDistance; x <= centerX + m_renderDistance; ++x) {
-            for (int z = centerZ - m_renderDistance; z <= centerZ + m_renderDistance; ++z) {
-                ChunkPos chunkPos(x, z);
-
-                if (m_chunkMap.contains(chunkPos) || m_pendingChunkPos.contains(chunkPos)) {
-                    continue;
-                }
-
-                const int dx = x - centerX;
-                const int dz = z - centerZ;
-                candidates.emplace_back(chunkPos, dx * dx + dz * dz);
-            }
-        }
-
-        // Closest to the center chunk first
-        std::ranges::sort(candidates, [](const Candidate& a, const Candidate& b) { return a.distSq < b.distSq; });
-
-        for (const auto& [pos, distSq] : candidates) {
-            const ChunkPos chunkPos = pos;
-            m_pendingChunkPos.emplace(chunkPos);
-            m_pendingChunkMeshData.emplace_back(Engine::getEngine()->getThreadPool().submit(Task::Priority::NORMAL, [this, chunkPos] { return m_worldGenerator.generateChunkData(chunkPos); }));
-        }
+    ChunkRenderPool& TerrainSystem::getChunkRenderPool() const {
+        return *m_chunkRenderPool;
     }
 
-    void TerrainSystem::processGeneratedChunkMeshData() {
-        int processedChunks = 0;
-        for (auto pendingIt = m_pendingChunkMeshData.begin(); pendingIt != m_pendingChunkMeshData.end();) {
+    void TerrainSystem::processGeneratedNodes() {
+        int processed = 0;
+        for (auto it = m_pendingNodeData.begin(); it != m_pendingNodeData.end();) {
             // ALLOWED_CHUNKS_PER_FRAME Prevents stuttering
-            if (processedChunks < ALLOWED_CHUNKS_PER_FRAME && pendingIt->wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
-                auto chunkData = pendingIt->get();
+            if (processed >= ALLOWED_CHUNKS_PER_FRAME || it->future.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready) {
+                ++it;
+                continue;
+            }
 
+            const NodeKey key = it->key;
+            auto chunkData = it->future.get();
+
+            it = m_pendingNodeData.erase(it);
+            m_pendingNodes.erase(key);
+
+            // Camera moved, nobody wants this node anymore so skip it
+            if (!m_wantedKeys.contains(key)) {
+                continue;
+            }
+
+            processed = processed + 1;
+
+            const unsigned int slot = m_chunkRenderPool->addChunk(key, chunkData.getVertices());
+            if (slot == ChunkRenderPool::INVALID_SLOT) {
+                continue; // ChunkRenderPool is full
+            }
+            m_residentNodes[key] = slot;
+
+            // Only LOD 0 nodes become simulated chunks
+            if (key.lodLevel == 0) {
                 Chunk chunk = m_worldGenerator.generateChunk(chunkData);
-                auto chunkPos = chunkData.getChunkPos();
+                const auto chunkPos = chunkData.getChunkPos();
 
                 auto [newIt, inserted] = m_chunkMap.try_emplace(chunkPos, std::move(chunk));
                 if (inserted) {
                     m_chunks.emplace_back(&newIt->second);
                     updateChunkState(newIt->second);
                 }
-
-                m_pendingChunkPos.erase(chunkPos);
-                pendingIt = m_pendingChunkMeshData.erase(pendingIt);
-                processedChunks = processedChunks + 1;
-            } else {
-                ++pendingIt;
             }
         }
     }
 
-    void TerrainSystem::updateAllChunks() {
-        // First clear slots outside of render distance before adding new chunks to the pool
-        for (auto* chunk : m_chunks) {
-            const ChunkPos pos = chunk->getChunkData().getChunkPos();
-            if (chunk->hasValidSlot() && !pos.isChunkInRadius(m_cameraChunkPos, m_renderDistance)) {
-                m_chunkRenderPool->release(chunk->getSlot());
-                chunk->clearSlot();
+    void TerrainSystem::updateNodes(const glm::vec2 camXZ) {
+        KITA_ENGINE_PROFILE("Update nodes");
+
+        m_quadTree->update(camXZ, m_wantedNodes);
+
+        // Sort so near terrain is generated before far terrain
+        std::ranges::sort(m_wantedNodes, [&](const QuadNode* a, const QuadNode* b) {
+            return a->getAABB().getDistanceSq(camXZ) < b->getAABB().getDistanceSq(camXZ);
+        });
+
+        m_wantedKeys.clear();
+        for (const QuadNode* node : m_wantedNodes) {
+            const NodeKey key = node->getKey();
+            m_wantedKeys.insert(key);
+
+            // Skip if Chunk is already uploaded in GPU or is already being generated
+            if (m_residentNodes.contains(key) || m_pendingNodes.contains(key)) {
+                continue;
+            }
+
+            // Submit task
+            m_pendingNodes.insert(key);
+            m_pendingNodeData.push_back(PendingNode{.key = key, .future = Engine::getEngine()->getThreadPool().submit(Task::Priority::NORMAL, [this, key] { return m_worldGenerator.generateChunkData(key); })});
+        }
+    }
+
+    void TerrainSystem::swapIfReady() {
+        for (const NodeKey& key : m_wantedKeys) {
+            if (!m_residentNodes.contains(key)) {
+                return; // Waiting for generation/upload to ChunkRenderPool, to prevent holes
             }
         }
 
+        // Render new chunks
+        for (const auto& [key, slot] : m_residentNodes) {
+            if (m_wantedKeys.contains(key)) {
+                m_chunkRenderPool->show(slot);
+            }
+        }
+
+        // Release swapped chunks
+        std::erase_if(m_residentNodes, [&](const std::pair<const NodeKey, unsigned int>& entry) {
+            if (m_wantedKeys.contains(entry.first)) {
+                return false;
+            }
+            m_chunkRenderPool->release(entry.second);
+            return true;
+        });
+    }
+
+    void TerrainSystem::updateAllChunks() {
         for (auto* chunk : m_chunks) {
             updateChunkState(*chunk);
         }
@@ -211,16 +246,6 @@ namespace Kita {
     void TerrainSystem::updateChunkState(Chunk& chunk) {
         KITA_ENGINE_PROFILE("Update chunk state");
         const ChunkPos chunkPos = chunk.getChunkData().getChunkPos();
-        const bool inRenderRange = chunkPos.isChunkInRadius(m_cameraChunkPos, m_renderDistance);
-        const bool inSimulationRange = chunkPos.isChunkInRadius(m_cameraChunkPos, m_simulationDistance);
-
-        if (inRenderRange && !chunk.hasValidSlot()) {
-            chunk.setSlot(m_chunkRenderPool->addChunk(chunkPos, chunk.getChunkData().getVertices()));
-        } else if (!inRenderRange && chunk.hasValidSlot()) {
-            m_chunkRenderPool->release(chunk.getSlot());
-            chunk.clearSlot();
-        }
-
-        inSimulationRange ? chunk.enableSimulation() : chunk.disableSimulation();
+        chunkPos.isChunkInRadius(m_cameraChunkPos, m_simulationDistance) ? chunk.enableSimulation() : chunk.disableSimulation();
     }
 } // Kita

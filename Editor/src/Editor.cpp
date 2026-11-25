@@ -5,6 +5,8 @@
 #include <imgui_internal.h> // required for DockBuilder API
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../../Engine/src/Renderer/Scene/ECS/Systems/TerrainSystem.h"
+
 void Editor::onInit() {
     //m_isEditor = true;
 
@@ -115,6 +117,7 @@ void Editor::onRender() {
     ImGui::Text("Frame time: %.3f ms | FPS: %.0f", displayedDt * 1000.0, 1.0 / displayedDt);
     ImGui::Text("Position: %.2f %.2f %.2f", cameraComponent.properties.position.x, cameraComponent.properties.position.y, cameraComponent.properties.position.z);
     ImGui::Text("Mesh count: %d", static_cast<int>(Kita::Engine::getEngine()->getAssetManager().getTotalNumberOfAssetsForBucket<Kita::Mesh>()));
+    ImGui::Text("Free slots in render pool: %d", static_cast<int>(m_sandbox->getScene().getSystem<Kita::TerrainSystem>()->getChunkRenderPool().freeSlotCount()));
     ImGui::End();
 
     /*

@@ -3,7 +3,7 @@
 #include "WorldGenerator.h"
 
 namespace Kita {
-    ChunkData::ChunkData(const ChunkPos& chunkPos, std::vector<std::byte> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, JPH::BodyCreationSettings bodyCreationSettings)
+    ChunkData::ChunkData(const ChunkPos& chunkPos, std::vector<std::byte> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, std::optional<JPH::BodyCreationSettings> bodyCreationSettings)
         : m_chunkPos(chunkPos), m_vertices(std::move(vertices)), m_heightmap(std::move(heightmap)), m_bodySettings(std::move(bodyCreationSettings)) {
     }
 
@@ -15,7 +15,7 @@ namespace Kita {
         return m_vertices;
     }
 
-    const JPH::BodyCreationSettings& ChunkData::getBodyCreationSettings() const {
+    const std::optional<JPH::BodyCreationSettings>& ChunkData::getBodyCreationSettings() const {
         return m_bodySettings;
     }
 

@@ -19,6 +19,6 @@ namespace Kita {
         void render(Scene& scene) override;
 
     private:
-        std::array<Texture*, 5> fetchTextures(const AssetManager& assetManager, const MaterialComponent& materialCmp, Scene& scene);
+        std::array<Texture*, 9> fetchTextures(const AssetManager& assetManager, const MaterialComponent& materialCmp, Scene& scene);
     };
 } // Kita

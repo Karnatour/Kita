@@ -3,6 +3,8 @@
 #include <utility>
 #include <functional>
 
+#include "../Core/Hash.h"
+
 namespace Kita {
     class KITAENGINE_API ChunkPos {
     public:
@@ -25,10 +27,12 @@ namespace Kita {
 
 template <>
 struct std::hash<Kita::ChunkPos> {
-    std::size_t operator()(const Kita::ChunkPos& chunkPos) const noexcept {
-        const std::size_t h1 = std::hash<int>{}(chunkPos.getChunkX());
-        const std::size_t h2 = std::hash<int>{}(chunkPos.getChunkZ());
+    size_t operator()(const Kita::ChunkPos& chunkPos) const noexcept {
+        size_t seed = 0;
 
-        return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+        seed = Kita::Hash::hashCombine(seed, std::hash<int>{}(chunkPos.getChunkX()));
+        seed = Kita::Hash::hashCombine(seed, std::hash<int>{}(chunkPos.getChunkZ()));
+
+        return seed;
     }
 };

@@ -25,6 +25,6 @@ namespace Kita {
         float shadowDistance = 1000.0f;
         // lambda = 0 will be linear distance split
         // lambda = 1 will be logarithmic split
-        float lambda = 0.75f;
+        float lambda = 1.0f;
     };
 }

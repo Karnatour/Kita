@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <Jolt/Jolt.h>
 #include <Jolt/Core/Reference.h>
+#include <Jolt/Physics/Body/BodyID.h>
 
 #include "System.h"
 #include "../Entity.h"
@@ -41,7 +42,13 @@ namespace Kita {
         void preUpdateVehicle(const PreUpdateEvent& event);
         void handleVehicleInput();
 
+        void updateSimulationRange();
         void updateModelMatrices();
         void syncTransformation(Entity entity, const glm::mat4& parentModelMatrix);
+
+        std::vector<JPH::BodyID> m_toAddStatic;
+        std::vector<JPH::BodyID> m_toAddDynamic;
+        std::vector<JPH::BodyID> m_toRemove;
+        static constexpr float m_simulationDistanceSquared = 128.0f * 128.0f;
     };
 } // Kita

@@ -23,7 +23,9 @@ namespace Kita {
         void setPosition(JPH::BodyID id, glm::vec3 position, bool zeroVelocity = true);
         glm::vec3 getPosition(JPH::BodyID id) const;
         glm::mat4 getModelMatrix(JPH::BodyID id) const;
+        void addBodies(std::vector<JPH::BodyID>& ids, JPH::EActivation activation);
         void removeBody(JPH::BodyID id);
+        void removeBodies(std::vector<JPH::BodyID>& ids);
         void destroyBody(JPH::BodyID id);
         bool isBodyActive(JPH::BodyID id) const;
         void activateBody(JPH::BodyID id);

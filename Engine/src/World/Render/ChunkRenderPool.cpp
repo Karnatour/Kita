@@ -4,12 +4,7 @@
 #include "../Generation/WorldGenerator.h"
 
 namespace Kita {
-    ChunkRenderPool::ChunkRenderPool(const ChunkPos& centerPos, const unsigned int renderDistance) :
-        m_sortCenter(centerPos), m_vertexLayout(VertexLayout({
-            VertexAttribute(VertexAttribute::Type::FLOAT, VertexAttribute::Count::THREE),
-            VertexAttribute(VertexAttribute::Type::FLOAT, VertexAttribute::Count::TWO)
-        })) {
-        m_maxChunks = static_cast<unsigned int>(std::pow(2 * renderDistance + 1, 2));
+    ChunkRenderPool::ChunkRenderPool(const unsigned int maxChunks) : m_vertexLayout(getTerrainVertexLayout()), m_maxChunks(maxChunks) {
         m_freeSlots.reserve(m_maxChunks);
         for (unsigned int i = 0; i < m_maxChunks; ++i) {
             m_freeSlots.push_back(m_maxChunks - 1 - i);
@@ -19,26 +14,41 @@ namespace Kita {
         m_commands.reserve(m_maxChunks);
 
         constexpr int VERTICES_PER_CHUNK = WorldGenerator::VERTICES_PER_EDGE * WorldGenerator::VERTICES_PER_EDGE;
-        m_meshID = Engine::getEngine()->getAssetManager().getOrCreateAsset<Mesh>(AssetKey{"Kita::ChunkRenderPool::Chunk"},{},VertexBufferData(std::vector<std::byte>(m_vertexLayout.getStride() * m_maxChunks * VERTICES_PER_CHUNK), m_vertexLayout), createIndices()).id;
+        m_meshID = Engine::getEngine()->getAssetManager().getOrCreateAsset<Mesh>(AssetKey{"Kita::ChunkRenderPool::Chunk"}, {}, VertexBufferData(std::vector<std::byte>(m_vertexLayout.getStride() * m_maxChunks * VERTICES_PER_CHUNK), m_vertexLayout),
+                                                                                 createIndices()).id;
 
         m_drawCommandBuffer = DrawCommandBuffer::createPtr(std::vector<DrawElementsIndirectCommandProperties>(m_maxChunks));
-        m_slotToPos.assign(m_maxChunks, ChunkPos(0, 0));
+        m_slotToAABB.assign(m_maxChunks, {});
+        KITA_ENGINE_INFO("Created ChunkRenderPool with {} slots", m_maxChunks);
     }
 
-    void ChunkRenderPool::render(const ChunkPos& center) {
-        updateCommands(center);
-        if (m_commands.empty()) {
+    void ChunkRenderPool::render(const glm::vec2 camXZ, const Frustum& frustum) {
+        updateCommands(camXZ);
+
+        m_visibleCommands.clear();
+        for (const auto& cmd : m_commands) {
+            if (frustum.insideFrustum(m_slotToAABB[cmd.baseInstance])) {
+                m_visibleCommands.push_back(cmd);
+            }
+        }
+
+        if (m_visibleCommands.empty()) {
             return;
         }
 
-        Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, m_commands.size());
+        m_drawCommandBuffer->upload(0, m_visibleCommands);
+
+        Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, m_visibleCommands.size());
     }
 
-    void ChunkRenderPool::renderInDistance(const ChunkPos& center, const unsigned int renderDistance) {
-        updateCommands(center);
+    /*void ChunkRenderPool::renderInDistance(const glm::vec2 camXZ, const unsigned int renderDistance) {
+        updateCommands(camXZ);
+
+        const float distance = static_cast<float>(ChunkData::CHUNK_SIZE * renderDistance);
+        const float distanceSq = distance * distance;
 
         const auto end = std::ranges::partition_point(m_commands, [&](const auto& c) {
-            return ChunkPos::chunkDistance(m_slotToPos[c.baseInstance], center) <= static_cast<int>(renderDistance);
+            return nodeDistanceSq(c.baseInstance, camXZ) <= distanceSq;
         });
 
         const size_t count = std::ranges::distance(m_commands.begin(), end);
@@ -47,9 +57,10 @@ namespace Kita {
         };
 
         Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, count);
-    }
+    }*/
 
-    unsigned int ChunkRenderPool::addChunk(const ChunkPos& pos, const std::vector<std::byte>& vertices) {
+    unsigned int ChunkRenderPool::addChunk(const NodeKey& key, const std::vector<std::byte>& vertices) {
+        KITA_ENGINE_PROFILE("Add chunk to render pool");
         if (m_freeSlots.empty()) {
             KITA_ENGINE_ERROR("ChunkRenderPool is full this shouldn't happen");
             return INVALID_SLOT;
@@ -57,62 +68,72 @@ namespace Kita {
 
         const unsigned int slot = m_freeSlots.back();
         m_freeSlots.pop_back();
-        m_slotToPos[slot] = pos;
+
+        const float size = static_cast<float>(ChunkData::CHUNK_SIZE * (1 << key.lodLevel));
+        const glm::vec3 min(static_cast<float>(key.chunkPosX) * size,0, static_cast<float>(key.chunkPosZ) * size);
+        m_slotToAABB[slot].setPos(min, min + glm::vec3(size,WorldGenerator::HEIGHT_SCALE * 2, size)); // TODO pass min/max Y for chunk here
 
         const Mesh& mesh = Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID);
 
         mesh.getVertexBuffer().upload(slot * WorldGenerator::VERTICES_PER_CHUNK * m_vertexLayout.getStride(), WorldGenerator::VERTICES_PER_CHUNK * m_vertexLayout.getStride(), vertices);
 
-        m_slotToCommand[slot] = static_cast<uint32_t>(m_commands.size());
-        m_commands.emplace_back(static_cast<unsigned int>(mesh.getIndexBuffer()->getIndices().size()), 1, 0, (slot * WorldGenerator::VERTICES_PER_CHUNK), slot); // Since we are not using baseInstance we can store slot into it
-
-        m_dirty = true;
-        m_sortValid = false;
         return slot;
     }
 
-    void ChunkRenderPool::release(const int slot) {
-        // Move last command into remove slot
-        const unsigned int commandToRemove = m_slotToCommand[slot];
-        const unsigned int lastCommand = static_cast<unsigned int>(m_commands.size() - 1);
-
-        if (commandToRemove != lastCommand) {
-            m_commands[commandToRemove] = m_commands[lastCommand];
-            m_slotToCommand[m_commands[commandToRemove].baseInstance] = commandToRemove; // Change slot
+    void ChunkRenderPool::show(const unsigned int slot) {
+        if (m_slotToCommand[slot] != INVALID_SLOT) {
+            return; // Already rendering
         }
-
-        m_commands.pop_back();
-        m_slotToCommand[slot] = INVALID_SLOT;
-
-        m_freeSlots.push_back(slot);
-        m_dirty = true;
+        const Mesh& mesh = Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID);
+        m_slotToCommand[slot] = static_cast<uint32_t>(m_commands.size());
+        m_commands.emplace_back(static_cast<unsigned int>(mesh.getIndexBuffer()->getIndices().size()), 1, 0, slot * WorldGenerator::VERTICES_PER_CHUNK, slot);
         m_sortValid = false;
     }
 
-    void ChunkRenderPool::updateCommands(const ChunkPos& center) {
-        if (!m_sortValid || center != m_sortCenter) {
-            auto key = [&](const DrawElementsIndirectCommandProperties& c) {
-                const ChunkPos& p = m_slotToPos[c.baseInstance];
-                const int dx = p.getChunkX() - center.getChunkX();
-                const int dz = p.getChunkZ() - center.getChunkZ();
-                return std::make_pair(ChunkPos::chunkDistance(p, center), dx * dx + dz * dz);
-            };
-            std::ranges::sort(m_commands, {}, key);
+    void ChunkRenderPool::release(const unsigned int slot) {
+        KITA_ENGINE_PROFILE("Remove chunk from render pool");
+        // Move last command into remove slot
+        const unsigned int commandToRemove = m_slotToCommand[slot];
+        if (commandToRemove != INVALID_SLOT) {
+            const unsigned int lastCommand = static_cast<unsigned int>(m_commands.size() - 1);
+            if (commandToRemove != lastCommand) {
+                m_commands[commandToRemove] = m_commands[lastCommand];
+                m_slotToCommand[m_commands[commandToRemove].baseInstance] = commandToRemove; // Change slot
+            }
+            m_commands.pop_back();
+            m_slotToCommand[slot] = INVALID_SLOT;
+            m_sortValid = false;
+        }
+        m_freeSlots.push_back(slot);
+    }
+
+    unsigned int ChunkRenderPool::freeSlotCount() const {
+        return static_cast<unsigned int>(m_freeSlots.size());
+    }
+
+    float ChunkRenderPool::nodeDistanceSq(const unsigned int slot, const glm::vec2 camXZ) const {
+        return m_slotToAABB[slot].getDistanceSqXZ(camXZ);
+    }
+
+    VertexLayout ChunkRenderPool::getTerrainVertexLayout() {
+        return VertexLayout({
+            VertexAttribute(VertexAttribute::Type::FLOAT, VertexAttribute::Count::THREE),
+            VertexAttribute(VertexAttribute::Type::FLOAT, VertexAttribute::Count::TWO)
+        });
+    }
+
+    void ChunkRenderPool::updateCommands(const glm::vec2 camXZ) {
+        if (!m_sortValid || camXZ != m_sortCenter) {
+            std::ranges::sort(m_commands, {}, [&](const DrawElementsIndirectCommandProperties& c) {
+                return nodeDistanceSq(c.baseInstance, camXZ);
+            });
 
             for (unsigned int i = 0; i < m_commands.size(); ++i) {
                 m_slotToCommand[m_commands[i].baseInstance] = i;
             }
 
-            m_sortCenter = center;
+            m_sortCenter = camXZ;
             m_sortValid = true;
-            m_dirty = true;
-        }
-
-        if (m_dirty) {
-            if (!m_commands.empty()) {
-                m_drawCommandBuffer->upload(0, m_commands);
-            }
-            m_dirty = false;
         }
     }
 

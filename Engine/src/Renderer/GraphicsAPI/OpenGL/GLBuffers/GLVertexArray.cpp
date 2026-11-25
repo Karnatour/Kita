@@ -48,15 +48,14 @@ namespace Kita {
 
         glVertexArrayVertexBuffer(m_vao, 0, vbo.getVBO(), 0, static_cast<GLsizei>(vertexLayout.getStride()));
 
-        GLsizei attributeIndex = 0;
-        GLuint offset = 0;
-        for (auto attribute : vertexLayout.getVertexAttributes()) {
-            glEnableVertexArrayAttrib(m_vao, attributeIndex);
-            glVertexArrayAttribFormat(m_vao, attributeIndex, static_cast<GLint>(attribute.getCount()), GLRendererAPI::convertAttributeTypeToGL(attribute.getType()),GL_FALSE, offset);
-            glVertexArrayAttribBinding(m_vao, attributeIndex, 0);
+        const auto& attributes = vertexLayout.getVertexAttributes();
+        for (size_t i = 0; i < attributes.size(); ++i) {
+            const auto& attribute = attributes[i];
+            const auto index = static_cast<GLuint>(i);
 
-            attributeIndex = attributeIndex + 1;
-            offset = offset + static_cast<GLuint>(static_cast<size_t>(attribute.getCount()) * attribute.getTypeSize());
+            glEnableVertexArrayAttrib(m_vao, index);
+            glVertexArrayAttribFormat(m_vao, index, static_cast<GLint>(attribute.getCount()), GLRendererAPI::convertAttributeTypeToGL(attribute.getType()),GL_FALSE, static_cast<GLuint>(vertexLayout.getOffset(i)));
+            glVertexArrayAttribBinding(m_vao, index, 0);
         }
     }
 } // Kita

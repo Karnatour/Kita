@@ -36,12 +36,12 @@ namespace Kita {
     }
 
     void Chunk::enableSimulation() {
-        if (m_chunkData.getBodyID() != JPH::BodyID(JPH::BodyID::cInvalidBodyID)) {
+        if (!m_chunkData.getBodyCreationSettings().has_value() || m_chunkData.getBodyID() != JPH::BodyID(JPH::BodyID::cInvalidBodyID)) {
             return;
         }
 
         auto& physicsManager = Engine::getEngine()->getPhysicsManager();
-        m_chunkData.setBodyID(physicsManager.createBody(m_chunkData.getBodyCreationSettings(), JPH::EActivation::DontActivate));
+        m_chunkData.setBodyID(physicsManager.createBody(m_chunkData.getBodyCreationSettings().value(), JPH::EActivation::DontActivate));
     }
 
     void Chunk::disableSimulation() {

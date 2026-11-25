@@ -43,8 +43,9 @@ namespace Kita {
         renderer.getMainFramebuffer().unbind();
     }
 
-    std::array<Texture*, 5> GeometrySystem::fetchTextures(const AssetManager& assetManager, const MaterialComponent& materialCmp, Scene& scene) {
-        std::array<Texture*, 5> textures = {};
+    std::array<Texture*, 9> GeometrySystem::fetchTextures(const AssetManager& assetManager, const MaterialComponent& materialCmp, Scene& scene) {
+        KITA_ENGINE_PROFILE("Texture fetch");
+        std::array<Texture*, 9> textures = {};
 
         if (materialCmp.albedoTextureID != AssetManager::INVALID_ASSET_ID) {
             textures[0] = &assetManager.getAsset<Texture>(materialCmp.albedoTextureID);
@@ -55,17 +56,30 @@ namespace Kita {
         }
 
         if (materialCmp.normalTextureID != AssetManager::INVALID_ASSET_ID) {
-            textures[2] = &assetManager.getAsset<Texture>(materialCmp.normalTextureID);
+            textures[3] = &assetManager.getAsset<Texture>(materialCmp.normalTextureID);
         }
 
+        if (materialCmp.displacementTextureID != AssetManager::INVALID_ASSET_ID) {
+            textures[4] = &assetManager.getAsset<Texture>(materialCmp.displacementTextureID);
+        }
+
+        if (materialCmp.ambientOcclusionTextureID != AssetManager::INVALID_ASSET_ID) {
+            textures[5] = &assetManager.getAsset<Texture>(materialCmp.ambientOcclusionTextureID);
+        }
+
+        if (materialCmp.opacityTextureID != AssetManager::INVALID_ASSET_ID) {
+            textures[6] = &assetManager.getAsset<Texture>(materialCmp.opacityTextureID);
+        }
+
+        //TODO Fetch only once
         if (const Entity skyboxEntity(&scene, scene.view<SkyboxComponent>().front()); skyboxEntity) {
             if (const auto& skyboxCmp = skyboxEntity.getComponent<SkyboxComponent>(); skyboxCmp.irradianceCubemapID != AssetManager::INVALID_ASSET_ID) {
-                textures[3] = &assetManager.getAsset<Texture>(skyboxCmp.irradianceCubemapID);
+                textures[7] = &assetManager.getAsset<Texture>(skyboxCmp.irradianceCubemapID);
             }
         }
 
         if (const auto dirShadowComponent = scene.contextGet<DirectionalShadowComponent>()) {
-            textures[4] = dirShadowComponent->properties.texture;
+            textures[8] = dirShadowComponent->properties.texture;
         }
 
         return textures;

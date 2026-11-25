@@ -19,7 +19,7 @@ namespace Kita {
         static constexpr float HEIGHT_SCALE = 250.0f; // Used for converting noise values (-1,1) to meters
         static constexpr float NOISE_FREQUENCY = 1.0f / 64.0f; // Lower = bigger hills. This needs to be power of two otherwise will cause ultra small holes
         WorldGenerator(int octaveCount, float gain, float lacunarity);
-        ChunkData generateChunkData(const ChunkPos& chunkPos);
+        ChunkData generateChunkData(const NodeKey& key);
         Chunk generateChunk(ChunkData chunkData);
     private:
         int m_octaveCount;

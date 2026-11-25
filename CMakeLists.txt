@@ -4,10 +4,18 @@ project(Kita)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Configs" FORCE)
 
 # Set the output directory for libraries and executables
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/Debug/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/Release/bin)
+foreach(CONFIG Debug Release RelWithDebInfo MinSizeRel)
+    string(TOUPPER ${CONFIG} CONFIG_UPPER)
+
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER}
+            ${CMAKE_BINARY_DIR}/${CONFIG}/bin)
+
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_UPPER}
+            ${CMAKE_BINARY_DIR}/${CONFIG}/bin)
+
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_UPPER}
+            ${CMAKE_BINARY_DIR}/${CONFIG}/lib)
+endforeach()
 
 add_subdirectory(Editor)
 add_subdirectory(Engine)

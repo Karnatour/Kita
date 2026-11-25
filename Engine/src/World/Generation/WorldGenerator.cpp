@@ -12,12 +12,20 @@ namespace Kita {
         m_noise = Noise::getTerrainNoise(octaveCount, gain, lacunarity);
     }
 
-    ChunkData WorldGenerator::generateChunkData(const ChunkPos& chunkPos) {
+    ChunkData WorldGenerator::generateChunkData(const NodeKey& key) {
         std::array<float, SAMPLES_PER_EDGE * SAMPLES_PER_EDGE> heightmap;
-        //X and Y Offset -1 so we have border data also
-        const float startX = static_cast<float>(chunkPos.getVertexX(0) - 1);
-        const float startZ = static_cast<float>(chunkPos.getVertexZ(0) - 1);
-        m_noise->GenUniformGrid2D(heightmap.data(), startX, startZ, SAMPLES_PER_EDGE, SAMPLES_PER_EDGE, 1.0f, 1.0f, SEED);
+        const ChunkPos chunkPos(key.chunkPosX, key.chunkPosZ);
+        const int lod = key.lodLevel;
+        const float step = static_cast<float>(1 << lod);
+        const float nodeSize = static_cast<float>(ChunkData::CHUNK_SIZE) * step;
+
+        const float originX = static_cast<float>(key.chunkPosX) * nodeSize;
+        const float originZ = static_cast<float>(key.chunkPosZ) * nodeSize;
+
+        // -step so we have border data also
+        const float startX = originX - step;
+        const float startZ = originZ - step;
+        m_noise->GenUniformGrid2D(heightmap.data(), startX, startZ, SAMPLES_PER_EDGE, SAMPLES_PER_EDGE, step, step, SEED);
 
         for (float& height : heightmap) {
             height = height * HEIGHT_SCALE;
@@ -34,42 +42,42 @@ namespace Kita {
         for (int z = 0; z < VERTICES_PER_EDGE; ++z) {
             for (int x = 0; x < VERTICES_PER_EDGE; ++x) {
                 // Position
-                VertexBufferData::appendBytes(vertices, glm::vec3(static_cast<float>(chunkPos.getVertexX(x)), heightAt(x, z), static_cast<float>(chunkPos.getVertexZ(z))));
+                VertexBufferData::appendBytes(vertices, glm::vec3(originX + static_cast<float>(x) * step, heightAt(x, z), originZ + static_cast<float>(z) * step));
 
                 const float heightLeft = heightAt(x - 1, z);
                 const float heightRight = heightAt(x + 1, z);
                 const float heightBack = heightAt(x, z - 1);
                 const float heightFront = heightAt(x, z + 1);
 
-                const float dYdX = (heightRight - heightLeft) * 0.5f;
-                const float dYdZ = (heightFront - heightBack) * 0.5f;
+                const float dYdX = (heightRight - heightLeft) / (2.0f * step);
+                const float dYdZ = (heightFront - heightBack) / (2.0f * step);
 
                 // Slope
                 VertexBufferData::appendBytes(vertices, glm::vec2(dYdX, dYdZ));
             }
         }
 
-        std::vector<float> physicsHeights;
-        physicsHeights.resize(PHYSICS_SAMPLES * PHYSICS_SAMPLES);
-        for (int z = 0; z < PHYSICS_SAMPLES; ++z) {
-            for (int x = 0; x < PHYSICS_SAMPLES; ++x) {
-                const bool padding = x >= VERTICES_PER_EDGE || z >= VERTICES_PER_EDGE;
-                physicsHeights[z * PHYSICS_SAMPLES + x] = padding ? JPH::HeightFieldShapeConstants::cNoCollisionValue : heightAt(x, z);
+        std::optional<JPH::BodyCreationSettings> bodySettings;
+        if (lod == 0) {
+            std::vector<float> physicsHeights(PHYSICS_SAMPLES * PHYSICS_SAMPLES);
+            for (int z = 0; z < PHYSICS_SAMPLES; ++z) {
+                for (int x = 0; x < PHYSICS_SAMPLES; ++x) {
+                    const bool padding = x >= VERTICES_PER_EDGE || z >= VERTICES_PER_EDGE;
+                    physicsHeights[z * PHYSICS_SAMPLES + x] = padding ? JPH::HeightFieldShapeConstants::cNoCollisionValue : heightAt(x, z);
+                }
             }
+
+            JPH::HeightFieldShapeSettings heightFieldSettings(physicsHeights.data(), JPH::Vec3::sZero(), JPH::Vec3(1.0f, 1.0f, 1.0f), PHYSICS_SAMPLES);
+            JPH::Shape::ShapeResult shapeResult = heightFieldSettings.Create();
+            if (shapeResult.HasError()) {
+                KITA_ENGINE_DEBUG("[WorldGenerator] Heightfield error: {}", shapeResult.GetError().c_str());
+            }
+
+            const JPH::RVec3 bodyPos(originX, 0.0f, originZ);
+            bodySettings.emplace(shapeResult.Get(), bodyPos, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::Layers::STATIC);
         }
 
-        JPH::HeightFieldShapeSettings heightFieldSettings(physicsHeights.data(), JPH::Vec3::sZero(), JPH::Vec3(1.0f, 1.0f, 1.0f), PHYSICS_SAMPLES);
-        JPH::Shape::ShapeResult shapeResult = heightFieldSettings.Create();
-        if (shapeResult.HasError()) {
-            KITA_ENGINE_DEBUG("[WorldGenerator] Heightfield error: {}", shapeResult.GetError().c_str());
-        }
-
-        const JPH::RVec3 bodyPos(static_cast<float>(chunkPos.getVertexX(0)), 0.0f, static_cast<float>(chunkPos.getVertexZ(0)));
-        JPH::BodyCreationSettings bodySettings(shapeResult.Get(), bodyPos, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::Layers::STATIC);
-
-        ChunkData chunkMeshData(chunkPos, std::move(vertices), std::move(heightmap), std::move(bodySettings));
-
-        return chunkMeshData;
+        return ChunkData(chunkPos, std::move(vertices), std::move(heightmap), std::move(bodySettings));
     }
 
     Chunk WorldGenerator::generateChunk(ChunkData chunkData) {

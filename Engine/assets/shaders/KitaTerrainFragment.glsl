@@ -61,6 +61,8 @@ uniform sampler2DArray normalTex;
 uniform sampler2DArray displacementTex;
 uniform sampler2DArray ambientOcclusionTex;
 
+const int GRASS = 0, SNOW = 1, ROCK = 2;
+
 uniform samplerCube cubemapTex;
 uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
 
@@ -348,10 +350,12 @@ vec3 randomColor(vec2 p) {
     return vec3(random(p), random(p + 1.0), random(p + 2.0));
 }
 
+//https://www.artstation.com/blogs/andreariccardi/3VPo/a-new-approach-for-parallax-mapping-presenting-the-contact-refinement-parallax-mapping-technique
 vec2 parallaxOcclusionMapping(vec2 texCoord, vec3 viewDirTangentSpace, vec2 dx, vec2 dy) {
+    const int MAX_LAYERS = 32;
     const float minLayers = 8.0;
-    const float maxLayers = 32.0;
-    const float heightScale = 0.05;
+    const float maxLayers = float(MAX_LAYERS);
+    const float heightScale = 0.035;
     // calculate the correct number of layer based on dot product
     float layersCount = mix(maxLayers, minLayers, abs(viewDirTangentSpace.z));
 
@@ -365,23 +369,55 @@ vec2 parallaxOcclusionMapping(vec2 texCoord, vec3 viewDirTangentSpace, vec2 dx, 
 
     // fetch original texture values
     vec2 currentTexCoord = texCoord;
+    float currentLayerDepth = 0.0f;
     float currentDisplacement = 1.0 - textureGrad(displacementTex, vec3(currentTexCoord,0), dx, dy).r;
 
-    float currentLayerDepth = 0.0f;
-    for (int i = 0; i < maxLayers; ++i) {
-        if (currentLayerDepth >= currentDisplacement){
+    // remember previous step
+    vec2 prevTexCoord = currentTexCoord;
+    float prevLayerDepth = currentLayerDepth;
+    float prevDisplacement = currentDisplacement;
+
+    // first pass, find the layer with the intersection
+    for (int i = 0; i < MAX_LAYERS; ++i) {
+        if (float(i) >= layersCount || currentLayerDepth >= currentDisplacement){
             break;
         }
+        prevTexCoord = currentTexCoord;
+        prevLayerDepth = currentLayerDepth;
+        prevDisplacement = currentDisplacement;
+
         // shift texture coordinates
         currentTexCoord -= deltaTexCoords;
         currentDisplacement = 1.0 - textureGrad(displacementTex, vec3(currentTexCoord,0), dx, dy).r;
         currentLayerDepth += layerDepth;
     }
 
+    // go back to the last step before the intersection
+    currentTexCoord = prevTexCoord;
+    currentLayerDepth = prevLayerDepth;
+    currentDisplacement = prevDisplacement;
+
+    // split one layer into the same number of small steps
+    vec2 fineDeltaTexCoords = deltaTexCoords / layersCount;
+    float fineLayerDepth = layerDepth / layersCount;
+
+    // second pass, search again only inside that layer
+    for (int i = 0; i < MAX_LAYERS; ++i) {
+        if (float(i) >= layersCount || currentLayerDepth >= currentDisplacement){
+            break;
+        }
+        prevTexCoord = currentTexCoord;
+        prevLayerDepth = currentLayerDepth;
+        prevDisplacement = currentDisplacement;
+
+        currentTexCoord -= fineDeltaTexCoords;
+        currentDisplacement = 1.0 - textureGrad(displacementTex, vec3(currentTexCoord,0), dx, dy).r;
+        currentLayerDepth += fineLayerDepth;
+    }
+
     // interpolate between the last two steps for a smooth result
-    vec2 prevTexCoord = currentTexCoord + deltaTexCoords;
     float afterDepth = currentDisplacement - currentLayerDepth;
-    float beforeDepth = (1.0 - textureGrad(displacementTex, vec3(prevTexCoord,0), dx, dy).r) - (currentLayerDepth - layerDepth);
+    float beforeDepth = prevDisplacement - prevLayerDepth;
     float denominator = afterDepth - beforeDepth;
     float weight = abs(denominator) > 1e-5 ? afterDepth / denominator : 0.0;
     return mix(currentTexCoord, prevTexCoord, clamp(weight, 0.0, 1.0));

@@ -22,7 +22,8 @@ namespace Kita {
             NORMAL = 8,
             DEPTH_ARRAY = 9,
             DISPLACEMENT = 10,
-            AMBIENT_OCCLUSION = 11
+            AMBIENT_OCCLUSION = 11,
+            OPACITY = 12
         };
 
         enum class TextureFlags : uint32_t {
@@ -37,7 +38,8 @@ namespace Kita {
             NORMAL = 1u << 7,
             DEPTH_ARRAY = 1u << 8,
             DISPLACEMENT = 1u << 9,
-            AMBIENT_OCCLUSION = 1u << 10
+            AMBIENT_OCCLUSION = 1u << 10,
+            OPACITY = 1u << 11
         };
 
         enum class TextureErrorCode {

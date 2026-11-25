@@ -8,6 +8,8 @@
 #include "../Renderer/Scene/ECS/Entity.h"
 
 namespace Kita {
+    struct MaterialComponent;
+
     class KITAENGINE_API AssetImporter {
     public:
         enum class ImportError {
@@ -20,27 +22,18 @@ namespace Kita {
         static std::expected<Entity, ImportError> importModel(const std::filesystem::path& path, Scene& scene, bool skipPhysics = false);
 
     private:
-        struct Material {
-            AssetManager::AssetID albedoTextureID = AssetManager::INVALID_ASSET_ID;
-            AssetManager::AssetID metallicRoughnessTextureID = AssetManager::INVALID_ASSET_ID;
-            AssetManager::AssetID normalTextureID = AssetManager::INVALID_ASSET_ID;
-
-            //TODO Proper blending
-            bool ignoreBecauseOfAlpha = false;
-        };
-
-        constexpr static std::size_t vertexSize =
+        constexpr static size_t vertexSize =
             sizeof(glm::vec3) + // position
             sizeof(glm::vec2) + // uv
             sizeof(glm::vec4) + // color
             sizeof(glm::vec3) + // normal
             sizeof(glm::vec3) * 2; // tangent, bitangent
 
-        static std::vector<Material> importMaterials(const aiScene* aiScene, const std::filesystem::path& path);
-        static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<Material>& materials, const aiMatrix4x4& parentTransform, const std::filesystem::path& path);
-        static void addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<Material>& materials);
+        static std::vector<MaterialComponent> importMaterials(const aiScene* aiScene, const std::filesystem::path& path);
+        static void processNode(const aiScene* aiScene, const aiNode* aiNode, Scene& scene, Entity parentEntity, const std::vector<MaterialComponent>& materials, const aiMatrix4x4& parentTransform, const std::filesystem::path& path);
+        static void addMaterialComponent(Entity entity, const aiMesh* aiMesh, const std::vector<MaterialComponent>& materials);
         static glm::mat4 convertAiModelMatrixToGLM(const aiMatrix4x4& aiMatrix);
-        static Entity processMesh(const ::aiMesh* aiMesh, Scene& scene, const std::vector<Material>& materials, const std::filesystem::path& path);
+        static Entity processMesh(const ::aiMesh* aiMesh, unsigned int meshIndex, Scene& scene, const std::vector<MaterialComponent>& materials, const std::filesystem::path& path);
         static std::vector<std::byte> importVertex(const aiMesh& aiMesh, unsigned int index);
         static Texture::TextureType assimpToKitaTextureType(const aiTextureType& ai_texture);
         static std::optional<AssetManager::AssetID> importTexture(aiTextureType textureType, const aiMaterial& aiMaterial, const std::filesystem::path& path);

@@ -11,6 +11,7 @@ const uint NORMAL = 1u << 7;
 const uint DEPTH_ARRAY = 1u << 8;
 const uint DISPLACEMENT = 1u << 9;
 const uint AMBIENT_OCCLUSION = 1u << 10;
+const uint OPACITY = 1u << 11;
 
 struct Light {
     vec4 position;
@@ -54,12 +55,14 @@ uniform sampler2D albedoTex;
 uniform sampler2D metallicRoughnessTex;
 uniform sampler2D normalTex;
 uniform samplerCube cubemapTex;
-uniform sampler2DArray depthTexArray; //directionalShadowMap textureArray
+uniform sampler2DArrayShadow depthTexArray; //directionalShadowMap textureArray
 uniform sampler2D displacementTex;
 uniform sampler2D ambientOcclusionTex;
+uniform sampler2D opacityTex;
 
 uniform float iblIntensity;
 
+in vec4 color;
 in vec2 texCoord;
 in vec3 normalVec;
 in vec3 fragPosWorld;
@@ -86,6 +89,18 @@ const float PI = 3.14159265359;
 
 void main()
 {
+    if (hasTexture(OPACITY)){
+        float alpha = texture(opacityTex, texCoord).r;
+        if (alpha < 0.5) {
+            discard;
+        }
+    }
+    else {
+        if (color.a < 0.5){
+            discard;
+        }
+    }
+
     vec2 newTexCoord = texCoord;
     vec3 viewDirWorld = normalize(camera.position.xyz - fragPosWorld);
 
@@ -126,14 +141,22 @@ void main()
 }
 
 vec3 getNormal(vec2 newTexCoord) {
+    vec3 N = normalize(TBNMat[2]);
+    vec3 T = normalize(TBNMat[0]);
+    vec3 B = normalize(TBNMat[1]);
+
     vec3 normal;
-    if (hasTexture(NORMAL)){
-        normal = texture(normalTex, newTexCoord).rgb;
-        normal = normal * 2.0 - 1.0;
-        normal = normalize(TBNMat * normal);
-    }
-    else {
+    if (hasTexture(NORMAL)) {
+        vec3 mapN = texture(normalTex, newTexCoord).rgb * 2.0 - 1.0;
+        if (!gl_FrontFacing){
+            mapN.z = -mapN.z;
+        }
+        normal = normalize(mat3(T, B, N) * mapN);
+    } else {
         normal = normalize(normalVec);
+        if (!gl_FrontFacing){
+            normal = -normal;
+        }
     }
     return normal;
 }
@@ -265,6 +288,8 @@ PBRProperties getPBRProperties(vec2 newTexCoord) {
 }
 
 float calculateShadow(vec3 geomNormal, vec3 lightDir){
+    geomNormal = gl_FrontFacing ? normalize(normalVec) : -normalize(normalVec);
+
     float normalDotLightDir = dot(geomNormal, lightDir);
     if (normalDotLightDir <= 0.0) {
         return 1.0;
@@ -313,8 +338,9 @@ float calculateShadow(vec3 geomNormal, vec3 lightDir){
     vec2 texelSize = 1.0 / mapSize;
     for (int x = -2; x <= 2; ++x) {
         for (int y = -2; y <= 2; ++y) {
-            float pcfDepth = texture(depthTexArray, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
-            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+            vec2 uv = projCoords.xy + vec2(x, y) * texelSize;
+            float pcfDepth = texture(depthTexArray, vec4(uv, float(layer), currentDepth - bias));
+            shadow += 1.0 - pcfDepth;
         }
     }
     return shadow / 25.0;

@@ -38,11 +38,12 @@ namespace Kita {
         carEntity.addComponent<CameraComponent>(CameraComponent{.properties = {.position = position, .ignorePosition = true, .ignoreEulerAnglesUpdate = true    }});
         carEntity.addComponent<PhysicsComponent>();
 
+        // ReSharper disable once CppTooWideScope
         bool wheelsFound = false;
         for (const auto child : carEntity.getComponent<ChildrenComponent>().children) {
             if (auto wheelsEntity = Entity(&scene, child); wheelsEntity.getComponent<NameComponent>().name == "KITA_Wheels") {
                 wheelsFound = true;
-                for (auto wheelID : wheelsEntity.getComponent<ChildrenComponent>().children) {
+                for (const auto wheelID : wheelsEntity.getComponent<ChildrenComponent>().children) {
                     auto wheelEntity = Entity(&scene, wheelID);
                     const std::string& wheelName = wheelEntity.getComponent<NameComponent>().name;
                     if (wheelName == "KITA_Wheel_Front_L") {

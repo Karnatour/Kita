@@ -8,6 +8,8 @@
 #include "../../../../World/ChunkPos.h"
 #include "../../../../World/Generation/WorldGenerator.h"
 #include "../../../../World/Render/ChunkRenderPool.h"
+#include "../../../../World/Render/QuadTree.h"
+#include "../../../Frustum/Frustum.h"
 #include "../Components/MaterialComponent.h"
 
 namespace Kita {
@@ -34,15 +36,24 @@ namespace Kita {
         const Chunk* getCameraChunk() const;
         ChunkPos getCameraChunkPos() const;
 
-        const std::unique_ptr<ChunkRenderPool>& getChunkRenderPool() const;
-    private:
-        void generateChunkMeshData();
-        void processGeneratedChunkMeshData();
+        const Frustum& getFrustum() const;
 
+        ChunkRenderPool& getChunkRenderPool() const;
+
+    private:
+        struct PendingNode {
+            NodeKey key;
+            std::future<ChunkData> future;
+        };
+
+        void processGeneratedNodes();
+
+        void updateNodes(glm::vec2 camXZ);
+        void swapIfReady();
         void updateAllChunks();
         void updateChunkState(Chunk& chunk);
 
-        int m_renderDistance = 32;
+        int m_renderDistance = 4096;
         // Used for physics simulation currently
         int m_simulationDistance = 16;
 
@@ -51,12 +62,20 @@ namespace Kita {
         std::vector<Chunk*> m_chunks;
 
         ChunkPos m_cameraChunkPos = ChunkPos(std::make_pair(0, 0));
+        glm::vec3 m_cameraPos = glm::vec3(0.0f);
+        std::unique_ptr<Frustum> m_frustum;
+
         WorldGenerator m_worldGenerator = WorldGenerator(6, 0.5f, 2.0f);
         MaterialComponent m_materialComponent;
         std::unique_ptr<ChunkRenderPool> m_chunkRenderPool;
 
-        std::vector<std::future<ChunkData>> m_pendingChunkMeshData;
-        std::unordered_set<ChunkPos> m_pendingChunkPos;
+        std::unique_ptr<QuadTree> m_quadTree;
+
+        std::vector<QuadNode*> m_wantedNodes;
+        std::vector<PendingNode> m_pendingNodeData;
+        std::unordered_set<NodeKey> m_pendingNodes;
+        std::unordered_set<NodeKey> m_wantedKeys;
+        std::unordered_map<NodeKey, unsigned int> m_residentNodes; // Key->Slot in ChunkRenderPool
 
         //TODO Switch to time budget maybe instead ?
         static constexpr int ALLOWED_CHUNKS_PER_FRAME = 16;

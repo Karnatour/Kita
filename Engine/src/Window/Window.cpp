@@ -30,8 +30,12 @@ namespace Kita {
 
     void Window::createWindow(const int width, const int height, const char* title) {
         m_windowResolution = std::make_pair(width, height);
-        KITA_ENGINE_INFO("Creating window: {} ({}x{})", title, width, height);
 
+        GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+        KITA_ENGINE_INFO("Creating window: {} ({}x{}), monitor refresh rate {}Hz", title, width, height, mode->refreshRate);
+
+        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
         m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
         if (!m_window) {
             KITA_ENGINE_ERROR("Failed to create GLFW window");
@@ -133,12 +137,21 @@ namespace Kita {
         m_cursorMode = mode;
         switch (mode) {
             case CursorMode::DISABLED:
+                if (glfwRawMouseMotionSupported()) {
+                    glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+                }
                 glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_DISABLED);
                 break;
             case CursorMode::HIDDEN:
+                if (glfwRawMouseMotionSupported()) {
+                    glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+                }
                 glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_HIDDEN);
                 break;
             case CursorMode::SHOWN:
+                if (glfwRawMouseMotionSupported()) {
+                    glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+                }
                 glfwSetInputMode(m_window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
                 break;
         }
