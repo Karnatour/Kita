@@ -392,7 +392,7 @@ namespace Kita {
                 p.handBrake = 1.0f;
             }
 
-            if (p.forward != 0.0f || p.right != 0.0f || p.brake != 0.0f || p.handBrake != 0.0f) {
+            if (!p.parked && (p.forward != 0.0f || p.right != 0.0f || p.brake != 0.0f || p.handBrake != 0.0f)) {
                 Engine::getEngine()->getPhysicsManager().getPhysicsSystem().GetBodyInterface().ActivateBody(physicsCmp.bodyID);
             }
 
