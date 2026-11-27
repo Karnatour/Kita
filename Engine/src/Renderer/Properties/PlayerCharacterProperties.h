@@ -22,9 +22,9 @@ namespace Kita {
         bool wasSwitchingStance = false;
 
         //Size
-        float heightStanding = 1.35f;
+        float heightStanding = 1.0f;
         float radiusStanding = 0.3f;
-        float heightCrouching = 0.8f;
+        float heightCrouching = 0.5f;
         float radiusCrouching = 0.3f;
         float innerShapeFraction = 0.9f;
 
