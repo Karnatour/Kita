@@ -73,7 +73,7 @@ namespace Kita {
     // https://github.com/jrouwe/JoltPhysics/blob/master/Samples/Tests/Character/CharacterVirtualTest.cpp
     void PhysicsSystem::preUpdatePlayerCharacter(const PreUpdateEvent& event) {
         for (auto [entityID, playerCharacter, camera] : m_scene.view<PlayerCharacterComponent, CameraComponent>().each()) {
-            if (!Entity(&m_scene,entityID).hasAllComponents<ActiveCamera>()) {
+            if (!Entity(&m_scene, entityID).hasAllComponents<ActiveCamera>()) {
                 continue; // Skip simulation if player doesn't hold active camera component
             }
 
@@ -101,7 +101,26 @@ namespace Kita {
             float eyeY = currentHeight + 2.0f * currentRadius - p.eyeOffset;
 
             p.position = PhysicsUtil::JPHToGLMVec3(p.character->GetPosition() + JPH::Vec3(0.0f, eyeY, 0.0f));
-            camera.properties.position = p.position;
+
+            constexpr float BOB_SIDE_AMPLITUDE = 0.03f; // left-right sway (meters)
+            constexpr float BOB_VERTICAL_AMPLITUDE = 0.03f; // up-down movement (meters)
+            constexpr float BOB_WALK_SPEED = 6.5f; // step speed when walking
+            constexpr float BOB_SPRINT_SPEED = 9.0f; // step speed when sprinting
+            constexpr float BOB_FADE_SPEED = 10.0f; // how fast the bob fades in/out
+
+            const bool walking = p.character->GetGroundState() == JPH::CharacterBase::EGroundState::OnGround && !p.controlInput.IsNearZero();
+            p.bobAmount = glm::mix(p.bobAmount, walking ? 1.0f : 0.0f, 1.0f - std::exp(-BOB_FADE_SPEED * deltaTime));
+            if (walking) {
+                p.bobTime += deltaTime * (p.isCurrentlySprinting ? BOB_SPRINT_SPEED : BOB_WALK_SPEED);
+            }
+
+            const float bobSide = std::sin(p.bobTime) * BOB_SIDE_AMPLITUDE * p.bobAmount;
+            const float bobY = std::sin(p.bobTime * 2.0f) * BOB_VERTICAL_AMPLITUDE * p.bobAmount;
+
+            glm::vec3 camRight = glm::cross(camera.properties.front, glm::vec3(0.0f, 1.0f, 0.0f));
+            camRight = glm::length2(camRight) > 0.0001f ? glm::normalize(camRight) : glm::vec3(1.0f, 0.0f, 0.0f);
+
+            camera.properties.position = p.position + glm::vec3(0.0f, bobY, 0.0f) + camRight * bobSide;
 
             if (p.controlInput != JPH::Vec3::sZero()) {
                 p.controlInput = p.controlInput.Normalized();

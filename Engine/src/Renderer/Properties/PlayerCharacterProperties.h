@@ -16,6 +16,8 @@ namespace Kita {
         bool allowControlWhileInAir = true;
         float speed = 5.0f;
         float jumpSpeed = 3.0f;
+        float bobTime = 0.0f;
+        float bobAmount = 0.0f;
         bool isCurrentlySprinting = false;
         bool isCurrentlyJumping = false;
         bool isSwitchingStance = false;
