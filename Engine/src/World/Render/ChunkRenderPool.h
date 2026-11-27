@@ -13,8 +13,7 @@ namespace Kita {
         static constexpr unsigned int INVALID_SLOT = std::numeric_limits<unsigned int>::max();
 
         explicit ChunkRenderPool(unsigned int maxChunks);
-        void render(glm::vec2 camXZ, const Frustum& frustum);
-        //void renderInDistance(glm::vec2 camXZ, unsigned int renderDistance);
+        void render(glm::vec2 camXZ, const Frustum& frustum, float cullDistanceOffset = 0);
         unsigned int addChunk(const NodeKey& key, const std::vector<std::byte>& vertices, std::pair<float, float> minMaxY);
         void show(unsigned int slot);
         void release(unsigned int slot);

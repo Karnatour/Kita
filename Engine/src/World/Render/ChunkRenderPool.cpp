@@ -22,12 +22,14 @@ namespace Kita {
         KITA_ENGINE_INFO("Created ChunkRenderPool with {} slots", m_maxChunks);
     }
 
-    void ChunkRenderPool::render(const glm::vec2 camXZ, const Frustum& frustum) {
+    void ChunkRenderPool::render(const glm::vec2 camXZ, const Frustum& frustum, const float cullDistanceOffset) {
         updateCommands(camXZ);
 
         m_visibleCommands.clear();
         for (const auto& cmd : m_commands) {
-            if (frustum.insideFrustum(m_slotToAABB[cmd.baseInstance])) {
+            // ReSharper disable once CppTooWideScopeInitStatement
+            const auto& AABB = m_slotToAABB[cmd.baseInstance];
+            if (frustum.insideFrustum(AABB) || AABB.getDistanceSqXZ(camXZ) <= cullDistanceOffset * cullDistanceOffset) {
                 m_visibleCommands.push_back(cmd);
             }
         }
@@ -40,24 +42,6 @@ namespace Kita {
 
         Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, m_visibleCommands.size());
     }
-
-    /*void ChunkRenderPool::renderInDistance(const glm::vec2 camXZ, const unsigned int renderDistance) {
-        updateCommands(camXZ);
-
-        const float distance = static_cast<float>(ChunkData::CHUNK_SIZE * renderDistance);
-        const float distanceSq = distance * distance;
-
-        const auto end = std::ranges::partition_point(m_commands, [&](const auto& c) {
-            return nodeDistanceSq(c.baseInstance, camXZ) <= distanceSq;
-        });
-
-        const size_t count = std::ranges::distance(m_commands.begin(), end);
-        if (count == 0) {
-            return;
-        };
-
-        Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, count);
-    }*/
 
     unsigned int ChunkRenderPool::addChunk(const NodeKey& key, const std::vector<std::byte>& vertices, std::pair<float, float> minMaxY) {
         KITA_ENGINE_PROFILE("Add chunk to render pool");

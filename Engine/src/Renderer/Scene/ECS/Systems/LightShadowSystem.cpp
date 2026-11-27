@@ -80,7 +80,7 @@ namespace Kita {
             shader.setUniformInt("cascadeIndex", i);
             if (const TerrainSystem* terrainSystem = scene.getSystem<TerrainSystem>(); terrainSystem != nullptr) {
                 shader.setUniformMat4("model", glm::mat4(1.0f));
-                terrainSystem->getChunkRenderPool().render(glm::vec2(terrainSystem->getCameraChunkPos().getChunkPos().first, terrainSystem->getCameraChunkPos().getChunkPos().second), terrainSystem->getFrustum());
+                terrainSystem->getChunkRenderPool().render(glm::vec2(terrainSystem->getCameraChunkPos().getChunkPos().first, terrainSystem->getCameraChunkPos().getChunkPos().second), terrainSystem->getFrustum(), 400.0f); //TODO Move to variable
             }
 
             // Set cull mode to front to reduce shadow artifacts (doesn't affect terrain so keep BACK for it)

@@ -42,7 +42,7 @@ namespace Kita {
         return glm::dot(delta, delta);
     }
 
-    float AABB::getDistanceSqXZ(glm::vec2 point) const {
+    float AABB::getDistanceSqXZ(const glm::vec2 point) const {
         const auto min = glm::vec2(m_min.x,m_min.z);
         const auto max = glm::vec2(m_max.x, m_min.z);
 
