@@ -59,7 +59,7 @@ namespace Kita {
         Engine::getEngine()->getRenderer().drawTerrain(Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID), m_drawCommandBuffer, count);
     }*/
 
-    unsigned int ChunkRenderPool::addChunk(const NodeKey& key, const std::vector<std::byte>& vertices) {
+    unsigned int ChunkRenderPool::addChunk(const NodeKey& key, const std::vector<std::byte>& vertices, std::pair<float, float> minMaxY) {
         KITA_ENGINE_PROFILE("Add chunk to render pool");
         if (m_freeSlots.empty()) {
             KITA_ENGINE_ERROR("ChunkRenderPool is full this shouldn't happen");
@@ -69,9 +69,10 @@ namespace Kita {
         const unsigned int slot = m_freeSlots.back();
         m_freeSlots.pop_back();
 
+        auto& [minY, maxY] = minMaxY;
         const float size = static_cast<float>(ChunkData::CHUNK_SIZE * (1 << key.lodLevel));
-        const glm::vec3 min(static_cast<float>(key.chunkPosX) * size,0, static_cast<float>(key.chunkPosZ) * size);
-        m_slotToAABB[slot].setPos(min, min + glm::vec3(size,WorldGenerator::HEIGHT_SCALE * 2, size)); // TODO pass min/max Y for chunk here
+        const glm::vec3 min(static_cast<float>(key.chunkPosX) * size, minY, static_cast<float>(key.chunkPosZ) * size);
+        m_slotToAABB[slot].setPos(min, min + glm::vec3(size, maxY, size));
 
         const Mesh& mesh = Engine::getEngine()->getAssetManager().getAsset<Mesh>(m_meshID);
 
@@ -109,6 +110,10 @@ namespace Kita {
 
     unsigned int ChunkRenderPool::freeSlotCount() const {
         return static_cast<unsigned int>(m_freeSlots.size());
+    }
+
+    std::pair<size_t, size_t> ChunkRenderPool::getRenderCullingStatistic() const {
+        return std::make_pair(m_visibleCommands.size(), m_commands.size());
     }
 
     float ChunkRenderPool::nodeDistanceSq(const unsigned int slot, const glm::vec2 camXZ) const {

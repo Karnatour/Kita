@@ -118,6 +118,8 @@ void Editor::onRender() {
     ImGui::Text("Position: %.2f %.2f %.2f", cameraComponent.properties.position.x, cameraComponent.properties.position.y, cameraComponent.properties.position.z);
     ImGui::Text("Mesh count: %d", static_cast<int>(Kita::Engine::getEngine()->getAssetManager().getTotalNumberOfAssetsForBucket<Kita::Mesh>()));
     ImGui::Text("Free slots in render pool: %d", static_cast<int>(m_sandbox->getScene().getSystem<Kita::TerrainSystem>()->getChunkRenderPool().freeSlotCount()));
+    const auto [drawn, total] = m_sandbox->getScene().getSystem<Kita::TerrainSystem>()->getChunkRenderPool().getRenderCullingStatistic();
+    ImGui::Text("Render pool culling: drawn %d, total %d", static_cast<int>(drawn), static_cast<int>(total));
     ImGui::End();
 
     /*

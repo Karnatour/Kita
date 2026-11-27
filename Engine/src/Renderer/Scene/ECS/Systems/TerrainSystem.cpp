@@ -167,7 +167,7 @@ namespace Kita {
 
             processed = processed + 1;
 
-            const unsigned int slot = m_chunkRenderPool->addChunk(key, chunkData.getVertices());
+            const unsigned int slot = m_chunkRenderPool->addChunk(key, chunkData.getVertices(), chunkData.getMinMaxY());
             if (slot == ChunkRenderPool::INVALID_SLOT) {
                 continue; // ChunkRenderPool is full
             }

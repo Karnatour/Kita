@@ -3,8 +3,8 @@
 #include "WorldGenerator.h"
 
 namespace Kita {
-    ChunkData::ChunkData(const ChunkPos& chunkPos, std::vector<std::byte> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, std::optional<JPH::BodyCreationSettings> bodyCreationSettings)
-        : m_chunkPos(chunkPos), m_vertices(std::move(vertices)), m_heightmap(std::move(heightmap)), m_bodySettings(std::move(bodyCreationSettings)) {
+    ChunkData::ChunkData(const ChunkPos& chunkPos, std::vector<std::byte> vertices, std::array<float, HEIGHTMAP_SIZE> heightmap, std::optional<JPH::BodyCreationSettings> bodyCreationSettings, const std::pair<float, float> minMaxY)
+        : m_chunkPos(chunkPos), m_vertices(std::move(vertices)), m_heightmap(std::move(heightmap)), m_bodySettings(std::move(bodyCreationSettings)), m_minMaxY(minMaxY) {
     }
 
     ChunkPos ChunkData::getChunkPos() const {
@@ -21,6 +21,10 @@ namespace Kita {
 
     const std::array<float, ChunkData::HEIGHTMAP_SIZE>& ChunkData::getHeightmap() const {
         return m_heightmap;
+    }
+
+    std::pair<float, float> ChunkData::getMinMaxY() const {
+        return m_minMaxY;
     }
 
     void ChunkData::setBodyID(const JPH::BodyID bodyID) {

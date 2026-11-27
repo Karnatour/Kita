@@ -39,10 +39,16 @@ namespace Kita {
         std::vector<std::byte> vertices;
         vertices.reserve(VERTICES_PER_EDGE * VERTICES_PER_EDGE);
 
+        auto minMaxY = std::make_pair(0.0f, 0.0f);
+        auto& [minY,maxY] = minMaxY;
         for (int z = 0; z < VERTICES_PER_EDGE; ++z) {
             for (int x = 0; x < VERTICES_PER_EDGE; ++x) {
+                float y = heightAt(x, z);
+                minY = std::min(minY, y);
+                maxY = std::max(maxY, y);
+
                 // Position
-                VertexBufferData::appendBytes(vertices, glm::vec3(originX + static_cast<float>(x) * step, heightAt(x, z), originZ + static_cast<float>(z) * step));
+                VertexBufferData::appendBytes(vertices, glm::vec3(originX + static_cast<float>(x) * step, y, originZ + static_cast<float>(z) * step));
 
                 const float heightLeft = heightAt(x - 1, z);
                 const float heightRight = heightAt(x + 1, z);
@@ -77,7 +83,7 @@ namespace Kita {
             bodySettings.emplace(shapeResult.Get(), bodyPos, JPH::Quat::sIdentity(), JPH::EMotionType::Static, PhysicsLayers::Layers::STATIC);
         }
 
-        return ChunkData(chunkPos, std::move(vertices), std::move(heightmap), std::move(bodySettings));
+        return ChunkData(chunkPos, std::move(vertices), std::move(heightmap), std::move(bodySettings), minMaxY);
     }
 
     Chunk WorldGenerator::generateChunk(ChunkData chunkData) {
